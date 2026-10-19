@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\UserGroup;
 use Illuminate\Database\Seeder;
 
 /* REMARK
@@ -20,12 +21,16 @@ class UserSeeder extends Seeder
         $users = [
             ['username' => 'supervisor', 'name' => 'Supervisor Gudang', 'email' => 'supervisor@sstock.test', 'role' => User::ROLE_SUPERVISOR],
             ['username' => 'entry', 'name' => 'Staf Data Entry', 'email' => 'entry@sstock.test', 'role' => User::ROLE_DATA_ENTRY],
-            // Akun admin untuk pengembangan dan UAT nanti (permintaan pemilik): hak Supervisor, password lemah sengaja. Hapus / ganti sebelum produksi.
-            ['username' => 'admin', 'name' => 'Admin UAT', 'email' => 'admin@sstock.test', 'role' => User::ROLE_SUPERVISOR, 'password' => 'admin'],
+            // Akun admin untuk pengembangan dan UAT nanti (permintaan pemilik): peran Administrator (hak Supervisor + menu Keamanan), password lemah sengaja. Hapus / ganti sebelum produksi.
+            ['username' => 'admin', 'name' => 'Admin UAT', 'email' => 'admin@sstock.test', 'role' => User::ROLE_ADMINISTRATOR, 'password' => 'admin'],
         ];
 
+        // Grup bawaan dibuat migrasi; akun contoh masuk grup sesuai perannya.
+        $groups = UserGroup::query()->pluck('id', 'code');
+        $groups = ['data_entry' => $groups['DATAENTRY'] ?? null, 'supervisor' => $groups['SUPERVISOR'] ?? null, 'administrator' => $groups['ADMIN'] ?? null];
+
         foreach ($users as $u) {
-            User::updateOrCreate(['username' => $u['username']], $u + ['password' => self::PASSWORD, 'is_active' => true]);
+            User::updateOrCreate(['username' => $u['username']], $u + ['password' => self::PASSWORD, 'is_active' => true, 'group_id' => $groups[$u['role']] ?? null]);
         }
     }
 }

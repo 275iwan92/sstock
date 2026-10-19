@@ -1,0 +1,39 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
+
+#[Fillable(['code', 'name', 'is_active'])]
+class Department extends Model
+{
+    protected function casts(): array
+    {
+        return ['is_active' => 'boolean'];
+    }
+
+    // Kode otomatis dari nama (tambah cepat dari form Issuance): huruf besar tanpa spasi, angka di belakang bila kembar.
+    public static function codeFor(string $name): string
+    {
+        $base = strtoupper(Str::limit(Str::slug($name, ''), 12, '')) ?: 'DEP';
+        $code = $base;
+        for ($n = 2; static::query()->where('code', $code)->exists(); $n++) {
+            $code = $base.$n;
+        }
+
+        return $code;
+    }
+
+    public function recipients(): HasMany
+    {
+        return $this->hasMany(Recipient::class);
+    }
+
+    public function documents(): HasMany
+    {
+        return $this->hasMany(StockDocument::class);
+    }
+}

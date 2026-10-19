@@ -21,7 +21,7 @@ class HomeController extends Controller
     public function __invoke(Request $request)
     {
         $user = $request->user();
-        $below = Item::query()->belowReorderPoint()->with('category')->orderByRaw('stock_qty / reorder_point')->get();
+        $below = Item::query()->belowReorderPoint()->with('category', 'openOrder')->orderByRaw('stock_qty / reorder_point')->get();
 
         return view('home', [
             'modules' => Menu::modules($user),
@@ -33,7 +33,7 @@ class HomeController extends Controller
             'stockValue' => $user->isSupervisor() ? round(Item::query()->selectRaw('SUM(stock_qty * avg_cost) v')->value('v') ?? 0, 2) : null,
             'receivingToday' => StockDocument::query()->where('type', StockDocumentType::Receiving)->whereDate('doc_at', today())->count(),
             'issuanceToday' => StockDocument::query()->where('type', StockDocumentType::Issuance)->whereDate('doc_at', today())->count(),
-            'valuation' => $user->isSupervisor() ? StockValuation::series() : null,
+            'valuation' => $user->isSupervisor() ? StockValuation::series($request->query('month')) : null,
             'pending' => $user->isSupervisor() ? StockDocument::query()->where('status', 'approval')->count() : null,
         ]);
     }

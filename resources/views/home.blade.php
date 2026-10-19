@@ -8,8 +8,9 @@
 --}}
 @extends('layout', ['title' => 'Home', 'bodyClass' => 'sstock-bare'])
 @section('body')
-    <x-dl::layer-shell :classic="false" :modules="$modules" :user="$user" :logout-action="route('logout')" :open="$open" :fresh="$fresh" menu-source="App\Support\Menu">
+    <x-dl::layer-shell :classic="false" :without="['chat', 'ai', 'theme']" :modules="$modules" :user="$user" :logout-action="route('logout')" :open="$open" :fresh="$fresh" menu-source="App\Support\Menu">
         <x-slot:dashboard>
+            @include('partials.flash')
             <x-dl::quote :quotes="\Devlib\Components\Frame::textLines('motivasi-harian.txt')" order="day" />
             <x-dl::kpi-row>
                 <x-dl::kpi label="Active items" :value="$itemCount" icon="fa-boxes-stacked" data-open-tab="ITM" class="sstock-link" role="link" tabindex="0" />
@@ -29,8 +30,20 @@
                 @endif
                 @if ($valuation)
                     <div class="sstock-box">
-                        <x-dl::chart type="line" format="money" height="300px" :legend="false" title="Nilai Stok"
-                            :subtitle="$valuation['mode'] === 'monthly' ? 'Per bulan, 12 bulan terakhir' : 'Per minggu, 12 minggu terakhir'"
+                        <div class="sstock-box-nav">
+                            @if ($valuation['prev'])
+                                <x-dl::button variant="secondary" size="sm" icon="fa-chevron-left" label="Bulan lalu" :href="route('home', ['month' => $valuation['prev']])" />
+                            @else
+                                <span></span>
+                            @endif
+                            <strong>{{ $valuation['title'] }}</strong>
+                            @if ($valuation['next'])
+                                <x-dl::button variant="secondary" size="sm" icon="fa-chevron-right" label="Bulan depan" :href="route('home', ['month' => $valuation['next']])" />
+                            @else
+                                <span></span>
+                            @endif
+                        </div>
+                        <x-dl::chart type="hbar" format="money" height="320px" :legend="false" title="Nilai Stok" subtitle="Per minggu"
                             :labels="$valuation['labels']" :series="[['name' => 'Nilai stok', 'data' => $valuation['values'], 'tone' => 'violet']]" source="stock_movements" />
                     </div>
                 @endif

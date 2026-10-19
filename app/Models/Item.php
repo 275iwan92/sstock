@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Fillable(['code', 'name', 'category_id', 'unit', 'location', 'unit_price', 'reorder_point', 'reorder_qty', 'lead_time_days', 'is_active'])]
 class Item extends Model
@@ -32,6 +33,12 @@ class Item extends Model
     public function lines(): HasMany
     {
         return $this->hasMany(StockDocumentLine::class);
+    }
+
+    // Pemesanan ulang yang masih menunggu barang datang (ditutup saat Receiving).
+    public function openOrder(): HasOne
+    {
+        return $this->hasOne(ReorderOrder::class)->whereNull('closed_at')->latestOfMany();
     }
 
     public function movements(): HasMany

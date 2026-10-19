@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Enums\StockDocumentType;
 use App\Models\Item;
+use App\Models\Recipient;
 use App\Models\StockDocument;
 use App\Models\Supplier;
 use App\Models\User;
@@ -29,6 +30,7 @@ class SampleTransactionSeeder extends Seeder
         $sup = User::where('username', 'supervisor')->firstOrFail();
         $entry = User::where('username', 'entry')->firstOrFail();
         $item = fn (string $code) => Item::where('code', $code)->firstOrFail()->id;
+        $recipient = fn (string $name) => Recipient::where('name', $name)->firstOrFail()->id;
         $supplier = fn (string $code) => Supplier::where('code', $code)->firstOrFail()->id;
         $monthStart = now()->subMonth()->startOfMonth();
 
@@ -51,14 +53,14 @@ class SampleTransactionSeeder extends Seeder
 
         // Pengeluaran; SPR-0002, SPR-0005 dan TLS-0002 berakhir di/bawah Reorder Point.
         Carbon::setTestNow($monthStart->copy()->addDays(15)->setTime(10, 5));
-        $docs->create(StockDocumentType::Issuance, ['recipient' => 'Budi (Teknisi)', 'department' => 'Maintenance', 'reason' => 'Overhaul mesin press 2'], [
+        $docs->create(StockDocumentType::Issuance, ['recipient_id' => $recipient('Budi (Teknisi)'), 'reason' => 'Overhaul mesin press 2'], [
             ['item_id' => $item('SPR-0002'), 'qty' => 850],
             ['item_id' => $item('SPR-0005'), 'qty' => 1500],
             ['item_id' => $item('SPR-0008'), 'qty' => 4],
             ['item_id' => $item('TLS-0002'), 'qty' => 3],
         ], $entry);
         Carbon::setTestNow($monthStart->copy()->addDays(20)->setTime(8, 45));
-        $docs->create(StockDocumentType::Issuance, ['recipient' => 'Sari', 'department' => 'Admin', 'reason' => 'Alat tulis kantor'], [
+        $docs->create(StockDocumentType::Issuance, ['recipient_id' => $recipient('Sari'), 'reason' => 'Alat tulis kantor'], [
             ['item_id' => $item('ATK-0001'), 'qty' => 18],
             ['item_id' => $item('ATK-0002'), 'qty' => 6],
         ], $entry);

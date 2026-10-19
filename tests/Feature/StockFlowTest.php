@@ -3,7 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
+use App\Models\Department;
 use App\Models\Item;
+use App\Models\Recipient;
+use App\Models\ReorderOrder;
 use App\Models\StockDocument;
 use App\Models\Supplier;
 use App\Models\User;
@@ -27,12 +30,18 @@ class StockFlowTest extends TestCase
 
     private Supplier $supplier;
 
+    private Recipient $recipient;
+
+    private Department $department;
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->supervisor = User::factory()->supervisor()->create(['username' => 'sup']);
         $this->entry = User::factory()->create(['username' => 'ent']);
         $this->supplier = Supplier::create(['code' => 'S1', 'name' => 'Supplier One']);
+        $this->department = Department::create(['code' => 'MNT', 'name' => 'Maintenance']);
+        $this->recipient = Recipient::create(['name' => 'Budi', 'department_id' => $this->department->id]);
     }
 
     private function item(string $code = 'I1', float $rop = 0): Item
@@ -53,7 +62,7 @@ class StockFlowTest extends TestCase
     private function issue(Item $item, float $qty)
     {
         return $this->actingAs($this->entry)->post(route('docs.store', 'issuance'), [
-            'recipient' => 'Budi', 'department' => 'Maintenance', 'lines' => [['item_id' => $item->id, 'qty' => $qty]],
+            'recipient_id' => $this->recipient->id, 'department_id' => $this->department->id, 'lines' => [['item_id' => $item->id, 'qty' => $qty]],
         ]);
     }
 
@@ -104,7 +113,7 @@ class StockFlowTest extends TestCase
     {
         $item = $this->item('I9');
         $this->receive($item, 1, 5);
-        $this->from(route('docs.create', 'issuance'))->post(route('docs.store', 'issuance'), ['recipient' => 'Budi', 'lines' => [['item_id' => $item->id, 'qty' => 5]]])->assertSessionHasErrors('lines');
+        $this->from(route('docs.create', 'issuance'))->post(route('docs.store', 'issuance'), ['recipient_id' => $this->recipient->id, 'lines' => [['item_id' => $item->id, 'qty' => 5]]])->assertSessionHasErrors('lines');
 
         $this->get(route('docs.create', 'issuance'))->assertOk()->assertSee('item_id_label', false)->assertSee('Item I9', false);
     }
@@ -213,27 +222,30 @@ class StockFlowTest extends TestCase
         $this->assertMatchesRegularExpression('/&quot;open&quot;:90(\.0)?,&quot;in&quot;:0(\.0)?,&quot;out&quot;:50(\.0)?,&quot;adj&quot;:0(\.0)?,&quot;end&quot;:40(\.0)?.*PESAN ULANG/', $later);
     }
 
-    public function test_valuation_series_is_weekly_for_new_data_and_monthly_after_half_a_year(): void
+    public function test_valuation_series_is_weekly_within_a_month_with_prev_and_next(): void
     {
         $item = $this->item('V1');
-        Carbon::setTestNow('2026-10-10 09:00:00');
+        Carbon::setTestNow('2026-09-10 09:00:00');
         $this->receive($item, 100, 10);   // nilai 1.000
         Carbon::setTestNow('2026-10-15 09:00:00');
         $this->issue($item, 40);          // nilai 600
         Carbon::setTestNow('2026-10-19 12:00:00');
 
-        $weekly = StockValuation::series();
-        $this->assertSame('weekly', $weekly['mode']);
-        $this->assertCount(12, $weekly['values']);
-        $this->assertSame(0.0, $weekly['values'][0]);                // sebelum ada pergerakan
-        $this->assertSame(1000.0, $weekly['values'][10]);            // 12 Okt: sesudah penerimaan 10 Okt, sebelum pengeluaran 15 Okt
-        $this->assertSame(600.0, end($weekly['values']));
+        $oct = StockValuation::series();
+        $this->assertSame('Oktober 2026', $oct['title']);
+        $this->assertSame([1000.0, 1000.0, 600.0], $oct['values']);      // s/d 7, 14 Okt (sebelum pengeluaran), 19 Okt (hari ini)
+        $this->assertSame('s/d 19 Okt', end($oct['labels']));
+        $this->assertSame('2026-09', $oct['prev']);
+        $this->assertNull($oct['next']);
 
-        Carbon::setTestNow('2027-05-10 12:00:00');
-        $monthly = StockValuation::series();
-        $this->assertSame('monthly', $monthly['mode']);
-        $this->assertCount(12, $monthly['values']);
-        $this->assertSame(600.0, end($monthly['values']));
+        $sep = StockValuation::series('2026-09');
+        $this->assertSame([0.0, 1000.0, 1000.0, 1000.0, 1000.0], $sep['values']);   // s/d 7, 14, 21, 28, 30 Sep
+        $this->assertNull($sep['prev']);
+        $this->assertSame('2026-10', $sep['next']);
+
+        $this->assertSame('Oktober 2026', StockValuation::series('2030-01')['title']);   // di luar rentang: dijepit
+        $this->assertSame('September 2026', StockValuation::series('2020-01')['title']);
+        $this->assertSame('Oktober 2026', StockValuation::series('ngawur')['title']);
         Carbon::setTestNow();
     }
 
@@ -244,6 +256,80 @@ class StockFlowTest extends TestCase
 
         $this->actingAs($this->supervisor)->get(route('home'))->assertOk()->assertSee('data-dl-chart', false);
         $this->actingAs($this->entry)->get(route('home'))->assertOk()->assertDontSee('data-dl-chart', false);
+    }
+
+    public function test_reorder_order_is_recorded_shown_on_the_opening_screen_and_closed_by_receiving(): void
+    {
+        $item = $this->item('R1', rop: 5);
+        $fine = $this->item('R2', rop: 5);
+        $this->receive($item, 3, 10);
+        $this->receive($fine, 50, 10);
+
+        $this->actingAs($this->entry)->get(route('home'))->assertOk()->assertSee('Belum dipesan')->assertDontSee('Item R2');
+
+        $order = ['item_id' => $item->id, 'ordered_at' => today()->toDateString(), 'ref_no' => 'PO-77'];
+        $this->post(route('reorder-orders.store'), $order)->assertRedirect(route('home'));
+        $this->get(route('home'))->assertSee('Dipesan ')->assertSee('PO-77')->assertDontSee('Belum dipesan');
+
+        $this->post(route('reorder-orders.store'), $order)->assertStatus(422);                                   // sudah terbuka
+        $this->post(route('reorder-orders.store'), ['item_id' => $fine->id] + $order)->assertStatus(422);        // stok masih cukup
+        $this->post(route('reorder-orders.store'), ['ref_no' => ''] + $order)->assertSessionHasErrors('ref_no');
+
+        $this->receive($item, 20, 10);
+        $this->assertNotNull(ReorderOrder::where('item_id', $item->id)->first()->closed_at);
+        $this->assertNull($item->fresh()->openOrder);
+    }
+
+    public function test_issuance_uses_recipient_and_department_masters_and_copies_their_names(): void
+    {
+        $item = $this->item('M1');
+        $this->receive($item, 20, 10);
+
+        // departemen dikosongkan -> ikut departemen bawaan penerima; nama disalin ke dokumen
+        $this->actingAs($this->entry)->post(route('docs.store', 'issuance'), ['recipient_id' => $this->recipient->id, 'lines' => [['item_id' => $item->id, 'qty' => 2]]])->assertSessionHasNoErrors();
+        $doc = StockDocument::where('type', 'OUT')->latest('id')->firstOrFail();
+        $this->assertSame([$this->recipient->id, $this->department->id, 'Budi', 'Maintenance'], [$doc->recipient_id, $doc->department_id, $doc->recipient, $doc->department]);
+
+        $this->post(route('docs.store', 'issuance'), ['lines' => [['item_id' => $item->id, 'qty' => 1]]])->assertSessionHasErrors('recipient_id');   // penerima wajib dari master
+        $this->recipient->update(['is_active' => false]);
+        $this->post(route('docs.store', 'issuance'), ['recipient_id' => $this->recipient->id, 'lines' => [['item_id' => $item->id, 'qty' => 1]]])->assertSessionHasErrors('recipient_id');
+    }
+
+    public function test_receiving_and_adjustment_also_take_optional_recipient_and_department(): void
+    {
+        $item = $this->item('M2');
+        $this->actingAs($this->entry)->post(route('docs.store', 'receiving'), [
+            'supplier_id' => $this->supplier->id, 'recipient_id' => $this->recipient->id,
+            'lines' => [['item_id' => $item->id, 'qty' => 5, 'unit_cost' => 10]],
+        ])->assertSessionHasNoErrors();
+        $in = StockDocument::where('type', 'IN')->firstOrFail();
+        $this->assertSame(['Budi', $this->department->id, 'Maintenance'], [$in->recipient, $in->department_id, $in->department]);   // departemen ikut bawaan penerima
+
+        $this->actingAs($this->supervisor)->post(route('docs.store', 'adjustment'), ['reason' => 'Opname', 'department_id' => $this->department->id, 'lines' => [['item_id' => $item->id, 'counted_qty' => 4]]])->assertSessionHasNoErrors();
+        $adj = StockDocument::where('type', 'ADJ')->firstOrFail();
+        $this->assertSame(['Maintenance', null], [$adj->department, $adj->recipient_id]);
+
+        // keduanya tetap opsional di Receiving
+        $this->actingAs($this->entry)->post(route('docs.store', 'receiving'), ['supplier_id' => $this->supplier->id, 'lines' => [['item_id' => $item->id, 'qty' => 1, 'unit_cost' => 10]]])->assertSessionHasNoErrors();
+        $this->get(route('docs.create', 'receiving'))->assertOk()->assertSee('recipient_id', false);
+    }
+
+    public function test_recipient_and_department_can_be_added_quickly_as_json_from_the_issuance_form(): void
+    {
+        $this->actingAs($this->entry);
+        $dept = $this->postJson(route('departments.store'), ['name' => 'Quality Control'])->assertCreated()->json();
+        $this->assertSame('QUALITYCONTR', Department::find($dept['id'])->code);
+        $this->postJson(route('departments.store'), ['name' => 'Quality Control'])->assertCreated();                       // kode kembar -> diberi angka
+        $this->assertSame(2, Department::where('name', 'Quality Control')->count());
+
+        $rec = $this->postJson(route('recipients.store'), ['name' => 'Rina', 'department_id' => $dept['id']])->assertCreated()->json();
+        $this->assertSame($dept['id'], $rec['department_id']);
+        $this->postJson(route('recipients.store'), ['name' => ''])->assertStatus(422);
+
+        $this->get(route('docs.create', 'issuance'))->assertOk()->assertSee('qa-recipient', false)->assertSee('Penerima baru', false);
+        $this->get(route('departments.index'))->assertOk();
+        $this->get(route('recipients.index'))->assertOk();
+        $this->get(route('recipients.show', $this->recipient))->assertOk();
     }
 
     public function test_reports_render_and_hide_valuation_from_data_entry(): void

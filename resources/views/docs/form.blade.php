@@ -65,16 +65,27 @@
                 <x-dl::field.select name="supplier_id" label="Supplier" :options="$suppliers + ($doc->supplier ? [$doc->supplier_id => $doc->supplier->name] : [])" :value="$v('supplier_id')" required :error="$e('supplier_id')" />
                 <x-dl::field.text name="ref_no" label="Reference No. (delivery note / PO / invoice)" :value="$v('ref_no')" maxlength="60" :error="$e('ref_no')" />
             </x-dl::form.row>
+            <x-dl::form.row :cols="3">
+                @include('docs.recipient-field')
+                @include('docs.department-field')
+            </x-dl::form.row>
         @elseif ($t === T::Issuance)
             <x-dl::form.row :cols="3">
-                <x-dl::field.text name="recipient" label="Recipient" :value="$v('recipient')" required maxlength="100" :error="$e('recipient')" />
-                <x-dl::field.text name="department" label="Department" :value="$v('department')" maxlength="100" :error="$e('department')" />
+                @include('docs.recipient-field')
+                @include('docs.department-field')
                 <x-dl::field.text name="reason" label="Purpose (maintenance / ATK ...)" :value="$v('reason')" maxlength="255" :error="$e('reason')" />
             </x-dl::form.row>
         @elseif ($isAdj)
-            <x-dl::form.row>
+            <x-dl::form.row :cols="3">
                 <x-dl::field.text name="reason" label="Reason for adjustment / opname" :value="$v('reason')" required maxlength="255" :error="$e('reason')" />
             </x-dl::form.row>
+            <x-dl::form.row :cols="3">
+                @include('docs.recipient-field')
+                @include('docs.department-field')
+            </x-dl::form.row>
+        @endif
+        @if (! $locked && $t !== T::Opening)
+            @include('docs.quick-add')
         @endif
         <x-dl::form.row>
             <x-dl::field.text name="note" label="Notes" :value="$v('note')" multiline maxlength="1000" :error="$e('note')" />

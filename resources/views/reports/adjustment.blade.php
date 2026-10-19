@@ -19,6 +19,8 @@
             ['key' => 'date', 'label' => 'Date & Time'],
             ['key' => 'doc', 'label' => 'Document No.', 'sub' => 'reason'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['Disetujui' => 'success', 'Menunggu Persetujuan' => 'warn', 'Draf' => 'neutral', 'Ditolak' => 'danger']],
+            ['key' => 'recipient', 'label' => 'Recipient'],
+            ['key' => 'dept', 'label' => 'Department'],
             ['key' => 'item', 'label' => 'Item', 'sub' => 'code'],
             ['key' => 'unit', 'label' => 'Unit'],
             ['key' => 'system', 'label' => 'System Qty', 'type' => 'number'],

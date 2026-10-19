@@ -28,6 +28,11 @@ class UserFactory extends Factory
         ];
     }
 
+    public function administrator(): static
+    {
+        return $this->state(['role' => User::ROLE_ADMINISTRATOR]);
+    }
+
     public function supervisor(): static
     {
         return $this->state(['role' => User::ROLE_SUPERVISOR]);

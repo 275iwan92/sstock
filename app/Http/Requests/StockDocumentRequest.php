@@ -32,6 +32,8 @@ class StockDocumentRequest extends FormRequest
             return [];
         }
 
+        $recipient = ['nullable', Rule::exists('recipients', 'id')->where('is_active', true)];
+        $department = ['nullable', Rule::exists('departments', 'id')->where('is_active', true)];
         $qty = ['required', 'numeric', 'gt:0', 'max:999999999'];
         $common = [
             'note' => ['nullable', 'string', 'max:1000'],
@@ -44,13 +46,15 @@ class StockDocumentRequest extends FormRequest
             StockDocumentType::Receiving => [
                 'supplier_id' => ['required', Rule::exists('suppliers', 'id')->where('is_active', true)],
                 'ref_no' => ['nullable', 'string', 'max:60'],
+                'department_id' => $department,
+                'recipient_id' => $recipient,
                 'lines.*.qty' => $qty,
                 'lines.*.unit' => ['nullable', Rule::exists('units', 'code')->where('is_active', true)],
                 'lines.*.unit_cost' => ['required', 'numeric', 'min:0', 'max:999999999999'],
             ],
             StockDocumentType::Issuance => [
-                'recipient' => ['required', 'string', 'max:100'],
-                'department' => ['nullable', 'string', 'max:100'],
+                'recipient_id' => ['required', Rule::exists('recipients', 'id')->where('is_active', true)],
+                'department_id' => $department,
                 'reason' => ['nullable', 'string', 'max:255'],
                 'lines.*.qty' => $qty,
             ],
@@ -60,6 +64,8 @@ class StockDocumentRequest extends FormRequest
                 'lines.*.unit_cost' => ['required', 'numeric', 'min:0', 'max:999999999999'],
             ],
             StockDocumentType::Adjustment => [
+                'department_id' => $department,
+                'recipient_id' => $recipient,
                 'reason' => ['required', 'string', 'max:255'],
                 'lines.*.counted_qty' => ['required', 'numeric', 'min:0', 'max:999999999'],
             ],

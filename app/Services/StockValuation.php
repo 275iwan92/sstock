@@ -7,36 +7,28 @@ use Devlib\Locale;
 use Illuminate\Support\Carbon;
 
 /* REMARK
- * Tujuan       : Deret nilai persediaan (saldo x biaya rata-rata semua barang) untuk grafik di opening screen: per minggu (12 minggu terakhir) selama riwayat stok masih singkat,
- *                otomatis per bulan (12 bulan terakhir) setelah riwayat lebih dari 180 hari.
+ * Tujuan       : Deret nilai persediaan (saldo x biaya rata-rata semua barang) untuk grafik di opening screen: satu bulan per tampilan,
+ *                titik per minggu (tanggal 7, 14, 21, 28, lalu akhir bulan atau hari ini), dengan navigasi bulan sebelum/sesudahnya.
  * Sumber hulu  : stock_movements (balance_qty, balance_avg_cost sesudah tiap pergerakan).
- * Output       : ['labels' => [...], 'values' => [...], 'mode' => 'weekly'|'monthly'].
+ * Output       : ['labels' => [...], 'values' => [...], 'month' => Carbon, 'title' => 'Oktober 2026', 'prev' => 'YYYY-MM'|null, 'next' => 'YYYY-MM'|null].
  * Dipakai oleh : HomeController (hanya Supervisor).
  * Status       : Aktif.
  */
 final class StockValuation
 {
-    private const WEEKLY_POINTS = 12;
-
-    private const MONTHLY_POINTS = 12;
-
-    // shortcut: memuat seluruh pergerakan ke memori lalu menjumlah per akhir periode, cukup untuk puluhan ribu baris; upgrade ke tabel ringkasan harian bila lebih besar.
-    public static function series(?Carbon $today = null): array
+    // shortcut: memuat seluruh pergerakan sampai akhir bulan ke memori, cukup untuk puluhan ribu baris; upgrade ke tabel ringkasan harian bila lebih besar.
+    public static function series(?string $month = null, ?Carbon $today = null): array
     {
         $today = ($today ?? now())->copy()->endOfDay();
-        $moves = StockMovement::query()->where('moved_at', '<=', $today)->orderBy('moved_at')->orderBy('id')->get(['item_id', 'moved_at', 'balance_qty', 'balance_avg_cost']);
-        $monthly = $moves->isNotEmpty() && $moves->first()->moved_at->diffInDays($today) > 180;
+        $first = StockMovement::query()->min('moved_at');
+        $min = $first ? Carbon::parse($first)->startOfMonth() : $today->copy()->startOfMonth();
+        $max = $today->copy()->startOfMonth();
+        $start = preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', (string) $month) ? Carbon::createFromFormat('!Y-m', $month) : $max->copy();
+        $start = $start->max($min)->min($max);
+        $end = $start->copy()->endOfMonth()->min($today);
 
-        $cutoffs = [];
-        if ($monthly) {
-            for ($i = self::MONTHLY_POINTS - 1; $i >= 0; $i--) {
-                $cutoffs[] = $i === 0 ? $today->copy() : $today->copy()->subMonthsNoOverflow($i)->endOfMonth();
-            }
-        } else {
-            for ($i = self::WEEKLY_POINTS - 1; $i >= 0; $i--) {
-                $cutoffs[] = $today->copy()->subDays(7 * $i)->endOfDay();
-            }
-        }
+        $cutoffs = collect([7, 14, 21, 28])->map(fn ($d) => $start->copy()->day($d)->endOfDay())->filter(fn ($c) => $c < $end->copy()->startOfDay())->push($end)->values();
+        $moves = StockMovement::query()->where('moved_at', '<=', $end)->orderBy('moved_at')->orderBy('id')->get(['item_id', 'moved_at', 'balance_qty', 'balance_avg_cost']);
 
         $value = [];
         $i = 0;
@@ -47,10 +39,14 @@ final class StockValuation
                 $value[$moves[$i]->item_id] = $moves[$i]->balance_qty * $moves[$i]->balance_avg_cost;
                 $i++;
             }
-            $labels[] = Locale::at($cutoff)->translatedFormat($monthly ? 'M Y' : 'd M');
+            $labels[] = Locale::at($cutoff)->translatedFormat('\s/\d d M');
             $values[] = round(array_sum($value));
         }
 
-        return ['labels' => $labels, 'values' => $values, 'mode' => $monthly ? 'monthly' : 'weekly'];
+        return [
+            'labels' => $labels, 'values' => $values, 'month' => $start, 'title' => Locale::at($start)->translatedFormat('F Y'),
+            'prev' => $start > $min ? $start->copy()->subMonthNoOverflow()->format('Y-m') : null,
+            'next' => $start < $max ? $start->copy()->addMonthNoOverflow()->format('Y-m') : null,
+        ];
     }
 }

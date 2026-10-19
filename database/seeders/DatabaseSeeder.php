@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             SupplierSeeder::class,
             ItemSeeder::class,
+            OrganizationSeeder::class,
             SampleTransactionSeeder::class,
         ]);
     }

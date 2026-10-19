@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Enums\StockDocumentType;
 use App\Http\Requests\StockDocumentRequest;
+use App\Models\Department;
 use App\Models\Item;
+use App\Models\Recipient;
 use App\Models\StockDocument;
 use App\Models\Supplier;
 use App\Models\Unit;
@@ -61,7 +63,7 @@ class StockDocumentController extends Controller
     public function store(StockDocumentRequest $request, string $type): RedirectResponse
     {
         $t = $request->type();
-        [$doc, $below] = $this->documents->create($t, $request->safe()->only(['supplier_id', 'ref_no', 'recipient', 'department', 'reason', 'note', 'doc_at']), array_values($request->validated('lines')), $request->user());
+        [$doc, $below] = $this->documents->create($t, $request->safe()->only(['supplier_id', 'ref_no', 'recipient_id', 'department_id', 'reason', 'note', 'doc_at']), array_values($request->validated('lines')), $request->user());
 
         $redirect = redirect()->route('docs.show', [$t->slug(), $doc])->with('status', $t === StockDocumentType::Adjustment ? "{$doc->doc_no} disimpan sebagai draf." : "{$doc->doc_no} disimpan dan diposting ke stok.");
         if ($below) {
@@ -78,7 +80,7 @@ class StockDocumentController extends Controller
         $action = $request->input('_action', 'save');
 
         if (in_array($action, ['save', 'confirm'], true)) {
-            $this->documents->update($document, $request->safe()->only(['reason', 'note']), array_values($request->validated('lines')));
+            $this->documents->update($document, $request->safe()->only(['reason', 'note', 'recipient_id', 'department_id']), array_values($request->validated('lines')));
         }
         $message = match ($action) {
             'save' => 'Draf disimpan.',
@@ -140,6 +142,8 @@ class StockDocumentController extends Controller
 
         return [
             't' => $t, 'doc' => $doc, 'log' => $log,
+            'recipients' => Recipient::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id')->all(),
+            'departments' => Department::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id')->all(),
             'suppliers' => Supplier::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id')->all(),
             'units' => Unit::query()->where('is_active', true)->orderBy('code')->get()->mapWithKeys(fn (Unit $u) => [$u->code => "{$u->code} · {$u->name}"])->all(),
             'lines' => $this->lineRows($doc),

@@ -3,7 +3,10 @@
 namespace App\Services;
 
 use App\Enums\StockDocumentType;
+use App\Models\Department;
 use App\Models\Item;
+use App\Models\Recipient;
+use App\Models\ReorderOrder;
 use App\Models\StockDocument;
 use App\Models\User;
 use App\Support\UnitConverter;
@@ -29,6 +32,8 @@ final class StockDocuments
      */
     public function create(StockDocumentType $type, array $header, array $lines, User $user): array
     {
+        $header = $this->withNames($type, $header);
+
         return DB::transaction(function () use ($type, $header, $lines, $user) {
             $doc = StockDocument::create([
                 ...$header,
@@ -41,15 +46,31 @@ final class StockDocuments
             $this->writeLines($doc, $lines);
 
             $below = $type === StockDocumentType::Adjustment ? [] : $this->ledger->post($doc, $user);
+            if ($type === StockDocumentType::Receiving) {
+                // Barang datang menutup pemesanan ulang yang terbuka (juga bila baru sebagian; pesan lagi bila masih kurang).
+                ReorderOrder::query()->whereNull('closed_at')->whereIn('item_id', collect($lines)->pluck('item_id'))->update(['closed_at' => now(), 'receiving_id' => $doc->id]);
+            }
 
             return [$doc, $below];
         });
+    }
+
+    // Semua jenis dokumen: departemen kosong -> departemen bawaan penerima. Nama master disalin ke kolom teks dokumen (tetap terbaca bila master diubah).
+    private function withNames(StockDocumentType $type, array $header): array
+    {
+        $recipient = isset($header['recipient_id']) ? Recipient::find($header['recipient_id']) : null;
+        $header['department_id'] = $header['department_id'] ?? $recipient?->department_id;
+        $header['recipient'] = $recipient?->name ?? $header['recipient'] ?? null;
+        $header['department'] = isset($header['department_id']) ? Department::find($header['department_id'])?->name : ($header['department'] ?? null);
+
+        return $header;
     }
 
     // Hanya draft penyesuaian yang boleh diubah.
     public function update(StockDocument $doc, array $header, array $lines): void
     {
         $this->assertStatus($doc, ['draft']);
+        $header = $this->withNames($doc->type, $header);
         DB::transaction(function () use ($doc, $header, $lines) {
             $doc->update($header);
             $doc->lines()->delete();

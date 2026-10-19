@@ -19,6 +19,8 @@
             ['key' => 'date', 'label' => 'Date & Time'],
             ['key' => 'doc', 'label' => 'Document No.', 'sub' => 'ref'],
             ['key' => 'party', 'label' => 'Supplier'],
+            ['key' => 'recipient', 'label' => 'Recipient'],
+            ['key' => 'dept', 'label' => 'Department'],
             ['key' => 'item', 'label' => 'Item', 'sub' => 'code'],
             ['key' => 'qty', 'label' => 'Qty (stock unit)', 'type' => 'number'],
             ['key' => 'unit', 'label' => 'Unit'],

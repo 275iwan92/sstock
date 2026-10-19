@@ -8,12 +8,18 @@
  */
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\GroupController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ItemController;
+use App\Http\Controllers\ModuleController;
+use App\Http\Controllers\RecipientController;
+use App\Http\Controllers\ReorderOrderController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\StockDocumentController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UnitController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -21,9 +27,29 @@ Route::middleware('guest')->group(function () {
     Route::post('login', [AuthController::class, 'login'])->name('login.attempt');
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'module'])->group(function () {
     Route::get('/', HomeController::class)->name('home');
+    Route::post('reorder-orders', [ReorderOrderController::class, 'store'])->name('reorder-orders.store');
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
+
+    // Keamanan: kelola pengguna, hanya Administrator.
+    Route::middleware('administrator')->prefix('users')->controller(UserController::class)->group(function () {
+        Route::get('/', 'index')->name('users.index');
+        Route::get('create', 'create')->name('users.create');
+        Route::post('/', 'store')->name('users.store');
+        Route::get('{user}', 'show')->name('users.show');
+        Route::put('{user}', 'update')->name('users.update');
+        Route::post('{user}/toggle', 'toggle')->name('users.toggle');
+    });
+
+    Route::middleware('administrator')->group(function () {
+        Route::get('groups', [GroupController::class, 'index'])->name('groups.index');
+        Route::get('groups/create', [GroupController::class, 'create'])->name('groups.create');
+        Route::post('groups', [GroupController::class, 'store'])->name('groups.store');
+        Route::get('groups/{group}', [GroupController::class, 'show'])->name('groups.show');
+        Route::put('groups/{group}', [GroupController::class, 'update'])->name('groups.update');
+        Route::get('modules', [ModuleController::class, 'index'])->name('modules.index');
+    });
 
     // Master Item: semua boleh melihat; ubah hanya Supervisor.
     Route::middleware('supervisor')->group(function () {
@@ -48,6 +74,16 @@ Route::middleware('auth')->group(function () {
     Route::get('suppliers/{supplier}', [SupplierController::class, 'show'])->name('suppliers.show');
     Route::put('suppliers/{supplier}', [SupplierController::class, 'update'])->name('suppliers.update');
     Route::post('suppliers/{supplier}/toggle', [SupplierController::class, 'toggle'])->name('suppliers.toggle');
+
+    // Master Departemen dan Penerima: Data Entry dan Supervisor sama-sama boleh mengelola.
+    foreach (['departments' => [DepartmentController::class, 'department'], 'recipients' => [RecipientController::class, 'recipient']] as $path => [$controller, $param]) {
+        Route::get($path, [$controller, 'index'])->name("{$path}.index");
+        Route::get("{$path}/create", [$controller, 'create'])->name("{$path}.create");
+        Route::post($path, [$controller, 'store'])->name("{$path}.store");
+        Route::get("{$path}/{{$param}}", [$controller, 'show'])->name("{$path}.show");
+        Route::put("{$path}/{{$param}}", [$controller, 'update'])->name("{$path}.update");
+        Route::post("{$path}/{{$param}}/toggle", [$controller, 'toggle'])->name("{$path}.toggle");
+    }
 
     // Dokumen stok: {type} = opening | receiving | issuance | adjustment (hak per jenis dicek di controller / request).
     Route::prefix('docs/{type}')->whereIn('type', ['opening', 'receiving', 'issuance', 'adjustment'])->controller(StockDocumentController::class)->group(function () {

@@ -131,7 +131,7 @@ class ReportController extends Controller
 
             return [
                 'date' => Locale::stamp($d->doc_at), 'month' => Locale::at($d->doc_at)->translatedFormat('F Y'), 'doc' => $d->doc_no, 'status' => ['confirmed' => 'Terkonfirmasi', 'draft' => 'Draf', 'approval' => 'Menunggu Persetujuan', 'approved' => 'Disetujui', 'rejected' => 'Ditolak'][$d->status] ?? $d->status,
-                'party' => $d->supplier?->name ?? $d->recipient ?? '', 'dept' => $d->department ?? '', 'ref' => $d->ref_no ?? '', 'reason' => $d->reason ?? '',
+                'party' => $d->supplier?->name ?? $d->recipient ?? '', 'recipient' => $d->recipient ?? '', 'dept' => $d->department ?? '', 'ref' => $d->ref_no ?? '', 'reason' => $d->reason ?? '',
                 'code' => $l->item->code, 'item' => $l->item->name, 'unit' => $l->item->unit, 'qty' => $l->qty,
                 'entered' => $l->entered_unit ? Locale::decimal($l->entered_qty, 3).' '.$l->entered_unit : '',
                 'system' => $l->system_qty, 'counted' => $l->counted_qty,
