@@ -18,7 +18,7 @@
         $locked = ! $isNew && $doc->status !== 'draft';
         $v = fn (string $k, $default = null) => old($k, $doc->{$k} ?? $default);
         $e = fn (string $k) => $errors->first($k) ?: null;
-        $rows = $lines ?: ($isNew ? [[]] : []);   // dokumen baru mulai dengan satu baris kosong, tetapi baris boleh dihapus semua (simpan / Confirm tetap minta minimal 1 baris)
+        $rows = $lines;
         $lookup = ['item_in', 'item_out', 'item_opn', 'item_adj'][array_search($t, [T::Receiving, T::Issuance, T::Opening, T::Adjustment], true)];
         $item = ['key' => 'item_id', 'label' => 'Item', 'type' => 'lookup', 'lookup' => $lookup, 'required' => true, 'width' => '300px'];
         $unit = ['key' => 'unit', 'label' => 'Unit', 'type' => 'display', 'width' => '80px'];
@@ -98,7 +98,7 @@
             <x-dl::field.text name="note" label="Notes" :value="$v('note')" multiline maxlength="1000" :error="$e('note')" />
         </x-dl::form.row>
         <x-slot:detail>
-            <x-dl::lines name="lines" title="Items" add-label="+ Add Item" :rows="$rows" :min-rows="0" :readonly="$locked" :columns="$columns" />
+            <x-dl::lines name="lines" title="Items" add-label="+ Add Item" :rows="$rows" :min-rows="$locked ? 0 : 1" :readonly="$locked" :columns="$columns" />
         </x-slot:detail>
     </x-dl::form>
 @endsection
