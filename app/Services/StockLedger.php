@@ -78,4 +78,34 @@ final class StockLedger
 
         return array_values($touched);
     }
+
+    /**
+     * Membatalkan posting dokumen: tiap baris buku besar dibalik dengan baris baru (baris asal tidak diubah / dihapus).
+     * Pembalikan masuk menurunkan saldo (ditolak bila stok tidak cukup); pembalikan keluar mengembalikan saldo pada biaya saat itu.
+     */
+    public function reverse(StockDocument $doc, User $user): void
+    {
+        DB::transaction(function () use ($doc, $user) {
+            $moves = StockMovement::query()->where('stock_document_id', $doc->id)->whereNull('reversal_of')->orderByDesc('id')->get();
+            foreach ($moves as $m) {
+                $item = Item::query()->lockForUpdate()->findOrFail($m->item_id);
+                $signed = -(float) $m->qty;
+                $balance = round($item->stock_qty + $signed, 3);
+                if ($balance < -self::EPS) {
+                    throw ValidationException::withMessages(['lines' => "Tidak bisa dibatalkan: stok {$item->code} {$item->name} tinggal ".rtrim(rtrim(number_format($item->stock_qty, 3, '.', ''), '0'), '.').' sehingga tidak cukup untuk menarik kembali '.rtrim(rtrim(number_format(abs($signed), 3, '.', ''), '0'), '.').'.']);
+                }
+                $cost = (float) $m->unit_cost;
+                $avg = match (true) {
+                    $balance <= self::EPS => $item->avg_cost,
+                    $signed > 0 => round(($item->stock_qty * $item->avg_cost + $signed * $cost) / $balance, 4),
+                    default => max(0, round(($item->stock_qty * $item->avg_cost - abs($signed) * $cost) / $balance, 4)),
+                };
+                $item->forceFill(['stock_qty' => $balance, 'avg_cost' => $avg])->save();
+                StockMovement::create([
+                    'item_id' => $item->id, 'stock_document_id' => $doc->id, 'type' => $m->type, 'moved_at' => now(), 'qty' => $signed, 'unit_cost' => $cost,
+                    'balance_qty' => $balance, 'balance_avg_cost' => $avg, 'user_id' => $user->id, 'reversal_of' => $m->id,
+                ]);
+            }
+        });
+    }
 }

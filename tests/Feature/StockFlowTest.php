@@ -51,19 +51,30 @@ class StockFlowTest extends TestCase
         return Item::create(['code' => $code, 'name' => "Item {$code}", 'category_id' => $category->id, 'unit' => 'pcs', 'unit_price' => 100, 'reorder_point' => $rop, 'reorder_qty' => 50, 'lead_time_days' => 3]);
     }
 
+    // Simpan (draf) lalu Confirm: stok baru berubah sesudah Confirm. Mengembalikan respons langkah terakhir (galat validasi pada simpan menghentikan lebih awal).
+    private function postDoc(string $slug, array $payload, User $by)
+    {
+        $store = $this->actingAs($by)->post(route('docs.store', $slug), $payload);
+        if (session()->has('errors')) {
+            return $store;
+        }
+
+        return $this->put(route('docs.update', [$slug, StockDocument::latest('id')->firstOrFail()]), $payload + ['_action' => 'confirm']);
+    }
+
     private function receive(Item $item, float $qty, float $cost, ?User $by = null)
     {
-        return $this->actingAs($by ?? $this->entry)->post(route('docs.store', 'receiving'), [
+        return $this->postDoc('receiving', [
             'supplier_id' => $this->supplier->id, 'ref_no' => 'SJ-1',
             'lines' => [['item_id' => $item->id, 'qty' => $qty, 'unit_cost' => $cost]],
-        ]);
+        ], $by ?? $this->entry);
     }
 
     private function issue(Item $item, float $qty)
     {
-        return $this->actingAs($this->entry)->post(route('docs.store', 'issuance'), [
+        return $this->postDoc('issuance', [
             'recipient_id' => $this->recipient->id, 'department_id' => $this->department->id, 'lines' => [['item_id' => $item->id, 'qty' => $qty]],
-        ]);
+        ], $this->entry);
     }
 
     public function test_login_redirects_by_role_and_rejects_wrong_password(): void
@@ -106,14 +117,14 @@ class StockFlowTest extends TestCase
         $this->receive($item, 10, 5);
         $this->issue($item, 11)->assertSessionHasErrors('lines');
         $this->assertSame(10.0, $item->fresh()->stock_qty);
-        $this->assertSame(0, StockDocument::where('type', 'OUT')->count());  // dokumen keluar dibatalkan seluruhnya
+        $this->assertSame(['draft'], StockDocument::where('type', 'OUT')->pluck('status')->all());  // gagal Confirm: tetap draf, stok tidak berubah
     }
 
     public function test_failed_save_keeps_the_typed_lines_with_item_labels(): void
     {
         $item = $this->item('I9');
         $this->receive($item, 1, 5);
-        $this->from(route('docs.create', 'issuance'))->post(route('docs.store', 'issuance'), ['recipient_id' => $this->recipient->id, 'lines' => [['item_id' => $item->id, 'qty' => 5]]])->assertSessionHasErrors('lines');
+        $this->from(route('docs.create', 'issuance'))->post(route('docs.store', 'issuance'), ['lines' => [['item_id' => $item->id, 'qty' => 5]]])->assertSessionHasErrors('recipient_id');
 
         $this->get(route('docs.create', 'issuance'))->assertOk()->assertSee('item_id_label', false)->assertSee('Item I9', false);
     }
@@ -158,8 +169,8 @@ class StockFlowTest extends TestCase
         $used = $this->item('N2');
         $this->receive($used, 5, 1);
 
-        $this->actingAs($this->supervisor)->post(route('docs.store', 'opening'), ['doc_at' => today()->toDateString(), 'lines' => [['item_id' => $used->id, 'qty' => 3, 'unit_cost' => 2]]])->assertSessionHasErrors('lines');
-        $this->post(route('docs.store', 'opening'), ['doc_at' => today()->toDateString(), 'lines' => [['item_id' => $fresh->id, 'qty' => 3, 'unit_cost' => 2]]])->assertRedirect();
+        $this->postDoc('opening', ['doc_at' => today()->toDateString(), 'lines' => [['item_id' => $used->id, 'qty' => 3, 'unit_cost' => 2]]], $this->supervisor)->assertSessionHasErrors('lines');
+        $this->postDoc('opening', ['doc_at' => today()->toDateString(), 'lines' => [['item_id' => $fresh->id, 'qty' => 3, 'unit_cost' => 2]]], $this->supervisor)->assertRedirect();
         $this->assertSame(3.0, $fresh->fresh()->stock_qty);
         $this->assertEqualsWithDelta(2.0, $fresh->fresh()->avg_cost, 0.0001);
     }

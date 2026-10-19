@@ -39,8 +39,8 @@ class ReportController extends Controller
                 ->orderBy('moved_at')->orderBy('id')->get()->map(fn (StockMovement $m) => [
                     'date' => Locale::stamp($m->moved_at), 'month' => Locale::at($m->moved_at)->translatedFormat('F Y'),
                     'doc' => $m->document->doc_no, 'src' => $m->document->supplier?->name ?? $m->document->recipient ?? $m->document->reason,
-                    'type' => self::TYPE_LABEL[$m->type], 'ref' => $m->document->ref_no ?? $m->document->department ?? $m->document->reason ?? '', 'user' => $m->user->name,
-                    'in' => in_array($m->type, ['IN', 'OPENING'], true) ? $m->qty : 0, 'out' => $m->type === 'OUT' ? abs($m->qty) : 0, 'adj' => $m->type === 'ADJ' ? $m->qty : 0,
+                    'type' => self::TYPE_LABEL[$m->type].($m->reversal_of ? ' (BATAL)' : ''), 'ref' => $m->document->ref_no ?? $m->document->department ?? $m->document->reason ?? '', 'user' => $m->user->name,
+                    'in' => $m->type !== 'ADJ' ? max($m->qty, 0) : 0, 'out' => $m->type !== 'ADJ' ? max(-$m->qty, 0) : 0, 'adj' => $m->type === 'ADJ' ? $m->qty : 0,
                     'cost' => $sup ? $m->unit_cost : null, 'bal_value' => $sup ? round($m->balance_qty * $m->balance_avg_cost, 2) : null,
                 ])->all();
         }
@@ -122,7 +122,7 @@ class ReportController extends Controller
         [$from, $to] = $this->period($request);
 
         $lines = StockDocumentLine::query()->with(['item', 'document.supplier', 'document.creator', 'document.approver'])
-            ->whereHas('document', fn ($d) => $d->where('type', $type)->whereBetween('doc_at', [$from, $to]));
+            ->whereHas('document', fn ($d) => $d->where('type', $type)->whereBetween('doc_at', [$from, $to])->when($type !== StockDocumentType::Adjustment, fn ($w) => $w->where('status', 'confirmed')));   // masuk / keluar: hanya yang sudah Confirm
         $lines = $filter($lines)->get()->sortBy([fn ($a, $b) => $a->document->doc_at <=> $b->document->doc_at, fn ($a, $b) => $a->id <=> $b->id]);
 
         $rows = $lines->map(function (StockDocumentLine $l) use ($sup) {
@@ -130,7 +130,7 @@ class ReportController extends Controller
             $cost = (float) ($l->unit_cost ?? $l->item->avg_cost);
 
             return [
-                'date' => Locale::stamp($d->doc_at), 'month' => Locale::at($d->doc_at)->translatedFormat('F Y'), 'doc' => $d->doc_no, 'status' => ['confirmed' => 'Terkonfirmasi', 'draft' => 'Draf', 'approval' => 'Menunggu Persetujuan', 'approved' => 'Disetujui', 'rejected' => 'Ditolak'][$d->status] ?? $d->status,
+                'date' => Locale::stamp($d->doc_at), 'month' => Locale::at($d->doc_at)->translatedFormat('F Y'), 'doc' => $d->doc_no, 'status' => ['confirmed' => 'Terkonfirmasi', 'draft' => 'Draf', 'approval' => 'Menunggu Persetujuan', 'approved' => 'Disetujui', 'rejected' => 'Ditolak', 'cancelled' => 'Dibatalkan'][$d->status] ?? $d->status,
                 'party' => $d->supplier?->name ?? $d->recipient ?? '', 'recipient' => $d->recipient ?? '', 'dept' => $d->department ?? '', 'ref' => $d->ref_no ?? '', 'reason' => $d->reason ?? '',
                 'code' => $l->item->code, 'item' => $l->item->name, 'unit' => $l->item->unit, 'qty' => $l->qty,
                 'entered' => $l->entered_unit ? Locale::decimal($l->entered_qty, 3).' '.$l->entered_unit : '',

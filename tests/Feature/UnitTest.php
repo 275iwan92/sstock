@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\Item;
+use App\Models\StockDocument;
 use App\Models\StockDocumentLine;
 use App\Models\Supplier;
 use App\Models\Unit;
@@ -115,7 +116,7 @@ class UnitTest extends TestCase
         $item = Item::create(array_merge($this->itemPayload(), ['code' => 'C-1', 'unit' => 'pcs']));
         UnitConversion::create(['from_unit' => 'box', 'to_unit' => 'pcs', 'factor' => 12]);
 
-        $this->actingAs($entry)->post(route('docs.store', 'receiving'), ['supplier_id' => $supplier->id, 'lines' => [['item_id' => $item->id, 'qty' => 5, 'unit' => 'box', 'unit_cost' => 1200]]])->assertRedirect();
+        $this->receiveAs($entry, ['supplier_id' => $supplier->id, 'lines' => [['item_id' => $item->id, 'qty' => 5, 'unit' => 'box', 'unit_cost' => 1200]]]);
 
         $line = StockDocumentLine::firstOrFail();
         $this->assertSame(60.0, $line->qty);              // masuk stok dalam pcs
@@ -143,7 +144,7 @@ class UnitTest extends TestCase
         $supplier = Supplier::create(['code' => 'S1', 'name' => 'S One']);
         $item = Item::create(array_merge($this->itemPayload(), ['code' => 'C-3', 'unit' => 'pcs']));
 
-        $this->actingAs(User::factory()->create())->post(route('docs.store', 'receiving'), ['supplier_id' => $supplier->id, 'lines' => [['item_id' => $item->id, 'qty' => 7, 'unit' => 'pcs', 'unit_cost' => 10]]])->assertRedirect();
+        $this->receiveAs(User::factory()->create(), ['supplier_id' => $supplier->id, 'lines' => [['item_id' => $item->id, 'qty' => 7, 'unit' => 'pcs', 'unit_cost' => 10]]]);
         $this->assertSame(7.0, $item->fresh()->stock_qty);
         $this->assertNull(StockDocumentLine::firstOrFail()->entered_unit);
     }
@@ -158,5 +159,12 @@ class UnitTest extends TestCase
         $this->assertNull(UnitConverter::factor('box', 'kg'));
         $this->assertSame(60.0, UnitConverter::convert(5, 'box', 'pcs'));
         $this->assertSame(2.0, UnitConverter::convert(24, 'pcs', 'box'));
+    }
+
+    // Simpan (draf) lalu Confirm supaya diproses ke stok.
+    private function receiveAs(User $user, array $payload): void
+    {
+        $this->actingAs($user)->post(route('docs.store', 'receiving'), $payload)->assertRedirect();
+        $this->put(route('docs.update', ['receiving', StockDocument::latest('id')->firstOrFail()]), $payload + ['_action' => 'confirm'])->assertRedirect();
     }
 }

@@ -28,7 +28,7 @@ class StockDocumentRequest extends FormRequest
 
     public function rules(): array
     {
-        if (in_array($this->input('_action'), ['approve', 'reject', 'delete'], true)) {
+        if (in_array($this->input('_action'), ['approve', 'reject', 'delete', 'cancel'], true)) {
             return [];
         }
 

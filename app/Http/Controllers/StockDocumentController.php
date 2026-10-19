@@ -24,7 +24,7 @@ use Illuminate\Http\Request;
  */
 class StockDocumentController extends Controller
 {
-    private const STATUS = ['confirmed' => 'Terkonfirmasi', 'draft' => 'Draf', 'approval' => 'Menunggu Persetujuan', 'approved' => 'Disetujui', 'rejected' => 'Ditolak'];
+    private const STATUS = ['confirmed' => 'Terkonfirmasi', 'draft' => 'Draf', 'approval' => 'Menunggu Persetujuan', 'approved' => 'Disetujui', 'rejected' => 'Ditolak', 'cancelled' => 'Dibatalkan'];
 
     public function __construct(private readonly StockDocuments $documents) {}
 
@@ -57,41 +57,62 @@ class StockDocumentController extends Controller
         $t = $this->type($request, $type);
         abort_unless($document->type === $t, 404);
 
-        return view('docs.form', $this->formData($t, $document->load(['lines.item', 'creator', 'approver'])));
+        return view('docs.form', $this->formData($t, $document->load(['lines.item', 'creator', 'approver', 'confirmer', 'canceller'])));
     }
 
+    // Simpan = draf: belum diproses ke stok. Stok baru berubah saat Confirm (penyesuaian: saat Approve).
     public function store(StockDocumentRequest $request, string $type): RedirectResponse
     {
         $t = $request->type();
-        [$doc, $below] = $this->documents->create($t, $request->safe()->only(['supplier_id', 'ref_no', 'recipient_id', 'department_id', 'reason', 'note', 'doc_at']), array_values($request->validated('lines')), $request->user());
+        $doc = $this->documents->create($t, $request->safe()->only(['supplier_id', 'ref_no', 'recipient_id', 'department_id', 'reason', 'note', 'doc_at']), array_values($request->validated('lines')), $request->user());
 
-        $redirect = redirect()->route('docs.show', [$t->slug(), $doc])->with('status', $t === StockDocumentType::Adjustment ? "{$doc->doc_no} disimpan sebagai draf." : "{$doc->doc_no} disimpan dan diposting ke stok.");
-        if ($below) {
-            $redirect->with('reorder', collect($below)->map(fn (Item $i) => "{$i->code} {$i->name} (stok ".Locale::number($i->stock_qty, 2).', titik pesan ulang '.Locale::number($i->reorder_point, 2).')')->implode('; '));
+        return redirect()->route('docs.show', [$t->slug(), $doc])->with('status', "{$doc->doc_no} disimpan sebagai draf. Belum diproses ke stok sebelum Confirm.");
+    }
+
+    // Siklus: save (draf), confirm (diproses ke stok; penyesuaian: diajukan), approve / reject (penyesuaian), cancel (dengan alasan), delete (hanya draf).
+    public function update(StockDocumentRequest $request, string $type, StockDocument $document): RedirectResponse
+    {
+        abort_unless($request->type() === $document->type, 404);
+        $action = $request->input('_action', 'save');
+        $isAdj = $document->type === StockDocumentType::Adjustment;
+        $sup = $request->user()->isSupervisor();
+        abort_if($action === 'cancel' && ! ($sup || ($isAdj && $document->status === 'approval' && $document->created_by === $request->user()->id)), 403, 'Pembatalan dokumen hanya oleh Supervisor.');
+
+        $header = $isAdj ? ['reason', 'note', 'recipient_id', 'department_id'] : ['supplier_id', 'ref_no', 'recipient_id', 'department_id', 'reason', 'note', 'doc_at'];
+        if (in_array($action, ['save', 'confirm'], true)) {
+            $this->documents->update($document, $request->safe()->only($header), array_values($request->validated('lines')));
+        }
+        $reorder = null;
+        $message = match ($action) {
+            'save' => 'Draf disimpan.',
+            'confirm' => $isAdj ? $this->submit($document) : $this->confirm($document, $request, $reorder),
+            'approve' => $this->approve($document, $request),
+            'reject' => $this->reject($document, $request),
+            'cancel' => $this->cancel($document, $request),
+            'delete' => $this->delete($document),
+            default => abort(422, 'Aksi tidak dikenal.'),
+        };
+
+        $redirect = ($action === 'delete' ? redirect()->route('docs.index', $type) : redirect()->route('docs.show', [$type, $document]))->with('status', $message);
+        if ($reorder) {
+            $redirect->with('reorder', collect($reorder)->map(fn (Item $i) => "{$i->code} {$i->name} (stok ".Locale::number($i->stock_qty, 2).', titik pesan ulang '.Locale::number($i->reorder_point, 2).')')->implode('; '));
         }
 
         return $redirect;
     }
 
-    // Hanya penyesuaian yang punya siklus: save, confirm (ajukan), approve, reject, delete.
-    public function update(StockDocumentRequest $request, string $type, StockDocument $document): RedirectResponse
+    private function confirm(StockDocument $document, Request $request, ?array &$reorder): string
     {
-        abort_unless($document->type === StockDocumentType::Adjustment && $request->type() === $document->type, 404);
-        $action = $request->input('_action', 'save');
+        $reorder = $this->documents->confirm($document, $request->user());
 
-        if (in_array($action, ['save', 'confirm'], true)) {
-            $this->documents->update($document, $request->safe()->only(['reason', 'note', 'recipient_id', 'department_id']), array_values($request->validated('lines')));
-        }
-        $message = match ($action) {
-            'save' => 'Draf disimpan.',
-            'confirm' => $this->submit($document),
-            'approve' => $this->approve($document, $request),
-            'reject' => $this->reject($document, $request),
-            'delete' => $this->delete($document),
-            default => abort(422, 'Aksi tidak dikenal.'),
-        };
+        return "{$document->doc_no} dikonfirmasi dan diposting ke stok.";
+    }
 
-        return ($action === 'delete' ? redirect()->route('docs.index', $type) : redirect()->route('docs.show', [$type, $document]))->with('status', $message);
+    private function cancel(StockDocument $document, Request $request): string
+    {
+        $this->documents->cancel($document, $request->user(), (string) $request->input('_reason'));
+
+        return "{$document->doc_no} dibatalkan; stok dikembalikan.";
     }
 
     private function submit(StockDocument $document): string
@@ -134,8 +155,14 @@ class StockDocumentController extends Controller
     {
         $log = [];
         if ($doc->exists) {
-            if (in_array($doc->status, ['approved', 'rejected'], true)) {
-                $log[] = ['at' => $doc->approved_at->format('Y-m-d H:i:s'), 'by' => $doc->approver->name, 'action' => self::STATUS[$doc->status] ?? $doc->status, 'note' => null];
+            if ($doc->status === 'cancelled') {
+                $log[] = ['at' => $doc->cancelled_at->format('Y-m-d H:i:s'), 'by' => $doc->canceller->name, 'action' => 'Dibatalkan', 'note' => $doc->cancel_reason];
+            }
+            if (in_array($doc->status, ['approved', 'rejected'], true) || ($doc->status === 'cancelled' && $doc->approved_at)) {
+                $log[] = ['at' => $doc->approved_at->format('Y-m-d H:i:s'), 'by' => $doc->approver->name, 'action' => self::STATUS[$doc->status === 'cancelled' ? 'approved' : $doc->status], 'note' => null];
+            }
+            if ($doc->confirmed_at) {
+                $log[] = ['at' => $doc->confirmed_at->format('Y-m-d H:i:s'), 'by' => $doc->confirmer->name, 'action' => 'Dikonfirmasi (diproses ke stok)', 'note' => null];
             }
             $log[] = ['at' => $doc->created_at->format('Y-m-d H:i:s'), 'by' => $doc->creator->name, 'action' => 'Dibuat', 'note' => null];
         }

@@ -26,11 +26,12 @@ final class StockDocuments
     public function __construct(private readonly StockLedger $ledger) {}
 
     /**
+     * Dokumen baru SELALU berstatus draf dan belum menyentuh stok; stok baru diproses saat Confirm (penyesuaian: saat Approve).
+     *
      * @param  array<string, mixed>  $header  supplier_id, ref_no, recipient, department, reason, note, doc_at (hanya saldo awal)
      * @param  array<int, array<string, mixed>>  $lines  item_id, qty, unit_cost, counted_qty, note
-     * @return array{0: StockDocument, 1: array<int, Item>}
      */
-    public function create(StockDocumentType $type, array $header, array $lines, User $user): array
+    public function create(StockDocumentType $type, array $header, array $lines, User $user): StockDocument
     {
         $header = $this->withNames($type, $header);
 
@@ -40,18 +41,59 @@ final class StockDocuments
                 'doc_no' => $this->nextNumber($type),
                 'type' => $type,
                 'doc_at' => $type === StockDocumentType::Opening ? $header['doc_at'] : now(),
-                'status' => $type === StockDocumentType::Adjustment ? 'draft' : 'confirmed',
+                'status' => 'draft',
                 'created_by' => $user->id,
             ]);
             $this->writeLines($doc, $lines);
 
-            $below = $type === StockDocumentType::Adjustment ? [] : $this->ledger->post($doc, $user);
-            if ($type === StockDocumentType::Receiving) {
+            return $doc;
+        });
+    }
+
+    /**
+     * Confirm = diproses ke stok (saldo awal, masuk, keluar). Tanggal / jam dokumen = saat Confirm (saldo awal: tanggal yang dipilih).
+     *
+     * @return array<int, Item> item yang kini di/bawah Reorder Point
+     */
+    public function confirm(StockDocument $doc, User $user): array
+    {
+        abort_if($doc->type === StockDocumentType::Adjustment, 422, 'Penyesuaian diajukan lalu disetujui Supervisor.');
+        $this->assertStatus($doc, ['draft']);
+        abort_if($doc->lines()->doesntExist(), 422, 'Tambahkan minimal satu baris sebelum Confirm.');
+
+        return DB::transaction(function () use ($doc, $user) {
+            if ($doc->type !== StockDocumentType::Opening) {
+                $doc->update(['doc_at' => now()]);
+            }
+            $below = $this->ledger->post($doc->refresh(), $user);
+            $doc->update(['status' => 'confirmed', 'confirmed_by' => $user->id, 'confirmed_at' => now()]);
+            if ($doc->type === StockDocumentType::Receiving) {
                 // Barang datang menutup pemesanan ulang yang terbuka (juga bila baru sebagian; pesan lagi bila masih kurang).
-                ReorderOrder::query()->whereNull('closed_at')->whereIn('item_id', collect($lines)->pluck('item_id'))->update(['closed_at' => now(), 'receiving_id' => $doc->id]);
+                ReorderOrder::query()->whereNull('closed_at')->whereIn('item_id', $doc->lines()->pluck('item_id'))->update(['closed_at' => now(), 'receiving_id' => $doc->id]);
             }
 
-            return [$doc, $below];
+            return $below;
+        });
+    }
+
+    /**
+     * Cancel dokumen: yang sudah diproses dibalik di buku besar (stok dikembalikan), yang menunggu persetujuan hanya ditarik. Alasan wajib dan tercatat.
+     */
+    public function cancel(StockDocument $doc, User $user, string $reason): void
+    {
+        $reason = trim($reason);
+        abort_if(mb_strlen($reason) < 3, 422, 'Isi alasan pembatalan (minimal 3 huruf).');
+        $this->assertStatus($doc, ['confirmed', 'approved', 'approval']);
+
+        DB::transaction(function () use ($doc, $user, $reason) {
+            if (in_array($doc->status, ['confirmed', 'approved'], true)) {
+                $this->ledger->reverse($doc, $user);
+            }
+            $doc->update(['status' => 'cancelled', 'cancelled_by' => $user->id, 'cancelled_at' => now(), 'cancel_reason' => mb_substr($reason, 0, 255)]);
+            if ($doc->type === StockDocumentType::Receiving) {
+                // Pemesanan yang ditutup oleh penerimaan ini terbuka lagi.
+                ReorderOrder::query()->where('receiving_id', $doc->id)->update(['closed_at' => null, 'receiving_id' => null]);
+            }
         });
     }
 
@@ -66,7 +108,7 @@ final class StockDocuments
         return $header;
     }
 
-    // Hanya draft penyesuaian yang boleh diubah.
+    // Hanya draf yang boleh diubah (semua jenis).
     public function update(StockDocument $doc, array $header, array $lines): void
     {
         $this->assertStatus($doc, ['draft']);
@@ -80,14 +122,14 @@ final class StockDocuments
 
     public function submit(StockDocument $doc): void
     {
-        $this->assertStatus($doc, ['draft']);
+        $this->assertStatus($doc, ['draft'], StockDocumentType::Adjustment);
         abort_if($doc->lines()->doesntExist(), 422, 'Tambahkan minimal satu baris sebelum konfirmasi.');
         $doc->update(['status' => 'approval']);
     }
 
     public function approve(StockDocument $doc, User $approver): void
     {
-        $this->assertStatus($doc, ['approval']);
+        $this->assertStatus($doc, ['approval'], StockDocumentType::Adjustment);
         DB::transaction(function () use ($doc, $approver) {
             foreach ($doc->lines()->with('item')->get() as $line) {
                 if (abs($line->item->stock_qty - (float) $line->system_qty) > 0.0005) {
@@ -101,7 +143,7 @@ final class StockDocuments
 
     public function reject(StockDocument $doc, User $approver): void
     {
-        $this->assertStatus($doc, ['approval']);
+        $this->assertStatus($doc, ['approval'], StockDocumentType::Adjustment);
         $doc->update(['status' => 'rejected', 'approved_by' => $approver->id, 'approved_at' => now()]);
     }
 
@@ -111,9 +153,9 @@ final class StockDocuments
         $doc->delete();
     }
 
-    private function assertStatus(StockDocument $doc, array $allowed): void
+    private function assertStatus(StockDocument $doc, array $allowed, ?StockDocumentType $only = null): void
     {
-        abort_unless($doc->type === StockDocumentType::Adjustment && in_array($doc->status, $allowed, true), 422, 'Aksi ini tidak diizinkan pada status sekarang.');
+        abort_unless(($only === null || $doc->type === $only) && in_array($doc->status, $allowed, true), 422, 'Aksi ini tidak diizinkan pada status sekarang.');
     }
 
     private function writeLines(StockDocument $doc, array $lines): void

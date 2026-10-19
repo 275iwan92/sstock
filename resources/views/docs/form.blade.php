@@ -1,8 +1,8 @@
 {{-- REMARK
- Tujuan       : Form dokumen stok (Master-Detail): header menurut jenis + tabel baris item (x-dl::lines). Saldo awal / masuk / keluar langsung diposting saat Save; penyesuaian: Draft > Confirm > Approve (Supervisor).
+ Tujuan       : Form dokumen stok (Master-Detail): header menurut jenis + tabel baris item (x-dl::lines). Semua jenis: Draft (belum menyentuh stok, boleh Delete) > Confirm (diproses ke stok; penyesuaian: diajukan lalu Approve Supervisor) > Cancel (Supervisor, alasan wajib, stok dikembalikan).
  Sumber hulu  : StockDocumentController (t, doc, lines, suppliers, log), Lookup item_in / item_out / item_opn / item_adj (AppServiceProvider).
  Input        : t, doc, lines, suppliers, log.
- Output       : POST docs.store (baru) / PUT docs.update (hanya penyesuaian: save, confirm, approve, reject, delete).
+ Output       : POST docs.store (baru = draf) / PUT docs.update (save, confirm, approve, reject, cancel, delete).
  Dipakai oleh : routes docs.create, docs.show.
  Status       : Aktif.
 --}}
@@ -47,8 +47,8 @@
     <x-dl::form :title="$title" :subtitle="$isNew ? null : raw($doc->supplier?->name ?? $doc->recipient ?? $doc->reason)" panel="top" kind="document" :status="$status"
         :back="route('docs.index', $t->slug())" :new-url="route('docs.create', $t->slug())"
         :action="$isNew ? route('docs.store', $t->slug()) : route('docs.update', [$t->slug(), $doc])" :hidden="$isNew ? [] : ['_method' => 'PUT']"
-        :pipeline="$isAdj" :approval-levels="$isAdj ? 1 : 0" :approval-at="1" :can-approve="$sup"
-        :hide="['cancel', 'hold', 'email', 'print', 'duplicate']" :log="$log"
+        :pipeline="true" :approval-levels="$isAdj ? 1 : 0" :approval-at="1" :can-approve="$sup"
+        :hide="array_values(array_filter(['hold', 'email', 'print', 'duplicate', ! $sup && in_array($status, ['confirmed', 'approved'], true) ? 'cancel' : null]))" :log="$log"
         :created-by="$doc->creator?->name" :created-at="$doc->created_at?->format('Y-m-d H:i:s')"
         :updated-by="$doc->approver?->name ?? $doc->creator?->name" :updated-at="$doc->updated_at?->format('Y-m-d H:i:s')">
         <x-dl::form.row :cols="3">

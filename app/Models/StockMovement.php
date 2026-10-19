@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['item_id', 'stock_document_id', 'type', 'moved_at', 'qty', 'unit_cost', 'balance_qty', 'balance_avg_cost', 'user_id'])]
+#[Fillable(['item_id', 'stock_document_id', 'type', 'moved_at', 'qty', 'unit_cost', 'balance_qty', 'balance_avg_cost', 'user_id', 'reversal_of'])]
 class StockMovement extends Model
 {
     public const UPDATED_AT = null;

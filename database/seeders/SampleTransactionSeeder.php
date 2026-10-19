@@ -33,48 +33,55 @@ class SampleTransactionSeeder extends Seeder
         $recipient = fn (string $name) => Recipient::where('name', $name)->firstOrFail()->id;
         $supplier = fn (string $code) => Supplier::where('code', $code)->firstOrFail()->id;
         $monthStart = now()->subMonth()->startOfMonth();
+        // Dokumen contoh dibuat lalu langsung di-Confirm supaya diposting ke stok seperti pemakaian nyata.
+        $post = function (StockDocumentType $type, array $header, array $lines, User $user) use ($docs) {
+            $doc = $docs->create($type, $header, $lines, $user);
+            $docs->confirm($doc, $user);
+
+            return $doc;
+        };
 
         // Saldo awal: seluruh item pada awal periode (bulan lalu), nilai = harga acuan.
         Carbon::setTestNow($monthStart->copy()->setTime(8, 0));
         $opening = array_map(fn ($r) => ['item_id' => $item($r[0]), 'qty' => $r[9], 'unit_cost' => $r[5]], ItemSeeder::ITEMS);
-        $docs->create(StockDocumentType::Opening, ['doc_at' => $monthStart->toDateString(), 'note' => 'Saldo awal periode'], $opening, $sup);
+        $post(StockDocumentType::Opening, ['doc_at' => $monthStart->toDateString(), 'note' => 'Saldo awal periode'], $opening, $sup);
 
         // Penerimaan.
         Carbon::setTestNow($monthStart->copy()->addDays(6)->setTime(9, 30));
-        $docs->create(StockDocumentType::Receiving, ['supplier_id' => $supplier('SUP-002'), 'ref_no' => 'SJ-2610-017'], [
+        $post(StockDocumentType::Receiving, ['supplier_id' => $supplier('SUP-002'), 'ref_no' => 'SJ-2610-017'], [
             ['item_id' => $item('SPR-0001'), 'qty' => 2000, 'unit_cost' => 460],
             ['item_id' => $item('SPR-0004'), 'qty' => 2000, 'unit_cost' => 225],
         ], $entry);
         Carbon::setTestNow($monthStart->copy()->addDays(12)->setTime(13, 15));
-        $docs->create(StockDocumentType::Receiving, ['supplier_id' => $supplier('SUP-001'), 'ref_no' => 'INV-5521'], [
+        $post(StockDocumentType::Receiving, ['supplier_id' => $supplier('SUP-001'), 'ref_no' => 'INV-5521'], [
             ['item_id' => $item('ATK-0001'), 'qty' => 20, 'unit_cost' => 290000],
             ['item_id' => $item('ATK-0005'), 'qty' => 48, 'unit_cost' => 9800],
         ], $entry);
 
         // Pengeluaran; SPR-0002, SPR-0005 dan TLS-0002 berakhir di/bawah Reorder Point.
         Carbon::setTestNow($monthStart->copy()->addDays(15)->setTime(10, 5));
-        $docs->create(StockDocumentType::Issuance, ['recipient_id' => $recipient('Budi (Teknisi)'), 'reason' => 'Overhaul mesin press 2'], [
+        $post(StockDocumentType::Issuance, ['recipient_id' => $recipient('Budi (Teknisi)'), 'reason' => 'Overhaul mesin press 2'], [
             ['item_id' => $item('SPR-0002'), 'qty' => 850],
             ['item_id' => $item('SPR-0005'), 'qty' => 1500],
             ['item_id' => $item('SPR-0008'), 'qty' => 4],
             ['item_id' => $item('TLS-0002'), 'qty' => 3],
         ], $entry);
         Carbon::setTestNow($monthStart->copy()->addDays(20)->setTime(8, 45));
-        $docs->create(StockDocumentType::Issuance, ['recipient_id' => $recipient('Sari'), 'reason' => 'Alat tulis kantor'], [
+        $post(StockDocumentType::Issuance, ['recipient_id' => $recipient('Sari'), 'reason' => 'Alat tulis kantor'], [
             ['item_id' => $item('ATK-0001'), 'qty' => 18],
             ['item_id' => $item('ATK-0002'), 'qty' => 6],
         ], $entry);
 
         // Opname: satu disetujui (susut baut), satu masih menunggu persetujuan.
         Carbon::setTestNow(now()->subDays(5)->setTime(16, 0));
-        [$approved] = $docs->create(StockDocumentType::Adjustment, ['reason' => 'Opname stok bulanan - baut dan mur'], [
+        $approved = $docs->create(StockDocumentType::Adjustment, ['reason' => 'Opname stok bulanan - baut dan mur'], [
             ['item_id' => $item('SPR-0001'), 'counted_qty' => 4960],
         ], $sup);
         $docs->submit($approved);
         $docs->approve($approved, $sup);
 
         Carbon::setTestNow(now()->subDays(1)->setTime(15, 30));
-        [$pending] = $docs->create(StockDocumentType::Adjustment, ['reason' => 'Opname - rak ATK A1'], [
+        $pending = $docs->create(StockDocumentType::Adjustment, ['reason' => 'Opname - rak ATK A1'], [
             ['item_id' => $item('ATK-0002'), 'counted_qty' => 18],
             ['item_id' => $item('ATK-0003'), 'counted_qty' => 11],
         ], $sup);

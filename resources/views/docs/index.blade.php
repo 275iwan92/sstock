@@ -19,7 +19,7 @@
             ['key' => 'doc_at', 'label' => 'Date & Time', 'type' => 'datetime'],
             ['key' => 'ref', 'label' => $refLabel],
             $sup ? ['key' => 'value', 'label' => 'Value', 'type' => 'money', 'decimals' => 2, 'sum' => true] : null,
-            ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['Terkonfirmasi' => 'success', 'Draf' => 'neutral', 'Menunggu Persetujuan' => 'warn', 'Disetujui' => 'success', 'Ditolak' => 'danger']],
+            ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['Terkonfirmasi' => 'success', 'Draf' => 'neutral', 'Menunggu Persetujuan' => 'warn', 'Disetujui' => 'success', 'Dibatalkan' => 'danger', 'Ditolak' => 'danger']],
             ['key' => 'user', 'label' => 'Entered by'],
         ]))"
         :detail="['key' => 'lines', 'title' => 'Items', 'columns' => array_values(array_filter([

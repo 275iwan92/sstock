@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['doc_no', 'type', 'doc_at', 'status', 'supplier_id', 'ref_no', 'recipient', 'recipient_id', 'department', 'department_id', 'reason', 'note', 'created_by', 'approved_by', 'approved_at'])]
+#[Fillable(['doc_no', 'type', 'doc_at', 'status', 'supplier_id', 'ref_no', 'recipient', 'recipient_id', 'department', 'department_id', 'reason', 'note', 'created_by', 'approved_by', 'approved_at', 'confirmed_by', 'confirmed_at', 'cancelled_by', 'cancelled_at', 'cancel_reason'])]
 class StockDocument extends Model
 {
     protected function casts(): array
@@ -17,6 +17,8 @@ class StockDocument extends Model
             'type' => StockDocumentType::class,
             'doc_at' => 'datetime',
             'approved_at' => 'datetime',
+            'confirmed_at' => 'datetime',
+            'cancelled_at' => 'datetime',
         ];
     }
 
@@ -48,6 +50,16 @@ class StockDocument extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function canceller(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'cancelled_by');
+    }
+
+    public function confirmer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'confirmed_by');
     }
 
     public function approver(): BelongsTo
