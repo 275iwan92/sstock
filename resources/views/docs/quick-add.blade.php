@@ -7,13 +7,13 @@
  Status       : Aktif.
 --}}
 <x-dl::modal id="qa-recipient" title="Add Recipient" icon="fa-user-tag" size="sm">
-    <x-dl::field.text name="qa_recipient_name" label="Recipient Name" maxlength="100" required />
+    <x-dl::field.text name="qa_recipient_name" label="Recipient Name" maxlength="100" />
     <p class="dl-note">{{ \Devlib\Lang::text('The department chosen in this form becomes the recipient\'s default department.') }}</p>
     <p class="sstock-quickadd__err" data-qa-error hidden></p>
     <x-slot:footer><x-dl::button type="button" icon="save" label="Save" data-qa-save="recipient" /></x-slot:footer>
 </x-dl::modal>
 <x-dl::modal id="qa-department" title="Add Department" icon="fa-building" size="sm">
-    <x-dl::field.text name="qa_department_name" label="Department Name" maxlength="100" required />
+    <x-dl::field.text name="qa_department_name" label="Department Name" maxlength="100" />
     <p class="sstock-quickadd__err" data-qa-error hidden></p>
     <x-slot:footer><x-dl::button type="button" icon="save" label="Save" data-qa-save="department" /></x-slot:footer>
 </x-dl::modal>
