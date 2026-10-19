@@ -12,7 +12,7 @@
     <x-dl::grid id="suppliers" :rows="$rows" actions="master" :new-url="route('suppliers.create')" :open-url="url('suppliers/{id}')" :toggle-url="url('suppliers/{id}/toggle')"
         search="Search code, name, contact, city..."
         :columns="[
-            ['key' => 'name', 'label' => 'Supplier', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
+            ['key' => 'name', 'label' => 'Supplier', 'type' => 'identity', 'code' => 'code', 'box' => true],
             ['key' => 'phone', 'label' => 'Company Phone'],
             ['key' => 'contact', 'label' => 'Contact'],
             ['key' => 'mobile', 'label' => 'Contact Mobile'],

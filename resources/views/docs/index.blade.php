@@ -1,5 +1,5 @@
 {{-- REMARK
- Tujuan       : Daftar dokumen stok satu jenis (Receiving / Issuance / Opening Balance / Stock Adjustment) sebagai Grid Transactional; baris dibuka menampilkan item-itemnya.
+ Tujuan       : Daftar dokumen stok satu jenis (Receiving / Issuance / Opening Balance / Stock Adjustment) sebagai Grid Transactional POLOS (cepat dipindai untuk data banyak): nomor dokumen tebal di kolom pertama, hanya kolom Status yang berwarna; baris dibuka menampilkan item-itemnya.
  Sumber hulu  : StockDocumentController@index. Kolom nilai hanya untuk Supervisor.
  Input        : t (StockDocumentType), rows, sup.
  Output       : x-dl::grid; klik 2x / Open membuka form dokumen, + New Record membuat dokumen baru.
@@ -15,7 +15,7 @@
     @include('partials.flash')
     <x-dl::grid :id="'docs-'.$t->slug()" :rows="$rows" actions="worklist" :new-url="route('docs.create', $t->slug())" :open-url="url('docs/'.$t->slug().'/{id}')" search="Search document, party, reference..."
         :columns="array_values(array_filter([
-            ['key' => 'doc_no', 'label' => 'Document', 'type' => 'doc', 'party' => 'party'],
+            ['key' => 'doc_no', 'label' => 'Document', 'type' => 'identity', 'code' => 'party', 'avatar' => false],
             ['key' => 'doc_at', 'label' => 'Date & Time', 'type' => 'datetime'],
             ['key' => 'ref', 'label' => $refLabel],
             $sup ? ['key' => 'value', 'label' => 'Value', 'type' => 'money', 'decimals' => 2, 'sum' => true] : null,

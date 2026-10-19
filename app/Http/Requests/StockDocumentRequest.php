@@ -45,6 +45,7 @@ class StockDocumentRequest extends FormRequest
                 'supplier_id' => ['required', Rule::exists('suppliers', 'id')->where('is_active', true)],
                 'ref_no' => ['nullable', 'string', 'max:60'],
                 'lines.*.qty' => $qty,
+                'lines.*.unit' => ['nullable', Rule::exists('units', 'code')->where('is_active', true)],
                 'lines.*.unit_cost' => ['required', 'numeric', 'min:0', 'max:999999999999'],
             ],
             StockDocumentType::Issuance => [

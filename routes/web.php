@@ -2,7 +2,7 @@
 
 /* REMARK
  * Tujuan       : Rute web Simple Stock: login, layar utama, master (item, supplier), dokumen stok, laporan.
- * Hak akses    : semua di grup auth; Item create/ubah dan Opening / Adjustment / laporan penyesuaian hanya Supervisor.
+ * Hak akses    : semua di grup auth; Item create/ubah, master Satuan, Opening / Adjustment / laporan penyesuaian hanya Supervisor.
  * Dipakai oleh : bootstrap/app.php.
  * Status       : Aktif.
  */
@@ -13,6 +13,7 @@ use App\Http\Controllers\ItemController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\StockDocumentController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\UnitController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -30,6 +31,13 @@ Route::middleware('auth')->group(function () {
         Route::post('items', [ItemController::class, 'store'])->name('items.store');
         Route::put('items/{item}', [ItemController::class, 'update'])->name('items.update');
         Route::post('items/{item}/toggle', [ItemController::class, 'toggle'])->name('items.toggle');
+
+        Route::get('units', [UnitController::class, 'index'])->name('units.index');
+        Route::get('units/create', [UnitController::class, 'create'])->name('units.create');
+        Route::post('units', [UnitController::class, 'store'])->name('units.store');
+        Route::get('units/{unit}', [UnitController::class, 'show'])->name('units.show');
+        Route::put('units/{unit}', [UnitController::class, 'update'])->name('units.update');
+        Route::post('units/{unit}/toggle', [UnitController::class, 'toggle'])->name('units.toggle');
     });
     Route::get('items', [ItemController::class, 'index'])->name('items.index');
     Route::get('items/{item}', [ItemController::class, 'show'])->name('items.show');

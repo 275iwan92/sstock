@@ -6,7 +6,7 @@
  Dipakai oleh : route home.
  Status       : Aktif.
 --}}
-@extends('layout', ['title' => 'Home'])
+@extends('layout', ['title' => 'Home', 'bodyClass' => 'sstock-bare'])
 @section('body')
     <x-dl::layer-shell :classic="false" :modules="$modules" :user="$user" :logout-action="route('logout')" :open="$open" :fresh="$fresh" menu-source="App\Support\Menu">
         <x-slot:dashboard>

@@ -5,7 +5,7 @@ namespace App\Support;
 use Devlib\Lookup;
 
 /* REMARK
- * Tujuan       : Lookup DevLib "geo_area" (kotak cari wilayah, ketik min. 2 huruf: kelurahan / kecamatan / kota / kode pos); memilih mengisi kode pos dan kotak baca-saja kecamatan, kota, provinsi, negara.
+ * Tujuan       : Lookup DevLib "geo_area" (kotak cari wilayah, ketik min. 2 huruf: kecamatan / kota / kode pos); nilai terpilih tampil sebagai label penuh + kode pos; kode pos disimpan server dari wilayah terpilih.
  * Sumber hulu  : GeoArea (tabel geo_*). Pola sama dengan lookup geo_area di tmerp.
  * Output       : Lookup::define('geo_area').
  * Dipakai oleh : AppServiceProvider::boot, view suppliers.form.
@@ -16,9 +16,8 @@ final class GeoLookup
     public static function register(): void
     {
         Lookup::define('geo_area', [
-            'key' => 'area', 'label' => 'full_label', 'source' => 'geo_country > geo_region > geo_city > geo_district > geo_village',
+            'key' => 'area', 'label' => 'display', 'source' => 'geo_country > geo_region > geo_city > geo_district > geo_village',
             'columns' => ['full_label' => 'Region', 'postal_code' => 'Postcode'],
-            'fill' => ['postal_code' => 'postal_code', 'district_name' => 'district', 'city_name' => 'city', 'region_name' => 'region', 'country_name' => 'country'],
             'search' => fn (string $q) => GeoArea::search($q),
             'find' => fn ($v) => GeoArea::find((string) $v),
         ]);

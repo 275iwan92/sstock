@@ -7,6 +7,7 @@ use App\Http\Requests\StockDocumentRequest;
 use App\Models\Item;
 use App\Models\StockDocument;
 use App\Models\Supplier;
+use App\Models\Unit;
 use App\Services\StockDocuments;
 use Devlib\Locale;
 use Illuminate\Http\RedirectResponse;
@@ -140,6 +141,7 @@ class StockDocumentController extends Controller
         return [
             't' => $t, 'doc' => $doc, 'log' => $log,
             'suppliers' => Supplier::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id')->all(),
+            'units' => Unit::query()->where('is_active', true)->orderBy('code')->get()->mapWithKeys(fn (Unit $u) => [$u->code => "{$u->code} · {$u->name}"])->all(),
             'lines' => $this->lineRows($doc),
         ];
     }
@@ -155,7 +157,8 @@ class StockDocumentController extends Controller
         }
 
         return $doc->exists ? $doc->lines->map(fn ($l) => $this->lineRow([
-            'item_id' => $l->item_id, 'qty' => $l->qty, 'unit_cost' => $l->unit_cost, 'system_qty' => $l->system_qty, 'counted_qty' => $l->counted_qty, 'note' => $l->note,
+            'item_id' => $l->item_id, 'qty' => $l->entered_qty ?? $l->qty, 'unit' => $l->entered_unit ?? $l->item->unit, 'unit_cost' => $l->entered_unit_cost ?? $l->unit_cost,
+            'stock_qty' => $l->qty, 'system_qty' => $l->system_qty, 'counted_qty' => $l->counted_qty, 'note' => $l->note,
         ], $l->item))->all() : [];
     }
 

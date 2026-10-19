@@ -6,7 +6,7 @@
  Dipakai oleh : route login.
  Status       : Aktif.
 --}}
-@extends('layout', ['title' => 'Sign in'])
+@extends('layout', ['title' => 'Sign in', 'bodyClass' => 'sstock-bare'])
 @section('body')
     <x-dl::frame bg="sstock" bg-order="random" box="right" color="light" widgets="brand@top-left, clock@top-right, quote@bottom-left" quotes="motivasi.txt">
         <x-dl::login-box show="brand, title, username, password, remember, button" :action="route('login.attempt')" :error="$error ?? ($errors->first() ?: null)" :username="$username" :brand="config('devlib.brand.name')" :tagline="config('devlib.brand.tagline')" />

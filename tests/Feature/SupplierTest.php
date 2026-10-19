@@ -30,15 +30,15 @@ class SupplierTest extends TestCase
     private function payload(array $extra = []): array
     {
         return array_merge(['code' => 's9', 'name' => 'Supplier Nine', 'phone' => '+62315550101', 'contact_name' => 'Bapak Hendra', 'contact_mobile' => '+6281234567890',
-            'address' => 'Jl. Contoh 1', 'area' => 'VILLAGE:1', 'postal_code' => '61256'], $extra);
+            'address' => 'Jl. Contoh 1', 'area' => 'VILLAGE:1', 'postal_code' => '99999'], $extra);
     }
 
     public function test_geo_search_finds_each_level_and_resolves_the_full_label(): void
     {
         $this->seedGeo();
-        $keys = array_column(GeoArea::search('waru'), 'area');
-        $this->assertSame(['VILLAGE:1', 'DISTRICT:1'], $keys);  // kelurahan lewat nama kecamatan, lalu kecamatan itu sendiri
-        $this->assertContains('CITY:1', array_column(GeoArea::search('sidoarjo'), 'area'));
+        $this->assertSame(['DISTRICT:1'], array_column(GeoArea::search('waru'), 'area'));  // kecamatan saja; kelurahan tidak dicari
+        $this->assertSame(['DISTRICT:1', 'CITY:1'], array_column(GeoArea::search('sidoarjo'), 'area'));
+        $this->assertSame('Waru, Kab. Sidoarjo, Jawa Timur, Indonesia (61256)', GeoArea::search('waru')[0]['display']);
 
         $village = GeoArea::find('VILLAGE:1');
         $this->assertSame('Pepelegi, Waru, Kab. Sidoarjo, Jawa Timur, Indonesia', $village['full_label']);

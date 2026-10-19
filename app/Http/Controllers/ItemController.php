@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ItemRequest;
 use App\Models\Category;
 use App\Models\Item;
+use App\Models\Unit;
+use App\Support\Palette;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,7 +27,7 @@ class ItemController extends Controller
             'id' => $i->id, 'code' => $i->code, 'name' => $i->name, 'category' => $i->category->name, 'unit' => $i->unit, 'location' => $i->location,
             'stock' => $i->stock_qty, 'rop' => $i->reorder_point, 'roq' => $i->reorder_qty, 'lead' => $i->lead_time_days,
             'price' => $sup ? $i->unit_price : null, 'value' => $sup ? $i->stockValue() : null,
-            'level' => $i->isBelowReorderPoint() ? 'REORDER' : 'OK', 'tone' => $i->isBelowReorderPoint() ? 'danger' : null, 'active' => $i->is_active,
+            'hue' => Palette::item($i->category->code, $i->code), 'level' => $i->isBelowReorderPoint() ? 'REORDER' : 'OK', 'tone' => $i->isBelowReorderPoint() ? 'danger' : null, 'active' => $i->is_active,
         ])->all();
 
         return view('items.index', ['rows' => $rows, 'sup' => $sup, 'categories' => Category::orderBy('name')->pluck('name', 'name')->all()]);
@@ -33,12 +35,12 @@ class ItemController extends Controller
 
     public function create()
     {
-        return view('items.form', ['item' => new Item(['unit' => 'pcs']), 'categories' => Category::orderBy('name')->pluck('name', 'id')->all()]);
+        return view('items.form', ['item' => new Item(['unit' => 'pcs']), 'categories' => $this->categories(), 'units' => $this->units()]);
     }
 
     public function show(Item $item)
     {
-        return view('items.form', ['item' => $item, 'categories' => Category::orderBy('name')->pluck('name', 'id')->all()]);
+        return view('items.form', ['item' => $item, 'categories' => $this->categories(), 'units' => $this->units($item->unit)]);
     }
 
     public function store(ItemRequest $request): RedirectResponse
@@ -60,6 +62,17 @@ class ItemController extends Controller
         $item->update($request->validated());
 
         return redirect()->route('items.show', $item)->with('status', 'Item saved.');
+    }
+
+    private function categories(): array
+    {
+        return Category::orderBy('name')->pluck('name', 'id')->all();
+    }
+
+    // Pilihan satuan = master Units aktif (+ satuan item ini sendiri bila sudah dinonaktifkan).
+    private function units(?string $keep = null): array
+    {
+        return Unit::query()->where('is_active', true)->orWhere('code', $keep)->orderBy('code')->get()->mapWithKeys(fn (Unit $u) => [$u->code => "{$u->code} · {$u->name}"])->all();
     }
 
     // Dipanggil saklar Aktif/Nonaktif di grid (POST, balasan JSON {active}).

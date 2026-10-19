@@ -1,0 +1,31 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+// Satuan barang. Item menyimpan kode satuan di items.unit (foreign key ke units.code); kode tidak diubah setelah disimpan.
+#[Fillable(['code', 'name', 'kind', 'is_active'])]
+class Unit extends Model
+{
+    // Jenis satuan; menentukan warna kotak di grid (App\Support\Palette).
+    public const KINDS = ['count' => 'Count (pcs, box, set ...)', 'weight' => 'Weight (kg, gram ...)', 'length' => 'Length (meter ...)', 'volume' => 'Volume (liter ...)', 'area' => 'Area (m2 ...)', 'other' => 'Other'];
+
+    protected function casts(): array
+    {
+        return ['is_active' => 'boolean'];
+    }
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(Item::class, 'unit', 'code');
+    }
+
+    // Konversi keluar dari satuan ini: 1 {code} = factor {to_unit}.
+    public function conversions(): HasMany
+    {
+        return $this->hasMany(UnitConversion::class, 'from_unit', 'code')->orderBy('to_unit');
+    }
+}

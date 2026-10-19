@@ -33,11 +33,16 @@ final class Menu
             $reports[] = $item('R-ADJ', 'Opname & Adjustment Report', route('reports.adjustment'), 'report', 'fa-solid fa-file-circle-check');
         }
 
+        $master = [
+            $item('ITM', 'Items', route('items.index'), 'grid', 'fa-solid fa-box'),
+            $item('SUP', 'Suppliers', route('suppliers.index'), 'grid', 'fa-solid fa-truck'),
+        ];
+        if ($user->isSupervisor()) {
+            $master[] = $item('UOM', 'Units', route('units.index'), 'grid', 'fa-solid fa-ruler');
+        }
+
         return [
-            ['code' => 'MST', 'short' => 'MST', 'label' => 'Master Data', 'icon' => 'fa-solid fa-boxes-stacked', 'children' => [
-                $item('ITM', 'Items', route('items.index'), 'grid', 'fa-solid fa-box'),
-                $item('SUP', 'Suppliers', route('suppliers.index'), 'grid', 'fa-solid fa-truck'),
-            ]],
+            ['code' => 'MST', 'short' => 'MST', 'label' => 'Master Data', 'icon' => 'fa-solid fa-boxes-stacked', 'children' => $master],
             ['code' => 'TRX', 'short' => 'TRX', 'label' => 'Transactions', 'icon' => 'fa-solid fa-right-left', 'children' => $trx],
             ['code' => 'RPT', 'short' => 'RPT', 'label' => 'Reports', 'icon' => 'fa-solid fa-chart-column', 'children' => $reports],
         ];

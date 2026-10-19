@@ -12,7 +12,7 @@
     <x-dl::grid id="items" :rows="$rows" :actions="$sup ? 'master' : 'worklist'" :new-record="$sup ? '+ New Record' : null" :new-url="route('items.create')"
         :open-url="url('items/{id}')" :toggle-url="$sup ? url('items/{id}/toggle') : null" search="Search code, name, location..." row-tone="tone"
         :columns="array_values(array_filter([
-            ['key' => 'name', 'label' => 'Item', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
+            ['key' => 'name', 'label' => 'Item', 'type' => 'identity', 'code' => 'code', 'hue' => 'hue', 'box' => true],
             ['key' => 'category', 'label' => 'Category'],
             ['key' => 'unit', 'label' => 'Unit'],
             ['key' => 'location', 'label' => 'Location'],

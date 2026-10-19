@@ -6,10 +6,10 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 /* REMARK
- * Tujuan       : Cari dan baca wilayah 5 tingkat (kelurahan > kecamatan > kota > provinsi > negara) dari tabel geo_*, meniru lookup geo_area tmerp:
- *                nilai area = "LEVEL:id" (VILLAGE | DISTRICT | CITY), label penuh "Pepelegi, Waru, Kab. Sidoarjo, Jawa Timur, Indonesia", kode pos dari tingkat terdalam yang punya.
+ * Tujuan       : Cari dan baca wilayah (kecamatan > kota / kabupaten > provinsi > negara) dari tabel geo_*, meniru lookup geo_area tmerp (kelurahan tetap bisa dibaca, tidak dicari):
+ *                nilai area = "LEVEL:id" (VILLAGE | DISTRICT | CITY), label penuh "Pepelegi, Waru, Kab. Sidoarjo, Jawa Timur, Indonesia" (display = label + kode pos dalam kurung), kode pos dari tingkat terdalam yang punya.
  * Sumber hulu  : geo_country, geo_region, geo_city, geo_district, geo_village (salinan tm2mst, lihat sstock:import-geo).
- * Output       : baris [area, level, id, full_label, postal_code, village, district, city, region, country].
+ * Output       : baris [area, level, id, full_label, display, postal_code, village, district, city, region, country].
  * Dipakai oleh : GeoLookup (kotak cari di form), SupplierController (grid, form).
  * Status       : Aktif.
  */
@@ -17,21 +17,18 @@ final class GeoArea
 {
     private const PATTERN = '/^(VILLAGE|DISTRICT|CITY):(\d+)$/';
 
-    /** @return array<int, array<string, mixed>> kelurahan dulu, lalu kecamatan, lalu kota */
+    /** @return array<int, array<string, mixed>> kecamatan dulu, lalu kota / kabupaten (kelurahan tidak dicari; nilai lama tingkat kelurahan tetap terbaca lewat find) */
     public static function search(string $q, int $limit = 30): array
     {
         $like = "%{$q}%";
         $prefix = "{$q}%";
 
-        $villages = self::villages()->where(fn ($w) => $w->where('v.village_name', 'like', $like)->orWhere('d.district_name', 'like', $like)->orWhere('v.post_code', 'like', $prefix))
-            ->orderByRaw('(d.district_name = ?) desc', [$q])->orderByRaw('(v.village_name like ?) desc', [$prefix])->orderBy('v.village_name')->limit(15)->get();
         $districts = self::districts()->where(fn ($w) => $w->where('d.district_name', 'like', $like)->orWhere('c.city_name', 'like', $like)->orWhere('d.post_code', 'like', $prefix))
-            ->orderByRaw('(d.district_name = ?) desc', [$q])->orderBy('d.district_name')->limit(10)->get();
+            ->orderByRaw('(d.district_name = ?) desc', [$q])->orderByRaw('(d.district_name like ?) desc', [$prefix])->orderBy('d.district_name')->limit(20)->get();
         $cities = self::cities()->where(fn ($w) => $w->where('c.city_name', 'like', $like)->orWhere('r.region_name', 'like', $like)->orWhere('c.post_code', 'like', $prefix))
             ->orderByRaw('(c.city_name = ?) desc', [$q])->orderBy('c.city_name')->limit(10)->get();
 
         return array_slice([
-            ...$villages->map(fn ($r) => self::row($r, 'VILLAGE'))->all(),
             ...$districts->map(fn ($r) => self::row($r, 'DISTRICT'))->all(),
             ...$cities->map(fn ($r) => self::row($r, 'CITY'))->all(),
         ], 0, $limit);
@@ -106,10 +103,11 @@ final class GeoArea
     private static function row(object $r, string $level): array
     {
         $city = trim(($r->city_type ?? '').' '.$r->city_name);
+        $label = implode(', ', array_filter([$r->village_name, $r->district_name, $city, $r->region_name, $r->country_name]));
 
         return [
             'area' => $level.':'.$r->id, 'level' => $level, 'id' => (int) $r->id,
-            'full_label' => implode(', ', array_filter([$r->village_name, $r->district_name, $city, $r->region_name, $r->country_name])),
+            'full_label' => $label, 'display' => $r->postal ? "{$label} ({$r->postal})" : $label,
             'postal_code' => $r->postal, 'village' => $r->village_name, 'district' => $r->district_name, 'city' => $city, 'region' => $r->region_name, 'country' => $r->country_name,
         ];
     }

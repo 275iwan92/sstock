@@ -107,6 +107,7 @@ class ReportController extends Controller
                 'date' => Locale::stamp($d->doc_at), 'month' => $d->doc_at->format('Y-m'), 'doc' => $d->doc_no, 'status' => ucfirst($d->status),
                 'party' => $d->supplier?->name ?? $d->recipient ?? '', 'dept' => $d->department ?? '', 'ref' => $d->ref_no ?? '', 'reason' => $d->reason ?? '',
                 'code' => $l->item->code, 'item' => $l->item->name, 'unit' => $l->item->unit, 'qty' => $l->qty,
+                'entered' => $l->entered_unit ? Locale::decimal($l->entered_qty, 3).' '.$l->entered_unit : '',
                 'system' => $l->system_qty, 'counted' => $l->counted_qty,
                 'cost' => $sup ? $cost : null, 'amount' => $sup ? round(abs($l->qty) * $cost, 2) : null, 'effect' => $sup ? round($l->qty * $cost, 2) : null,
                 'user' => $d->creator->name, 'approver' => $d->approver?->name ?? '',

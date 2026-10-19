@@ -9,3 +9,41 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+/* REMARK
+ * Tujuan       : Warna tombol panel form per aksi (merah untuk Deactivate / Delete / Reject / Cancel, hijau untuk Activate / Confirm / Approve, biru lembut untuk New, kuning untuk Hold)
+ *                dan nama item berukuran besar. Khusus SStock: tidak mengubah DevLib, jadi tidak memengaruhi aplikasi lain.
+ * Sumber hulu  : atribut data-f-act tombol panel (Devlib\Components\Form), token warna DevLib (--dl-danger, --dl-success, --dl-accent-soft).
+ * Dipakai oleh : semua form panel SStock; kelas sstock-name di form Item.
+ */
+.dl-form__panel .dl-btn[data-f-act="deactivate"],
+.dl-form__panel .dl-btn[data-f-act="delete"],
+.dl-form__panel .dl-btn[data-f-act="reject"],
+.dl-form__panel .dl-btn[data-f-act="cancel"] { background: var(--dl-danger); color: #fff; border-color: transparent; }
+
+.dl-form__panel .dl-btn[data-f-act="activate"],
+.dl-form__panel .dl-btn[data-f-act="confirm"],
+.dl-form__panel .dl-btn[data-f-act="approve"] { background: var(--dl-success); color: #fff; border-color: transparent; }
+
+.dl-form__panel .dl-btn[data-f-act="new"],
+.dl-form__panel .dl-btn[data-f-act="duplicate"] { background: var(--dl-accent-soft); color: var(--dl-accent); border-color: transparent; }
+
+.dl-form__panel .dl-btn[data-f-act="hold"] { background: #f59e0b; color: #1f2937; border-color: transparent; }
+
+.dl-form__panel .dl-btn[data-f-act="deactivate"]:hover,
+.dl-form__panel .dl-btn[data-f-act="delete"]:hover,
+.dl-form__panel .dl-btn[data-f-act="reject"]:hover,
+.dl-form__panel .dl-btn[data-f-act="cancel"]:hover,
+.dl-form__panel .dl-btn[data-f-act="activate"]:hover,
+.dl-form__panel .dl-btn[data-f-act="confirm"]:hover,
+.dl-form__panel .dl-btn[data-f-act="approve"]:hover,
+.dl-form__panel .dl-btn[data-f-act="hold"]:hover { filter: brightness(1.08); }
+
+.sstock-name .dl-input { font-size: 1.5rem; font-weight: 600; height: 3rem; }
+
+/* Logo Stoku (SVG berwarna) menggantikan kotak gradasi bawaan DevLib di semua tempat lencana logo tampil (sidebar, kotak login, pojok login). */
+.dl-logo-badge { background: url('/media/brand/stoku.svg') center / contain no-repeat; }
+.dl-logo-badge > img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+/* Layar di dalam tab Layer Shell diberi jarak kiri / kanan / bawah supaya tidak menempel ke menu. Login dan layar utama (shell) memakai kelas sstock-bare: tanpa jarak. */
+body.dl-body:not(.sstock-bare) { padding: 0 16px 16px; }

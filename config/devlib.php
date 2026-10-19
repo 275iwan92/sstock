@@ -1,15 +1,15 @@
 <?php
 
 /* REMARK
- * Tujuan       : Konfigurasi DevLib untuk Simple Stock (identitas, bahasa, zona waktu, media login, hak akses komponen).
+ * Tujuan       : Konfigurasi DevLib untuk Stoku (stok sederhana) (identitas, bahasa, zona waktu, media login, hak akses komponen).
  * Dipakai oleh : Devlib\* (Brand, Frame, Locale, Access, Report/PrintOut).
  * Status       : Aktif.
  */
 return [
-    'brand' => ['name' => 'SIMPLE STOCK', 'tagline' => 'Maintenance & ATK warehouse', 'logo' => null],
+    'brand' => ['name' => 'STOKU', 'tagline' => 'STOK SEDERHANA', 'logo' => '/media/brand/stoku.svg'],
 
     // Kop laporan cetak.
-    'company' => ['name' => 'Simple Stock (sstock)', 'initials' => 'SS', 'tagline' => 'Maintenance & ATK Warehouse', 'address' => '', 'contact' => ''],
+    'company' => ['name' => 'Stoku', 'initials' => 'ST', 'tagline' => 'Maintenance & ATK Warehouse', 'address' => '', 'contact' => ''],
 
     'lang' => env('DEVLIB_LANG', 'id'),
     'timezone' => env('APP_TIMEZONE', 'Asia/Jakarta'),

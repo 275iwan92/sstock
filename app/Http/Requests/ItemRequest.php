@@ -12,8 +12,6 @@ use Illuminate\Validation\Rule;
  */
 class ItemRequest extends FormRequest
 {
-    public const UNITS = ['pcs', 'box', 'set', 'pack', 'roll', 'pair', 'unit', 'sheet', 'kg', 'gram', 'meter', 'liter', 'can', 'bottle'];
-
     public function authorize(): bool
     {
         return (bool) $this->user()?->isSupervisor();
@@ -30,7 +28,8 @@ class ItemRequest extends FormRequest
             'code' => ['required', 'string', 'max:40', Rule::unique('items', 'code')->ignore($this->route('item'))],
             'name' => ['required', 'string', 'max:150'],
             'category_id' => ['required', 'exists:categories,id'],
-            'unit' => ['required', Rule::in(self::UNITS)],
+            // Satuan dari master Units yang aktif (satuan lama item yang sudah nonaktif tetap boleh dipertahankan).
+            'unit' => ['required', Rule::exists('units', 'code')->where(fn ($q) => $q->where('is_active', true)->orWhere('code', $this->route('item')?->unit))],
             'location' => ['nullable', 'string', 'max:50'],
             'unit_price' => ['required', 'numeric', 'min:0', 'max:999999999999'],
             'reorder_point' => ['required', 'numeric', 'min:0', 'max:999999999'],

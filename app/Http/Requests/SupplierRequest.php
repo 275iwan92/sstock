@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /* REMARK
- * Tujuan       : Validasi simpan master Supplier (tambah / ubah): kode, nama, telepon kantor (PSTN), kontak + HP, alamat jalan, wilayah (wajib, minimal sampai kota), kode pos.
+ * Tujuan       : Validasi simpan master Supplier (tambah / ubah): kode, nama, telepon kantor (PSTN), kontak + HP, alamat jalan, wilayah (wajib, minimal sampai kota; kode pos ikut dari wilayah).
  * Sumber hulu  : field "area" = "LEVEL:id" dari lookup geo_area; dicek ada di tabel geo_*. validated() mengembalikan area_level + area_id (bukan area).
  * Dipakai oleh : SupplierController@store, @update.
  * Status       : Aktif.
@@ -33,7 +33,6 @@ class SupplierRequest extends FormRequest
             'contact_mobile' => ['nullable', 'string', 'max:40'],
             'address' => ['nullable', 'string', 'max:255'],
             'area' => ['required', 'string', fn ($attr, $value, $fail) => GeoArea::find($value) ? null : $fail('Choose a region from the list (at least down to the city).')],
-            'postal_code' => ['nullable', 'string', 'max:20'],
         ];
     }
 
@@ -47,6 +46,7 @@ class SupplierRequest extends FormRequest
         $data = parent::validated();
         if (isset($data['area'])) {
             [$data['area_level'], $data['area_id']] = explode(':', $data['area']);
+            $data['postal_code'] = GeoArea::find($data['area'])['postal_code'] ?? null;  // kode pos selalu dari wilayah terpilih
             unset($data['area']);
         }
 

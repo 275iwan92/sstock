@@ -23,10 +23,12 @@
         $unit = ['key' => 'unit', 'label' => 'Unit', 'type' => 'display', 'width' => '80px'];
         $note = ['key' => 'note', 'label' => 'Line Note', 'width' => '200px'];
         $columns = match ($t) {
-            T::Receiving => [$item, $unit,
-                ['key' => 'qty', 'label' => 'Qty', 'type' => 'number', 'required' => true, 'sum' => true, 'width' => '110px'],
-                ['key' => 'unit_cost', 'label' => 'Purchase Price', 'type' => 'money', 'required' => true, 'width' => '140px'],
-                ['key' => 'subtotal', 'label' => 'Subtotal', 'type' => 'money', 'formula' => 'qty * unit_cost', 'sum' => true, 'width' => '150px'], $note],
+            T::Receiving => [$item,
+                ['key' => 'qty', 'label' => 'Qty', 'type' => 'number', 'required' => true, 'width' => '110px'],
+                ['key' => 'unit', 'label' => 'Unit', 'type' => 'select', 'options' => $units, 'required' => true, 'width' => '150px'],
+                ['key' => 'unit_cost', 'label' => 'Purchase Price / Unit', 'type' => 'money', 'required' => true, 'width' => '150px'],
+                ['key' => 'subtotal', 'label' => 'Subtotal', 'type' => 'money', 'formula' => 'qty * unit_cost', 'sum' => true, 'width' => '150px'],
+                ['key' => 'stock_qty', 'label' => '= In stock unit', 'type' => 'display', 'width' => '120px'], $note],
             T::Issuance => [$item, $unit,
                 ['key' => 'available', 'label' => 'Available', 'type' => 'display', 'width' => '100px'],
                 ['key' => 'qty', 'label' => 'Qty', 'type' => 'number', 'required' => true, 'sum' => true, 'width' => '110px'], $note],

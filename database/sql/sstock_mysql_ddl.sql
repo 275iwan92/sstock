@@ -1,5 +1,5 @@
 -- Simple Stock (sstock) - skema MySQL 8 (DDL lengkap: tabel, index, foreign key).
--- Dihasilkan dari migrasi Laravel (users, stock tables, geo tables + kontak supplier) dalam mode pretend; sumber kebenaran tetap migrasi.
+-- Dihasilkan dari migrasi Laravel (users, stock tables, geo tables + kontak supplier, satuan + konversi, satuan input penerimaan) dalam mode pretend; sumber kebenaran tetap migrasi.
 -- Tabel framework (cache, jobs) tidak disertakan: dibuat oleh php artisan migrate. Isi geo_* disalin dari tmerp: php artisan sstock:import-geo.
 
 CREATE DATABASE IF NOT EXISTS sstock CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -110,3 +110,37 @@ alter table `suppliers` add `area_level` varchar(10) null after `address`;
 alter table `suppliers` add `area_id` bigint unsigned null after `area_level`;
 
 alter table `suppliers` add `postal_code` varchar(20) null after `area_id`;
+
+create table `units` (`id` bigint unsigned not null auto_increment primary key, `code` varchar(20) not null, `name` varchar(100) not null, `is_active` tinyint(1) not null default '1', `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci';
+
+alter table `units` add unique `units_code_unique`(`code`);
+
+select distinct `unit` from `items`;
+
+insert into `units` (`code`, `created_at`, `is_active`, `name`, `updated_at`) values ('pcs', '2026-10-19 12:46:30', 1, 'Pieces', '2026-10-19 12:46:30'), ('box', '2026-10-19 12:46:30', 1, 'Box', '2026-10-19 12:46:30'), ('set', '2026-10-19 12:46:30', 1, 'Set', '2026-10-19 12:46:30'), ('pack', '2026-10-19 12:46:30', 1, 'Pack', '2026-10-19 12:46:30'), ('roll', '2026-10-19 12:46:30', 1, 'Roll', '2026-10-19 12:46:30'), ('pair', '2026-10-19 12:46:30', 1, 'Pair', '2026-10-19 12:46:30'), ('unit', '2026-10-19 12:46:30', 1, 'Unit', '2026-10-19 12:46:30'), ('sheet', '2026-10-19 12:46:30', 1, 'Sheet', '2026-10-19 12:46:30'), ('kg', '2026-10-19 12:46:30', 1, 'Kilogram', '2026-10-19 12:46:30'), ('gram', '2026-10-19 12:46:30', 1, 'Gram', '2026-10-19 12:46:30'), ('meter', '2026-10-19 12:46:30', 1, 'Meter', '2026-10-19 12:46:30'), ('liter', '2026-10-19 12:46:30', 1, 'Liter', '2026-10-19 12:46:30'), ('can', '2026-10-19 12:46:30', 1, 'Can', '2026-10-19 12:46:30'), ('bottle', '2026-10-19 12:46:30', 1, 'Bottle', '2026-10-19 12:46:30');
+
+alter table `items` add constraint `items_unit_foreign` foreign key (`unit`) references `units` (`code`) on delete restrict;
+
+create table `unit_conversions` (`id` bigint unsigned not null auto_increment primary key, `from_unit` varchar(20) not null, `to_unit` varchar(20) not null, `factor` decimal(18, 6) not null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci';
+
+alter table `unit_conversions` add unique `unit_conversions_from_unit_to_unit_unique`(`from_unit`, `to_unit`);
+
+alter table `unit_conversions` add constraint `unit_conversions_from_unit_foreign` foreign key (`from_unit`) references `units` (`code`) on delete cascade;
+
+alter table `unit_conversions` add constraint `unit_conversions_to_unit_foreign` foreign key (`to_unit`) references `units` (`code`) on delete cascade;
+
+alter table `stock_document_lines` add `entered_qty` decimal(15, 3) null after `note`;
+
+alter table `stock_document_lines` add `entered_unit` varchar(20) null after `entered_qty`;
+
+alter table `stock_document_lines` add `entered_unit_cost` decimal(15, 4) null after `entered_unit`;
+
+alter table `stock_document_lines` add constraint `stock_document_lines_entered_unit_foreign` foreign key (`entered_unit`) references `units` (`code`) on delete restrict;
+
+alter table `units` add `kind` varchar(12) not null default 'count' after `name`;
+
+update `units` set `kind` = 'weight' where `code` in ('kg', 'gram');
+
+update `units` set `kind` = 'length' where `code` in ('meter');
+
+update `units` set `kind` = 'volume' where `code` in ('liter');

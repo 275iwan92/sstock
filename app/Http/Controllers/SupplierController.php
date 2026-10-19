@@ -10,7 +10,7 @@ use Illuminate\Http\RedirectResponse;
 
 /* REMARK
  * Tujuan       : Master Supplier (dipilih di transaksi Receiving). Data Entry dan Supervisor sama-sama boleh mengelola.
- * Sumber hulu  : suppliers, GeoArea (kota + negara di grid, kotak baca-saja di form).
+ * Sumber hulu  : suppliers, GeoArea (kota + negara di grid).
  * Output       : grid Suppliers, form Supplier.
  * Dipakai oleh : routes/web.php (suppliers.*).
  * Status       : Aktif.
@@ -31,12 +31,12 @@ class SupplierController extends Controller
 
     public function create()
     {
-        return view('suppliers.form', ['supplier' => new Supplier, 'geo' => null]);
+        return view('suppliers.form', ['supplier' => new Supplier]);
     }
 
     public function show(Supplier $supplier)
     {
-        return view('suppliers.form', ['supplier' => $supplier, 'geo' => GeoArea::find($supplier->areaKey())]);
+        return view('suppliers.form', ['supplier' => $supplier]);
     }
 
     public function store(SupplierRequest $request): RedirectResponse
