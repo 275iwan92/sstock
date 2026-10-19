@@ -14,7 +14,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /* REMARK
- * Tujuan       : Menjaga siklus dokumen stok: draf belum menyentuh stok (boleh Delete), Confirm memproses ke stok, Cancel (Supervisor, alasan wajib) membalik stok lewat baris pembalik, dan yang dibatalkan tidak dihitung di laporan / KPI.
+ * Tujuan       : Menjaga siklus dokumen stok: draf belum menyentuh stok (boleh Delete), Confirm memproses ke stok, Cancel = pengguna mengajukan dengan alasan lalu Supervisor menyetujui (stok dibalik lewat baris pembalik),
+ *                ditolak bila stok tidak cukup (koreksi lewat Stock Adjustment), dan yang dibatalkan tidak dihitung di laporan / KPI.
  * Dipakai oleh : php artisan test.
  * Status       : Aktif.
  */
@@ -61,6 +62,16 @@ class DocumentLifecycleTest extends TestCase
         return $this->actingAs($by ?? $this->entry)->put(route('docs.update', [$doc->type->slug(), $doc]), $payload + ['_action' => $action, '_reason' => $reason]);
     }
 
+    private function confirmedPair(): array
+    {
+        $in = $this->draft('receiving', $this->receivePayload(10, 10), $this->entry);
+        $this->act($in, 'confirm', $this->receivePayload(10, 10));
+        $out = $this->draft('issuance', $this->issuePayload(4), $this->entry);
+        $this->act($out, 'confirm', $this->issuePayload(4));
+
+        return [$in, $out];
+    }
+
     public function test_a_new_document_is_a_draft_that_does_not_touch_stock_until_confirm(): void
     {
         $doc = $this->draft('receiving', $this->receivePayload(10), $this->entry);
@@ -87,38 +98,77 @@ class DocumentLifecycleTest extends TestCase
         $this->act(StockDocument::latest('id')->first(), 'delete')->assertStatus(422);
     }
 
-    public function test_cancel_needs_a_supervisor_and_a_reason_and_restores_stock_with_reversal_rows(): void
+    public function test_a_user_cancel_is_a_request_with_a_reason_that_a_supervisor_approves(): void
     {
-        $in = $this->draft('receiving', $this->receivePayload(10, 10), $this->entry);
-        $this->act($in, 'confirm', $this->receivePayload(10, 10));
-        $out = $this->draft('issuance', $this->issuePayload(4), $this->entry);
-        $this->act($out, 'confirm', $this->issuePayload(4));
+        [, $out] = $this->confirmedPair();
         $this->assertSame(6.0, $this->item->fresh()->stock_qty);
 
-        $this->act($out, 'cancel', [], $this->entry, 'salah input')->assertForbidden();           // Data Entry tidak boleh
-        $this->act($out, 'cancel', [], $this->sup, '')->assertStatus(422);                        // alasan wajib
-        $this->assertSame(6.0, $this->item->fresh()->stock_qty);
-
-        $this->act($out, 'cancel', [], $this->sup, 'salah input')->assertRedirect()->assertSessionHas('status');
+        $this->act($out, 'cancel', [], $this->entry, '')->assertStatus(422);                       // alasan wajib
+        $this->act($out, 'cancel', [], $this->entry, 'salah input')->assertRedirect()->assertSessionHas('status');
         $out->refresh();
-        $this->assertSame(['cancelled', 'salah input', $this->sup->id], [$out->status, $out->cancel_reason, $out->cancelled_by]);
+        $this->assertSame(['cancel_pending', 'salah input', $this->entry->id], [$out->status, $out->cancel_reason, $out->cancel_requested_by]);
+        $this->assertSame(6.0, $this->item->fresh()->stock_qty);                                    // belum berubah sebelum disetujui
+
+        $this->act($out, 'approve', [], $this->entry)->assertForbidden();                          // Data Entry tidak bisa menyetujui
+        $this->assertSame('cancel_pending', $out->fresh()->status);
+
+        $this->act($out, 'approve', [], $this->sup)->assertRedirect();
+        $out->refresh();
+        $this->assertSame(['cancelled', $this->sup->id, 'salah input'], [$out->status, $out->cancelled_by, $out->cancel_reason]);
         $this->assertSame(10.0, $this->item->fresh()->stock_qty);
         $this->assertEqualsWithDelta(10.0, $this->item->fresh()->avg_cost, 0.0001);
         $this->assertSame(2, $out->movements()->count());                                           // baris asal tetap + satu baris pembalik
         $this->assertSame(1, $out->movements()->whereNotNull('reversal_of')->count());
-
         $this->act($out, 'cancel', [], $this->sup, 'lagi')->assertStatus(422);                    // tidak bisa dibatalkan dua kali
     }
 
-    public function test_cancelling_a_receipt_is_blocked_when_the_stock_was_already_used(): void
+    public function test_a_supervisor_can_reject_or_the_requester_can_withdraw_a_cancel_request(): void
+    {
+        [, $out] = $this->confirmedPair();
+
+        $this->act($out, 'cancel', [], $this->entry, 'salah input');
+        $this->act($out, 'reject', [], $this->sup)->assertRedirect();
+        $this->assertSame(['confirmed', null, 6.0], [$out->fresh()->status, $out->fresh()->cancel_reason, $this->item->fresh()->stock_qty]);
+
+        $this->act($out, 'cancel', [], $this->entry, 'coba lagi');
+        $this->act($out, 'cancel', [], User::factory()->create())->assertForbidden();              // orang lain tidak bisa menarik
+        $this->act($out, 'cancel', [], $this->entry)->assertRedirect();                           // pengaju menarik pengajuannya
+        $this->assertSame('confirmed', $out->fresh()->status);
+    }
+
+    public function test_a_supervisor_cancel_takes_effect_immediately(): void
+    {
+        [, $out] = $this->confirmedPair();
+
+        $this->act($out, 'cancel', [], $this->sup, '')->assertStatus(422);
+        $this->act($out, 'cancel', [], $this->sup, 'salah input')->assertRedirect();
+        $this->assertSame(['cancelled', 10.0], [$out->fresh()->status, $this->item->fresh()->stock_qty]);
+    }
+
+    public function test_cancel_is_refused_when_the_stock_is_no_longer_enough_and_the_form_warns_in_advance(): void
     {
         $in = $this->draft('receiving', $this->receivePayload(10), $this->entry);
         $this->act($in, 'confirm', $this->receivePayload(10));
         $out = $this->draft('issuance', $this->issuePayload(8), $this->entry);
         $this->act($out, 'confirm', $this->issuePayload(8));
 
-        $this->act($in, 'cancel', [], $this->sup, 'salah supplier')->assertSessionHasErrors('lines');
+        // tampilan sudah memberi tahu sebelum tombol ditekan
+        $this->actingAs($this->entry)->get(route('docs.show', ['receiving', $in]))->assertOk()->assertSee('Pembatalan tidak bisa dilakukan', false)->assertSee('Stock Adjustment', false);
+        $this->actingAs($this->entry)->get(route('docs.show', ['issuance', $out]))->assertOk()->assertDontSee('Pembatalan tidak bisa dilakukan', false);
+
+        $this->act($in, 'cancel', [], $this->entry, 'salah supplier')->assertSessionHasErrors('lines');   // pengajuan ditolak, tidak masuk antrean
+        $this->act($in, 'cancel', [], $this->sup, 'salah supplier')->assertSessionHasErrors('lines');     // Supervisor pun tidak bisa
         $this->assertSame(['confirmed', 2.0], [$in->fresh()->status, $this->item->fresh()->stock_qty]);
+
+        // stok terpakai di antara pengajuan dan persetujuan: persetujuan diperiksa ulang
+        $other = $this->draft('receiving', $this->receivePayload(5), $this->entry);
+        $this->act($other, 'confirm', $this->receivePayload(5));
+        $this->act($other, 'cancel', [], $this->entry, 'keliru');
+        $this->assertSame('cancel_pending', $other->fresh()->status);
+        $use = $this->draft('issuance', $this->issuePayload(6), $this->entry);
+        $this->act($use, 'confirm', $this->issuePayload(6));
+        $this->act($other, 'approve', [], $this->sup)->assertSessionHasErrors('lines');
+        $this->assertSame('cancel_pending', $other->fresh()->status);
     }
 
     public function test_cancelled_documents_drop_out_of_reports_and_the_reopened_reorder_order_returns(): void
@@ -160,7 +210,7 @@ class DocumentLifecycleTest extends TestCase
         $this->assertSame(10.0, $this->item->fresh()->stock_qty);
     }
 
-    public function test_the_form_shows_delete_while_draft_and_cancel_after_confirm(): void
+    public function test_the_form_shows_delete_while_draft_cancel_after_confirm_and_approve_reject_for_a_pending_cancel(): void
     {
         $doc = $this->draft('issuance', $this->issuePayload(1), $this->entry);
         $html = $this->actingAs($this->entry)->get(route('docs.show', ['issuance', $doc]))->assertOk()->getContent();
@@ -170,8 +220,15 @@ class DocumentLifecycleTest extends TestCase
 
         $this->act($this->draft('receiving', $this->receivePayload(5), $this->entry), 'confirm', $this->receivePayload(5));
         $this->act($doc, 'confirm', $this->issuePayload(1));
-        $confirmed = $this->actingAs($this->sup)->get(route('docs.show', ['issuance', $doc]))->getContent();
-        $this->assertStringContainsString('data-f-act="cancel"', $confirmed);
-        $this->assertStringNotContainsString('data-f-act="cancel"', $this->actingAs($this->entry)->get(route('docs.show', ['issuance', $doc]))->getContent());   // Data Entry tidak melihat Cancel
+        foreach ([$this->entry, $this->sup] as $user) {                                             // semua pengguna melihat Cancel pada dokumen yang sudah Confirm
+            $this->assertStringContainsString('data-f-act="cancel"', $this->actingAs($user)->get(route('docs.show', ['issuance', $doc]))->getContent());
+        }
+
+        $this->act($doc, 'cancel', [], $this->entry, 'salah input');
+        $forSup = $this->actingAs($this->sup)->get(route('docs.show', ['issuance', $doc]))->assertOk()->assertSee('menunggu persetujuan Supervisor', false)->getContent();
+        $this->assertStringContainsString('data-f-act="approve"', $forSup);                          // Supervisor menyetujui / menolak
+        $this->assertStringContainsString('data-f-act="reject"', $forSup);
+        $forEntry = $this->actingAs($this->entry)->get(route('docs.show', ['issuance', $doc]))->getContent();
+        $this->assertStringNotContainsString('data-f-act="approve"', $forEntry);
     }
 }

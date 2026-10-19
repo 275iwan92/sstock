@@ -31,10 +31,10 @@ class HomeController extends Controller
             'below' => $below,
             'itemCount' => Item::query()->where('is_active', true)->count(),
             'stockValue' => $user->isSupervisor() ? round(Item::query()->selectRaw('SUM(stock_qty * avg_cost) v')->value('v') ?? 0, 2) : null,
-            'receivingToday' => StockDocument::query()->where('type', StockDocumentType::Receiving)->where('status', 'confirmed')->whereDate('doc_at', today())->count(),
-            'issuanceToday' => StockDocument::query()->where('type', StockDocumentType::Issuance)->where('status', 'confirmed')->whereDate('doc_at', today())->count(),
+            'receivingToday' => StockDocument::query()->where('type', StockDocumentType::Receiving)->whereIn('status', ['confirmed', 'cancel_pending'])->whereDate('doc_at', today())->count(),
+            'issuanceToday' => StockDocument::query()->where('type', StockDocumentType::Issuance)->whereIn('status', ['confirmed', 'cancel_pending'])->whereDate('doc_at', today())->count(),
             'valuation' => $user->isSupervisor() ? StockValuation::series($request->query('month')) : null,
-            'pending' => $user->isSupervisor() ? StockDocument::query()->where('status', 'approval')->count() : null,
+            'pending' => $user->isSupervisor() ? StockDocument::query()->whereIn('status', ['approval', 'cancel_pending'])->count() : null,
         ]);
     }
 }

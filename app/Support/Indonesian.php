@@ -39,7 +39,7 @@ final class Indonesian
 
         // Beranda
         'Active items' => 'Barang aktif', 'At / below reorder point' => 'Di / bawah titik pesan ulang', 'Receiving today' => 'Penerimaan hari ini', 'Issuance today' => 'Pengeluaran hari ini',
-        'Stock value' => 'Nilai stok', 'Nilai Stok' => 'Nilai Stok', 'Adjustments waiting approval' => 'Penyesuaian menunggu persetujuan', 'Open Receiving' => 'Buka Penerimaan', 'Current Stock' => 'Stok saat ini', 'Order Status' => 'Status Pesanan', 'Record Order' => 'Catat Pemesanan', 'Order Date' => 'Tanggal Pesan', 'Order Reference No. (PO)' => 'No. Referensi Pemesanan (PO)', 'Stock value ' => 'Nilai stok',
+        'Stock value' => 'Nilai stok', 'Nilai Stok' => 'Nilai Stok', 'Documents waiting approval' => 'Dokumen menunggu persetujuan', 'Open Receiving' => 'Buka Penerimaan', 'Current Stock' => 'Stok saat ini', 'Order Status' => 'Status Pesanan', 'Record Order' => 'Catat Pemesanan', 'Order Date' => 'Tanggal Pesan', 'Order Reference No. (PO)' => 'No. Referensi Pemesanan (PO)', 'Stock value ' => 'Nilai stok',
         'Code' => 'Kode', 'Category' => 'Kategori', 'Location' => 'Lokasi', 'Stock' => 'Stok', 'Reorder Point' => 'Titik Pesan Ulang', 'Reorder Qty' => 'Jml Pesan Ulang', 'Lead Time' => 'Lead Time',
 
         // Grid master

@@ -122,7 +122,7 @@ class ReportController extends Controller
         [$from, $to] = $this->period($request);
 
         $lines = StockDocumentLine::query()->with(['item', 'document.supplier', 'document.creator', 'document.approver'])
-            ->whereHas('document', fn ($d) => $d->where('type', $type)->whereBetween('doc_at', [$from, $to])->when($type !== StockDocumentType::Adjustment, fn ($w) => $w->where('status', 'confirmed')));   // masuk / keluar: hanya yang sudah Confirm
+            ->whereHas('document', fn ($d) => $d->where('type', $type)->whereBetween('doc_at', [$from, $to])->when($type !== StockDocumentType::Adjustment, fn ($w) => $w->whereIn('status', ['confirmed', 'cancel_pending'])));   // masuk / keluar: yang sudah Confirm (pembatalan menunggu persetujuan masih berlaku)
         $lines = $filter($lines)->get()->sortBy([fn ($a, $b) => $a->document->doc_at <=> $b->document->doc_at, fn ($a, $b) => $a->id <=> $b->id]);
 
         $rows = $lines->map(function (StockDocumentLine $l) use ($sup) {
@@ -130,7 +130,7 @@ class ReportController extends Controller
             $cost = (float) ($l->unit_cost ?? $l->item->avg_cost);
 
             return [
-                'date' => Locale::stamp($d->doc_at), 'month' => Locale::at($d->doc_at)->translatedFormat('F Y'), 'doc' => $d->doc_no, 'status' => ['confirmed' => 'Terkonfirmasi', 'draft' => 'Draf', 'approval' => 'Menunggu Persetujuan', 'approved' => 'Disetujui', 'rejected' => 'Ditolak', 'cancelled' => 'Dibatalkan'][$d->status] ?? $d->status,
+                'date' => Locale::stamp($d->doc_at), 'month' => Locale::at($d->doc_at)->translatedFormat('F Y'), 'doc' => $d->doc_no, 'status' => ['confirmed' => 'Terkonfirmasi', 'draft' => 'Draf', 'approval' => 'Menunggu Persetujuan', 'approved' => 'Disetujui', 'rejected' => 'Ditolak', 'cancelled' => 'Dibatalkan', 'cancel_pending' => 'Pembatalan Menunggu Persetujuan'][$d->status] ?? $d->status,
                 'party' => $d->supplier?->name ?? $d->recipient ?? '', 'recipient' => $d->recipient ?? '', 'dept' => $d->department ?? '', 'ref' => $d->ref_no ?? '', 'reason' => $d->reason ?? '',
                 'code' => $l->item->code, 'item' => $l->item->name, 'unit' => $l->item->unit, 'qty' => $l->qty,
                 'entered' => $l->entered_unit ? Locale::decimal($l->entered_qty, 3).' '.$l->entered_unit : '',

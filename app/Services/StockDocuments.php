@@ -77,19 +77,81 @@ final class StockDocuments
     }
 
     /**
-     * Cancel dokumen: yang sudah diproses dibalik di buku besar (stok dikembalikan), yang menunggu persetujuan hanya ditarik. Alasan wajib dan tercatat.
+     * Cancel: pengguna MENGAJUKAN pembatalan (alasan wajib) yang menunggu persetujuan Supervisor; Supervisor yang menekan Cancel membatalkan langsung.
+     * Ditolak lebih dulu bila stok tidak cukup untuk menarik dokumen kembali (koreksi lewat Stock Adjustment). Draf dihapus, bukan dibatalkan.
+     * Penyesuaian yang baru diajukan (belum disetujui) hanya ditarik; pengajuan pembatalan yang menunggu bisa ditarik kembali.
+     *
+     * @return string requested | cancelled | withdrawn
      */
-    public function cancel(StockDocument $doc, User $user, string $reason): void
+    public function cancel(StockDocument $doc, User $user, string $reason): string
     {
-        $reason = trim($reason);
-        abort_if(mb_strlen($reason) < 3, 422, 'Isi alasan pembatalan (minimal 3 huruf).');
-        $this->assertStatus($doc, ['confirmed', 'approved', 'approval']);
+        $reason = mb_substr(trim($reason), 0, 255);
+        $this->assertStatus($doc, ['confirmed', 'approved', 'approval', 'cancel_pending']);
 
-        DB::transaction(function () use ($doc, $user, $reason) {
-            if (in_array($doc->status, ['confirmed', 'approved'], true)) {
-                $this->ledger->reverse($doc, $user);
+        if ($doc->status === 'cancel_pending') {
+            $doc->update($this->backToProcessed($doc) + ['cancel_reason' => null, 'cancel_requested_by' => null, 'cancel_requested_at' => null]);
+
+            return 'withdrawn';
+        }
+        abort_if(mb_strlen($reason) < 3, 422, 'Isi alasan pembatalan (minimal 3 huruf).');
+
+        if ($doc->status === 'approval') {
+            $this->finishCancel($doc, $user, $reason);
+
+            return 'cancelled';
+        }
+        $this->ledger->assertReversible($doc);
+        if ($user->isSupervisor()) {
+            $this->finishCancel($doc, $user, $reason);
+
+            return 'cancelled';
+        }
+        $doc->update(['status' => 'cancel_pending', 'cancel_reason' => $reason, 'cancel_requested_by' => $user->id, 'cancel_requested_at' => now()]);
+
+        return 'requested';
+    }
+
+    /** Hasil hitungan "apakah stok masih cukup untuk menarik dokumen ini kembali": pesan masalahnya, atau null bila bisa dibatalkan. */
+    public function cancelProblem(StockDocument $doc): ?string
+    {
+        if (! in_array($doc->status, ['confirmed', 'approved'], true)) {
+            return null;
+        }
+        try {
+            $this->ledger->assertReversible($doc);
+        } catch (ValidationException $e) {
+            return $e->errors()['lines'][0] ?? 'Pembatalan tidak bisa dilakukan.';
+        }
+
+        return null;
+    }
+
+    // Supervisor menyetujui pengajuan pembatalan: stok dibalik (diperiksa ulang), dokumen dibatalkan.
+    public function approveCancel(StockDocument $doc, User $approver): void
+    {
+        $this->assertStatus($doc, ['cancel_pending']);
+        $this->finishCancel($doc, $approver, (string) $doc->cancel_reason);
+    }
+
+    // Supervisor menolak pengajuan: dokumen kembali berstatus sebelumnya, stok tidak berubah.
+    public function rejectCancel(StockDocument $doc): void
+    {
+        $this->assertStatus($doc, ['cancel_pending']);
+        $doc->update($this->backToProcessed($doc) + ['cancel_reason' => null, 'cancel_requested_by' => null, 'cancel_requested_at' => null]);
+    }
+
+    private function backToProcessed(StockDocument $doc): array
+    {
+        return ['status' => $doc->type === StockDocumentType::Adjustment ? 'approved' : 'confirmed'];
+    }
+
+    private function finishCancel(StockDocument $doc, User $by, string $reason): void
+    {
+        DB::transaction(function () use ($doc, $by, $reason) {
+            if (in_array($doc->status, ['confirmed', 'approved', 'cancel_pending'], true)) {
+                $this->ledger->reverse($doc, $by);
             }
-            $doc->update(['status' => 'cancelled', 'cancelled_by' => $user->id, 'cancelled_at' => now(), 'cancel_reason' => mb_substr($reason, 0, 255)]);
+            $doc->update(['status' => 'cancelled', 'cancelled_by' => $by->id, 'cancelled_at' => now(), 'cancel_reason' => $reason]);
             if ($doc->type === StockDocumentType::Receiving) {
                 // Pemesanan yang ditutup oleh penerimaan ini terbuka lagi.
                 ReorderOrder::query()->where('receiving_id', $doc->id)->update(['closed_at' => null, 'receiving_id' => null]);

@@ -1,7 +1,7 @@
 {{-- REMARK
- Tujuan       : Form dokumen stok (Master-Detail): header menurut jenis + tabel baris item (x-dl::lines). Semua jenis: Draft (belum menyentuh stok, boleh Delete) > Confirm (diproses ke stok; penyesuaian: diajukan lalu Approve Supervisor) > Cancel (Supervisor, alasan wajib, stok dikembalikan).
+ Tujuan       : Form dokumen stok (Master-Detail): header menurut jenis + tabel baris item (x-dl::lines). Semua jenis: Draft (belum menyentuh stok, boleh Delete) > Confirm (diproses ke stok; penyesuaian: diajukan lalu Approve Supervisor) > Cancel (pengguna mengajukan dengan alasan, Supervisor menyetujui; ditolak bila stok tidak cukup, koreksi lewat Stock Adjustment).
  Sumber hulu  : StockDocumentController (t, doc, lines, suppliers, log), Lookup item_in / item_out / item_opn / item_adj (AppServiceProvider).
- Input        : t, doc, lines, suppliers, log.
+ Input        : t, doc, lines, suppliers, log, cancelProblem (hasil hitungan: stok masih cukup untuk membatalkan atau tidak).
  Output       : POST docs.store (baru = draf) / PUT docs.update (save, confirm, approve, reject, cancel, delete).
  Dipakai oleh : routes docs.create, docs.show.
  Status       : Aktif.
@@ -13,7 +13,8 @@
         $sup = auth()->user()->isSupervisor();
         $isNew = ! $doc->exists;
         $isAdj = $t === T::Adjustment;
-        $status = $isNew ? 'new' : $doc->status;
+        $pendingCancel = ! $isNew && $doc->status === 'cancel_pending';
+        $status = $isNew ? 'new' : ($pendingCancel ? 'approval' : $doc->status);   // pengajuan pembatalan memakai tahap persetujuan DevLib (Approve / Reject untuk Supervisor)
         $locked = ! $isNew && $doc->status !== 'draft';
         $v = fn (string $k, $default = null) => old($k, $doc->{$k} ?? $default);
         $e = fn (string $k) => $errors->first($k) ?: null;
@@ -44,11 +45,17 @@
         $title = $t->label().' · '.($isNew ? 'Baru' : raw($doc->doc_no));
     @endphp
     @include('partials.flash')
+    @if (! empty($cancelProblem))
+        <x-dl::alert tone="warn" :message="raw($cancelProblem)" />
+    @endif
+    @if ($pendingCancel)
+        <x-dl::alert tone="warn" :message="raw('Pembatalan diajukan oleh '.($doc->cancelRequester?->name ?? '-').' dan menunggu persetujuan Supervisor. Alasan: '.$doc->cancel_reason.'. Stok belum berubah.')" />
+    @endif
     <x-dl::form :title="$title" :subtitle="$isNew ? null : raw($doc->supplier?->name ?? $doc->recipient ?? $doc->reason)" panel="top" kind="document" :status="$status"
         :back="route('docs.index', $t->slug())" :new-url="route('docs.create', $t->slug())"
         :action="$isNew ? route('docs.store', $t->slug()) : route('docs.update', [$t->slug(), $doc])" :hidden="$isNew ? [] : ['_method' => 'PUT']"
-        :pipeline="true" :approval-levels="$isAdj ? 1 : 0" :approval-at="1" :can-approve="$sup"
-        :hide="array_values(array_filter(['hold', 'email', 'print', 'duplicate', ! $sup && in_array($status, ['confirmed', 'approved'], true) ? 'cancel' : null]))" :log="$log"
+        :pipeline="true" :approval-levels="$isAdj || $pendingCancel ? 1 : 0" :approval-at="1" :can-approve="$sup"
+        :hide="['hold', 'email', 'print', 'duplicate']" :log="$log"
         :created-by="$doc->creator?->name" :created-at="$doc->created_at?->format('Y-m-d H:i:s')"
         :updated-by="$doc->approver?->name ?? $doc->creator?->name" :updated-at="$doc->updated_at?->format('Y-m-d H:i:s')">
         <x-dl::form.row :cols="3">

@@ -92,7 +92,7 @@ final class StockLedger
                 $signed = -(float) $m->qty;
                 $balance = round($item->stock_qty + $signed, 3);
                 if ($balance < -self::EPS) {
-                    throw ValidationException::withMessages(['lines' => "Tidak bisa dibatalkan: stok {$item->code} {$item->name} tinggal ".rtrim(rtrim(number_format($item->stock_qty, 3, '.', ''), '0'), '.').' sehingga tidak cukup untuk menarik kembali '.rtrim(rtrim(number_format(abs($signed), 3, '.', ''), '0'), '.').'.']);
+                    throw $this->shortage($item, $signed);
                 }
                 $cost = (float) $m->unit_cost;
                 $avg = match (true) {
@@ -107,5 +107,26 @@ final class StockLedger
                 ]);
             }
         });
+    }
+
+    /** Memeriksa tanpa mengubah apa pun: kalau pembatalan membuat stok negatif, lempar galat (koreksi harus lewat Stock Adjustment). */
+    public function assertReversible(StockDocument $doc): void
+    {
+        $stock = [];
+        foreach (StockMovement::query()->where('stock_document_id', $doc->id)->whereNull('reversal_of')->orderByDesc('id')->get() as $m) {
+            $item = Item::query()->findOrFail($m->item_id);
+            $signed = -(float) $m->qty;
+            $stock[$item->id] = round(($stock[$item->id] ?? $item->stock_qty) + $signed, 3);
+            if ($stock[$item->id] < -self::EPS) {
+                throw $this->shortage($item, $signed);
+            }
+        }
+    }
+
+    private function shortage(Item $item, float $signed): ValidationException
+    {
+        $fmt = fn (float $v) => rtrim(rtrim(number_format($v, 3, '.', ''), '0'), '.');
+
+        return ValidationException::withMessages(['lines' => "Pembatalan tidak bisa dilakukan: stok {$item->code} {$item->name} tinggal {$fmt($item->stock_qty)}, tidak cukup untuk menarik kembali {$fmt(abs($signed))}. Koreksi stok lewat Stock Adjustment."]);
     }
 }

@@ -21,7 +21,7 @@
                     <x-dl::kpi label="Stock value" :value="$stockValue" format="money" icon="fa-coins" data-open-tab="R-SUM" class="sstock-link" role="link" tabindex="0" />
                 @endif
                 @if ($pending !== null)
-                    <x-dl::kpi label="Adjustments waiting approval" :value="$pending" icon="fa-scale-balanced" :tone="$pending ? 'warn' : 'success'" good-when="down" data-open-tab="ADJ" class="sstock-link" role="link" tabindex="0" />
+                    <x-dl::kpi label="Documents waiting approval" :value="$pending" icon="fa-scale-balanced" :tone="$pending ? 'warn' : 'success'" good-when="down" />
                 @endif
             </x-dl::kpi-row>
             <div class="sstock-split">

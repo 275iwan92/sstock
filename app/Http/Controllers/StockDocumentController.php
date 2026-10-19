@@ -24,7 +24,7 @@ use Illuminate\Http\Request;
  */
 class StockDocumentController extends Controller
 {
-    private const STATUS = ['confirmed' => 'Terkonfirmasi', 'draft' => 'Draf', 'approval' => 'Menunggu Persetujuan', 'approved' => 'Disetujui', 'rejected' => 'Ditolak', 'cancelled' => 'Dibatalkan'];
+    private const STATUS = ['confirmed' => 'Terkonfirmasi', 'draft' => 'Draf', 'approval' => 'Menunggu Persetujuan', 'approved' => 'Disetujui', 'rejected' => 'Ditolak', 'cancelled' => 'Dibatalkan', 'cancel_pending' => 'Pembatalan Menunggu Persetujuan'];
 
     public function __construct(private readonly StockDocuments $documents) {}
 
@@ -57,7 +57,7 @@ class StockDocumentController extends Controller
         $t = $this->type($request, $type);
         abort_unless($document->type === $t, 404);
 
-        return view('docs.form', $this->formData($t, $document->load(['lines.item', 'creator', 'approver', 'confirmer', 'canceller'])));
+        return view('docs.form', $this->formData($t, $document->load(['lines.item', 'creator', 'approver', 'confirmer', 'canceller', 'cancelRequester'])));
     }
 
     // Simpan = draf: belum diproses ke stok. Stok baru berubah saat Confirm (penyesuaian: saat Approve).
@@ -76,7 +76,10 @@ class StockDocumentController extends Controller
         $action = $request->input('_action', 'save');
         $isAdj = $document->type === StockDocumentType::Adjustment;
         $sup = $request->user()->isSupervisor();
-        abort_if($action === 'cancel' && ! ($sup || ($isAdj && $document->status === 'approval' && $document->created_by === $request->user()->id)), 403, 'Pembatalan dokumen hanya oleh Supervisor.');
+        $me = $request->user()->id;
+        abort_if(in_array($action, ['approve', 'reject'], true) && ! $sup, 403, 'Hanya Supervisor yang menyetujui atau menolak.');
+        // Menarik penyesuaian yang diajukan / pengajuan pembatalan: hanya pembuat / pengajunya atau Supervisor.
+        abort_if($action === 'cancel' && ! $sup && in_array($document->status, ['approval', 'cancel_pending'], true) && ! in_array($me, [$document->created_by, $document->cancel_requested_by], true), 403, 'Hanya pengaju atau Supervisor.');
 
         $header = $isAdj ? ['reason', 'note', 'recipient_id', 'department_id'] : ['supplier_id', 'ref_no', 'recipient_id', 'department_id', 'reason', 'note', 'doc_at'];
         if (in_array($action, ['save', 'confirm'], true)) {
@@ -86,8 +89,8 @@ class StockDocumentController extends Controller
         $message = match ($action) {
             'save' => 'Draf disimpan.',
             'confirm' => $isAdj ? $this->submit($document) : $this->confirm($document, $request, $reorder),
-            'approve' => $this->approve($document, $request),
-            'reject' => $this->reject($document, $request),
+            'approve' => $document->status === 'cancel_pending' ? $this->approveCancel($document, $request) : $this->approve($document, $request),
+            'reject' => $document->status === 'cancel_pending' ? $this->rejectCancel($document) : $this->reject($document, $request),
             'cancel' => $this->cancel($document, $request),
             'delete' => $this->delete($document),
             default => abort(422, 'Aksi tidak dikenal.'),
@@ -110,9 +113,25 @@ class StockDocumentController extends Controller
 
     private function cancel(StockDocument $document, Request $request): string
     {
-        $this->documents->cancel($document, $request->user(), (string) $request->input('_reason'));
+        return match ($this->documents->cancel($document, $request->user(), (string) $request->input('_reason'))) {
+            'requested' => "Pembatalan {$document->doc_no} diajukan dan menunggu persetujuan Supervisor. Stok belum berubah.",
+            'withdrawn' => "Pengajuan pembatalan {$document->doc_no} ditarik.",
+            default => "{$document->doc_no} dibatalkan; stok dikembalikan.",
+        };
+    }
 
-        return "{$document->doc_no} dibatalkan; stok dikembalikan.";
+    private function approveCancel(StockDocument $document, Request $request): string
+    {
+        $this->documents->approveCancel($document, $request->user());
+
+        return "Pembatalan {$document->doc_no} disetujui; stok dikembalikan.";
+    }
+
+    private function rejectCancel(StockDocument $document): string
+    {
+        $this->documents->rejectCancel($document);
+
+        return "Pembatalan {$document->doc_no} ditolak; dokumen tetap berlaku.";
     }
 
     private function submit(StockDocument $document): string
@@ -155,6 +174,9 @@ class StockDocumentController extends Controller
     {
         $log = [];
         if ($doc->exists) {
+            if ($doc->status === 'cancel_pending') {
+                $log[] = ['at' => $doc->cancel_requested_at->format('Y-m-d H:i:s'), 'by' => $doc->cancelRequester->name, 'action' => 'Mengajukan pembatalan', 'note' => $doc->cancel_reason];
+            }
             if ($doc->status === 'cancelled') {
                 $log[] = ['at' => $doc->cancelled_at->format('Y-m-d H:i:s'), 'by' => $doc->canceller->name, 'action' => 'Dibatalkan', 'note' => $doc->cancel_reason];
             }
@@ -168,7 +190,7 @@ class StockDocumentController extends Controller
         }
 
         return [
-            't' => $t, 'doc' => $doc, 'log' => $log,
+            't' => $t, 'doc' => $doc, 'log' => $log, 'cancelProblem' => $doc->exists ? $this->documents->cancelProblem($doc) : null,
             'recipients' => Recipient::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id')->all(),
             'departments' => Department::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id')->all(),
             'suppliers' => Supplier::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id')->all(),
