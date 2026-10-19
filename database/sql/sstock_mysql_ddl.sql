@@ -1,6 +1,6 @@
 -- Simple Stock (sstock) - skema MySQL 8 (DDL lengkap: tabel, index, foreign key).
--- Dihasilkan dari migrasi Laravel (users + 2026_10_19_100000_create_stock_tables) dalam mode pretend; sumber kebenaran tetap migrasi.
--- Tabel framework (cache, jobs) tidak disertakan: dibuat oleh php artisan migrate.
+-- Dihasilkan dari migrasi Laravel (users, stock tables, geo tables + kontak supplier) dalam mode pretend; sumber kebenaran tetap migrasi.
+-- Tabel framework (cache, jobs) tidak disertakan: dibuat oleh php artisan migrate. Isi geo_* disalin dari tmerp: php artisan sstock:import-geo.
 
 CREATE DATABASE IF NOT EXISTS sstock CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE sstock;
@@ -71,3 +71,42 @@ alter table `stock_movements` add index `stock_movements_item_id_moved_at_id_ind
 
 alter table `stock_movements` add index `stock_movements_type_moved_at_index`(`type`, `moved_at`);
 
+create table `geo_country` (`id_country` bigint unsigned not null, `country_code` varchar(20) null, `iso_code` varchar(20) null, `country_name` varchar(255) not null, `call_country_no` varchar(30) null, `activate` tinyint(1) not null default '1', primary key (`id_country`)) default character set utf8mb4 collate 'utf8mb4_unicode_ci';
+
+create table `geo_region` (`id_region` bigint unsigned not null, `country_id` bigint unsigned not null, `region_code` varchar(50) null, `region_name` varchar(255) not null, `is_active` tinyint(1) not null default '1', primary key (`id_region`)) default character set utf8mb4 collate 'utf8mb4_unicode_ci';
+
+alter table `geo_region` add index `geo_region_country_id_index`(`country_id`);
+
+create table `geo_city` (`id_city` bigint unsigned not null, `region_id` bigint unsigned not null, `city_code` varchar(50) null, `city_type` varchar(50) null, `city_name` varchar(255) not null, `post_code` varchar(20) null, `activate` tinyint(1) not null default '1', primary key (`id_city`)) default character set utf8mb4 collate 'utf8mb4_unicode_ci';
+
+alter table `geo_city` add index `geo_city_region_id_index`(`region_id`);
+
+alter table `geo_city` add index `geo_city_city_name_index`(`city_name`);
+
+alter table `geo_city` add index `geo_city_post_code_index`(`post_code`);
+
+create table `geo_district` (`id_district` bigint unsigned not null, `city_id` bigint unsigned not null, `district_code` varchar(50) null, `district_name` varchar(255) not null, `post_code` varchar(20) null, `activate` tinyint(1) not null default '1', primary key (`id_district`)) default character set utf8mb4 collate 'utf8mb4_unicode_ci';
+
+alter table `geo_district` add index `geo_district_city_id_index`(`city_id`);
+
+alter table `geo_district` add index `geo_district_district_name_index`(`district_name`);
+
+alter table `geo_district` add index `geo_district_post_code_index`(`post_code`);
+
+create table `geo_village` (`id_village` bigint unsigned not null, `district_id` bigint unsigned not null, `village_code` varchar(50) null, `village_name` varchar(255) not null, `post_code` varchar(20) null, `activate` tinyint(1) not null default '1', primary key (`id_village`)) default character set utf8mb4 collate 'utf8mb4_unicode_ci';
+
+alter table `geo_village` add index `geo_village_district_id_index`(`district_id`);
+
+alter table `geo_village` add index `geo_village_village_name_index`(`village_name`);
+
+alter table `geo_village` add index `geo_village_post_code_index`(`post_code`);
+
+alter table `suppliers` add `contact_name` varchar(100) null after `phone`;
+
+alter table `suppliers` add `contact_mobile` varchar(40) null after `contact_name`;
+
+alter table `suppliers` add `area_level` varchar(10) null after `address`;
+
+alter table `suppliers` add `area_id` bigint unsigned null after `area_level`;
+
+alter table `suppliers` add `postal_code` varchar(20) null after `area_id`;

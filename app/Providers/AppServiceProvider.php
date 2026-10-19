@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Support\GeoLookup;
 use App\Support\ItemLookups;
 use Illuminate\Support\ServiceProvider;
 
@@ -15,5 +16,6 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         ItemLookups::register();
+        GeoLookup::register();
     }
 }

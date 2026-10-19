@@ -8,13 +8,15 @@
 ## Stack
 - Laravel 13.37, PHP 8.4 (Herd), Vite + Tailwind 4
 - `telasih/devlib` lewat Composer path repository `../devlib` (symlink), terdaftar otomatis
-- Database: SQLite (`database/database.sqlite`), migrasi bawaan sudah jalan
+- Database: MySQL 8, database `sstock`, user `sstock_usr` (dibuat otomatis oleh `php artisan sstock:install`; nilai di `.env.example`)
 - `.env`: `APP_NAME=SStock`, `APP_URL=http://sstock.test`
 
 ## Sudah dikerjakan
 - Proyek Laravel dibuat, devlib terpasang (`@source` Tailwind ke `../../../devlib/*`)
 - **Aplikasi stok lengkap (2026-10-19)**: login (`x-dl::frame` + `x-dl::login-box`), Layer Shell dengan menu per peran, dashboard KPI + popup Reorder Point
 - Master: Item (kategori, satuan, rak, harga, Reorder Point/Qty, Lead Time), Supplier; kategori hanya lewat seeder
+- Supplier: telepon kantor (PSTN, kolom `phone`), nama kontak + HP kontak, wilayah wajib (minimal kota; kelurahan > kecamatan > kota > provinsi > negara) lewat kotak cari `geo_area`, kode pos, alamat jalan; grid punya satu kolom "City, Country"
+- Wilayah: tabel `geo_*` salinan tmerp (`tm2mst`, id sama; 250 negara, ±80 rb kelurahan) lewat `php artisan sstock:import-geo` (otomatis di `sstock:install`, tidak fatal bila gagal); logika cari di `App\Support\GeoArea`, lookup di `App\Support\GeoLookup`. Pencarian ±1 detik (join 5 tabel, LIKE di tengah kata)
 - Transaksi (`docs/{type}`): Opening Balance, Receiving, Issuance langsung diposting saat Save (tidak bisa diubah; koreksi lewat penyesuaian); Stock Adjustment: Draft > Confirm > Approve/Reject (Supervisor)
 - Buku besar `stock_movements` + saldo `items.stock_qty/avg_cost` (moving average) hanya diubah `App\Services\StockLedger`
 - Laporan `x-dl::report` (bisa dicetak): Stock Card, Summary Stock, Receiving, Issuance, Opname & Adjustment
@@ -31,18 +33,16 @@
 - Tanggal/jam transaksi = waktu server saat Save (tidak bisa diisi mundur, kecuali tanggal Opening Balance)
 - `CLAUDE.md` khusus sstock
 
-## Keputusan terbuka
-- DB memakai SQLite karena akun MySQL root butuh password dan kredensial tmerp tidak dipakai.
-  Untuk MySQL seperti tmerp: tentukan user dan nama database, ubah `DB_*` di `.env`, lalu `php artisan migrate --seed`
-  (atau impor `database/sql/sstock_mysql_ddl.sql`). Migrasi belum dijalankan di MySQL.
+## Database dan deploy pertama
+- `php artisan sstock:install` (dipanggil `composer setup`): bila database + user belum ada, membuatnya lewat akun admin MySQL
+  (`--admin-user/--admin-password`, atau env `DB_ADMIN_USERNAME/DB_ADMIN_PASSWORD`, atau ditanya), lalu `migrate` dan `db:seed` (seed hanya bila belum ada user). Aman dijalankan ulang.
+- Tes memakai SQLite in-memory (`phpunit.xml`), tidak menyentuh MySQL. DDL referensi: `database/sql/sstock_mysql_ddl.sql`.
+- Login: wallpaper `public/media/bg/sstock` (dibuat sendiri, bukan gambar DevLib), kutipan `public/media/text/*.txt` (salinan DevLib).
 
 ## Menjalankan di mesin lain
 ```bash
 git clone https://github.com/275iwan92/sstock.git   # taruh sejajar dengan devlib
-composer install
-cp .env.example .env && php artisan key:generate
-touch database/database.sqlite && php artisan migrate --seed
-npm install && npm run build    # wajib setiap menambah class Tailwind
+composer setup    # install, .env, key, buat DB + user MySQL, migrate, seed, build
 ```
 Lalu daftarkan folder ke Herd (park/link) → http://sstock.test
 

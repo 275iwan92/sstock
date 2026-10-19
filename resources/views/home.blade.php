@@ -10,6 +10,7 @@
 @section('body')
     <x-dl::layer-shell :classic="false" :modules="$modules" :user="$user" :logout-action="route('logout')" :open="$open" :fresh="$fresh" menu-source="App\Support\Menu">
         <x-slot:dashboard>
+            <x-dl::quote :quotes="\Devlib\Components\Frame::textLines('motivasi-harian.txt')" order="day" />
             <x-dl::kpi-row>
                 <x-dl::kpi label="Active items" :value="$itemCount" icon="fa-boxes-stacked" />
                 <x-dl::kpi label="At / below reorder point" :value="$below->count()" icon="fa-triangle-exclamation" :tone="$below->isNotEmpty() ? 'danger' : 'success'" good-when="down" />

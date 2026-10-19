@@ -4,12 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\SupplierRequest;
 use App\Models\Supplier;
+use App\Support\GeoArea;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 
 /* REMARK
  * Tujuan       : Master Supplier (dipilih di transaksi Receiving). Data Entry dan Supervisor sama-sama boleh mengelola.
- * Sumber hulu  : suppliers.
+ * Sumber hulu  : suppliers, GeoArea (kota + negara di grid, kotak baca-saja di form).
  * Output       : grid Suppliers, form Supplier.
  * Dipakai oleh : routes/web.php (suppliers.*).
  * Status       : Aktif.
@@ -18,8 +19,11 @@ class SupplierController extends Controller
 {
     public function index()
     {
-        $rows = Supplier::query()->orderBy('code')->get()->map(fn (Supplier $s) => [
-            'id' => $s->id, 'code' => $s->code, 'name' => $s->name, 'phone' => $s->phone, 'address' => $s->address, 'active' => $s->is_active,
+        $suppliers = Supplier::query()->orderBy('code')->get();
+        $areas = GeoArea::findMany($suppliers->map->areaKey()->all());
+        $rows = $suppliers->map(fn (Supplier $s) => [
+            'id' => $s->id, 'code' => $s->code, 'name' => $s->name, 'phone' => $s->phone, 'contact' => $s->contact_name, 'mobile' => $s->contact_mobile,
+            'place' => ($a = $areas[$s->areaKey()] ?? null) ? $a['city'].', '.$a['country'] : null, 'address' => $s->address, 'active' => $s->is_active,
         ])->all();
 
         return view('suppliers.index', ['rows' => $rows]);
@@ -27,12 +31,12 @@ class SupplierController extends Controller
 
     public function create()
     {
-        return view('suppliers.form', ['supplier' => new Supplier]);
+        return view('suppliers.form', ['supplier' => new Supplier, 'geo' => null]);
     }
 
     public function show(Supplier $supplier)
     {
-        return view('suppliers.form', ['supplier' => $supplier]);
+        return view('suppliers.form', ['supplier' => $supplier, 'geo' => GeoArea::find($supplier->areaKey())]);
     }
 
     public function store(SupplierRequest $request): RedirectResponse
