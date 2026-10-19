@@ -2,7 +2,7 @@
  Tujuan       : Tambah Penerima / Departemen baru langsung dari form Issuance (tanpa meninggalkan layar): baris "Penerima baru" / "Departemen baru" di atas daftar dropdown membuka modal kecil, simpan lewat fetch ke master, lalu pilihan langsung terpilih di dropdown.
  Sumber hulu  : recipients.store / departments.store (menjawab JSON bila diminta; kode departemen dibuat otomatis dari nama).
  Input        : tanpa prop (memakai field recipient_id (hanya Issuance) dan department_id di form).
- Output       : dua x-dl::modal + script kecil yang menambah item ke dropdown x-dl::field.select.
+ Output       : dua x-dl::modal (dipindah ke <body> oleh script, di luar <form> dokumen) + script kecil yang menambah item ke dropdown x-dl::field.select.
  Dipakai oleh : docs/form.blade.php (Issuance, dokumen belum terkunci).
  Status       : Aktif.
 --}}
@@ -22,6 +22,8 @@
         const token = @json(csrf_token());
         const urls = {recipient: @json(route('recipients.store')), department: @json(route('departments.store'))};
         const layer = id => document.querySelector(`[data-dl-modal-id="${id}"]`);
+        // Dialog dipindah keluar dari <form> dokumen: isiannya tidak ikut divalidasi / dikirim bersama dokumen.
+        document.body.append(layer('qa-recipient'), layer('qa-department'));
         const field = name => document.querySelector(`[data-dl-select] [name="${name}"]`)?.closest('[data-dl-select]');
         const choose = (name, data) => {
             const sel = field(name), list = sel.querySelector('[data-dl-dd-list]');
