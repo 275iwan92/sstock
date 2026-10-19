@@ -19,8 +19,9 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         $users = [
-            ['username' => 'supervisor', 'name' => 'Supervisor Gudang', 'email' => 'supervisor@sstock.test', 'role' => User::ROLE_SUPERVISOR],
-            ['username' => 'entry', 'name' => 'Staf Data Entry', 'email' => 'entry@sstock.test', 'role' => User::ROLE_DATA_ENTRY],
+            // Password akun uji (permintaan pemilik untuk pengujian); ganti sebelum produksi.
+            ['username' => 'supervisor', 'name' => 'Supervisor Gudang', 'email' => 'supervisor@sstock.test', 'role' => User::ROLE_SUPERVISOR, 'password' => '1qa2ws3ed'],
+            ['username' => 'entry', 'name' => 'Staf Data Entry', 'email' => 'entry@sstock.test', 'role' => User::ROLE_DATA_ENTRY, 'password' => '12345678'],
             // Akun admin untuk pengembangan dan UAT nanti (permintaan pemilik): peran Administrator (hak Supervisor + menu Keamanan), password lemah sengaja. Hapus / ganti sebelum produksi.
             ['username' => 'admin', 'name' => 'Admin UAT', 'email' => 'admin@sstock.test', 'role' => User::ROLE_ADMINISTRATOR, 'password' => 'admin'],
         ];
