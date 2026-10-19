@@ -14,6 +14,7 @@
 ## Sudah dikerjakan
 - Proyek Laravel dibuat, devlib terpasang (`@source` Tailwind ke `../../../devlib/*`)
 - **Aplikasi stok lengkap (2026-10-19)**: login (`x-dl::frame` + `x-dl::login-box`), Layer Shell dengan menu per peran, dashboard KPI + popup Reorder Point
+- Opening screen: 6 KPI yang bisa diklik (membuka tab menu terkait), tabel Reorder ringkas (nama, Reorder Qty, stok) di kiri, dan (hanya Supervisor) grafik garis nilai stok di kanan: per minggu (12 minggu terakhir), otomatis per bulan setelah riwayat >180 hari (`App\Services\StockValuation`)
 - Master: Item (kategori, satuan, rak, harga, Reorder Point/Qty, Lead Time), Supplier; kategori hanya lewat seeder
 - Supplier: telepon kantor (PSTN, kolom `phone`), nama kontak + HP kontak, alamat jalan, lalu satu kotak cari `geo_area` (kecamatan > kota/kabupaten > provinsi > negara + kode pos, wajib; kode pos disimpan server dari wilayah terpilih); grid punya satu kolom "City, Country"
 - Master Satuan (Master Data > Units, Supervisor): kode tetap, nama, aktif/nonaktif; Item memilih satuan dari master (foreign key `items.unit` > `units.code`). Konversi satu aturan untuk semua item (`unit_conversions`: 1 box = 12 pcs; arah sebaliknya dihitung, tanpa rantai) lewat tabel Conversions di form Unit; `App\Support\UnitConverter`

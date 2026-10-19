@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\StockDocumentType;
 use App\Models\Item;
 use App\Models\StockDocument;
+use App\Services\StockValuation;
 use App\Support\Menu;
 use Illuminate\Http\Request;
 
@@ -30,7 +31,9 @@ class HomeController extends Controller
             'below' => $below,
             'itemCount' => Item::query()->where('is_active', true)->count(),
             'stockValue' => $user->isSupervisor() ? round(Item::query()->selectRaw('SUM(stock_qty * avg_cost) v')->value('v') ?? 0, 2) : null,
-            'todayCount' => StockDocument::query()->whereIn('type', [StockDocumentType::Receiving, StockDocumentType::Issuance])->whereDate('doc_at', today())->count(),
+            'receivingToday' => StockDocument::query()->where('type', StockDocumentType::Receiving)->whereDate('doc_at', today())->count(),
+            'issuanceToday' => StockDocument::query()->where('type', StockDocumentType::Issuance)->whereDate('doc_at', today())->count(),
+            'valuation' => $user->isSupervisor() ? StockValuation::series() : null,
             'pending' => $user->isSupervisor() ? StockDocument::query()->where('status', 'approval')->count() : null,
         ]);
     }

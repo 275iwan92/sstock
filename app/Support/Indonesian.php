@@ -38,8 +38,8 @@ final class Indonesian
         'Item · ' => 'Barang · ', 'Item · New' => 'Barang · Baru', 'Supplier · ' => 'Supplier · ', 'Supplier · New' => 'Supplier · Baru', 'Unit · ' => 'Satuan · ', 'Unit · New' => 'Satuan · Baru',
 
         // Beranda
-        'Active items' => 'Barang aktif', 'At / below reorder point' => 'Di / bawah titik pesan ulang', 'Receiving + issuance today' => 'Penerimaan + pengeluaran hari ini',
-        'Stock value' => 'Nilai stok', 'Adjustments waiting approval' => 'Penyesuaian menunggu persetujuan', 'Open Receiving' => 'Buka Penerimaan',
+        'Active items' => 'Barang aktif', 'At / below reorder point' => 'Di / bawah titik pesan ulang', 'Receiving today' => 'Penerimaan hari ini', 'Issuance today' => 'Pengeluaran hari ini',
+        'Stock value' => 'Nilai stok', 'Nilai Stok' => 'Nilai Stok', 'Adjustments waiting approval' => 'Penyesuaian menunggu persetujuan', 'Open Receiving' => 'Buka Penerimaan', 'Current Stock' => 'Stok saat ini', 'Stock value ' => 'Nilai stok',
         'Code' => 'Kode', 'Category' => 'Kategori', 'Location' => 'Lokasi', 'Stock' => 'Stok', 'Reorder Point' => 'Titik Pesan Ulang', 'Reorder Qty' => 'Jml Pesan Ulang', 'Lead Time' => 'Lead Time',
 
         // Grid master

@@ -7,6 +7,7 @@ use App\Models\Item;
 use App\Models\StockDocument;
 use App\Models\Supplier;
 use App\Models\User;
+use App\Services\StockValuation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;
@@ -210,6 +211,39 @@ class StockFlowTest extends TestCase
 
         $later = $this->get(route('reports.summary', ['from' => '2026-10-21', 'to' => '2026-10-31']))->getContent();
         $this->assertMatchesRegularExpression('/&quot;open&quot;:90(\.0)?,&quot;in&quot;:0(\.0)?,&quot;out&quot;:50(\.0)?,&quot;adj&quot;:0(\.0)?,&quot;end&quot;:40(\.0)?.*PESAN ULANG/', $later);
+    }
+
+    public function test_valuation_series_is_weekly_for_new_data_and_monthly_after_half_a_year(): void
+    {
+        $item = $this->item('V1');
+        Carbon::setTestNow('2026-10-10 09:00:00');
+        $this->receive($item, 100, 10);   // nilai 1.000
+        Carbon::setTestNow('2026-10-15 09:00:00');
+        $this->issue($item, 40);          // nilai 600
+        Carbon::setTestNow('2026-10-19 12:00:00');
+
+        $weekly = StockValuation::series();
+        $this->assertSame('weekly', $weekly['mode']);
+        $this->assertCount(12, $weekly['values']);
+        $this->assertSame(0.0, $weekly['values'][0]);                // sebelum ada pergerakan
+        $this->assertSame(1000.0, $weekly['values'][10]);            // 12 Okt: sesudah penerimaan 10 Okt, sebelum pengeluaran 15 Okt
+        $this->assertSame(600.0, end($weekly['values']));
+
+        Carbon::setTestNow('2027-05-10 12:00:00');
+        $monthly = StockValuation::series();
+        $this->assertSame('monthly', $monthly['mode']);
+        $this->assertCount(12, $monthly['values']);
+        $this->assertSame(600.0, end($monthly['values']));
+        Carbon::setTestNow();
+    }
+
+    public function test_opening_screen_shows_the_valuation_chart_only_to_supervisors(): void
+    {
+        $item = $this->item('V2', rop: 5);
+        $this->receive($item, 3, 10);
+
+        $this->actingAs($this->supervisor)->get(route('home'))->assertOk()->assertSee('data-dl-chart', false);
+        $this->actingAs($this->entry)->get(route('home'))->assertOk()->assertDontSee('data-dl-chart', false);
     }
 
     public function test_reports_render_and_hide_valuation_from_data_entry(): void
