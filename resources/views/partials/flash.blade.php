@@ -10,7 +10,7 @@
     <x-dl::alert tone="success" :message="raw(session('status'))" />
 @endif
 @if (session('reorder'))
-    <x-dl::alert tone="warn" :message="raw('Reorder point reached: '.session('reorder'))" />
+    <x-dl::alert tone="warn" :message="raw('Titik pesan ulang tercapai: '.session('reorder'))" />
 @endif
 @if ($errors->any())
     <x-dl::alert tone="danger" :message="raw($errors->first())" />

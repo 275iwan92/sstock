@@ -43,7 +43,10 @@
 
 /* Logo Stoku (SVG berwarna) menggantikan kotak gradasi bawaan DevLib di semua tempat lencana logo tampil (sidebar, kotak login, pojok login). */
 .dl-logo-badge { background: url('/media/brand/stoku.svg') center / contain no-repeat; }
-.dl-logo-badge > img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.dl-logo-badge > img { width: 100%; height: 100%; object-fit: contain; display: block; background: transparent; border-radius: 0; }
 
 /* Layar di dalam tab Layer Shell diberi jarak kiri / kanan / bawah supaya tidak menempel ke menu. Login dan layar utama (shell) memakai kelas sstock-bare: tanpa jarak. */
 body.dl-body:not(.sstock-bare) { padding: 0 16px 16px; }
+
+/* Logo tanpa kotak di belakangnya tampil lebih besar supaya kubusnya jelas. */
+.dl-logo-badge--sm { width: 46px; height: 46px; }

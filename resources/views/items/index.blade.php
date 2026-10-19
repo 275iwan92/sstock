@@ -20,13 +20,13 @@
             ['key' => 'rop', 'label' => 'Reorder Point', 'type' => 'number', 'decimals' => 2],
             ['key' => 'roq', 'label' => 'Reorder Qty', 'type' => 'number', 'decimals' => 2, 'visible' => false],
             ['key' => 'lead', 'label' => 'Lead Time (days)', 'type' => 'integer'],
-            ['key' => 'level', 'label' => 'Level', 'type' => 'badge', 'tones' => ['OK' => 'success', 'REORDER' => 'danger']],
+            ['key' => 'level', 'label' => 'Level', 'type' => 'badge', 'tones' => ['AMAN' => 'success', 'PESAN ULANG' => 'danger']],
             $sup ? ['key' => 'price', 'label' => 'Unit Price', 'type' => 'money', 'decimals' => 2, 'visible' => false] : null,
             $sup ? ['key' => 'value', 'label' => 'Stock Value', 'type' => 'money', 'decimals' => 2, 'sum' => true] : null,
         ]))"
         :stats="[
             ['label' => 'All items'],
-            ['label' => 'Reorder', 'where' => ['level' => 'REORDER'], 'tone' => 'danger'],
+            ['label' => 'Reorder', 'where' => ['level' => 'PESAN ULANG'], 'tone' => 'danger'],
             ['label' => 'Inactive', 'where' => ['active' => false], 'tone' => 'warn'],
         ]"
         :filters="['category' => 'Category', 'unit' => 'Unit']" />

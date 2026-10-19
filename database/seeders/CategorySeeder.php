@@ -15,7 +15,7 @@ class CategorySeeder extends Seeder
 {
     public function run(): void
     {
-        foreach (['ATK' => 'ATK (Office Stationery)', 'SPR' => 'Sparepart Maintenance', 'TLS' => 'Tools / Peralatan'] as $code => $name) {
+        foreach (['ATK' => 'ATK (Alat Tulis Kantor)', 'SPR' => 'Sparepart Maintenance', 'TLS' => 'Tools / Peralatan'] as $code => $name) {
             Category::updateOrCreate(['code' => $code], ['name' => $name]);
         }
     }

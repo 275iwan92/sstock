@@ -17,16 +17,16 @@
         $e = fn (string $k) => $errors->first($k) ?: null;
     @endphp
     @include('partials.flash')
-    <x-dl::form :title="$isNew ? 'Item · New' : 'Item · '.raw($item->code)" :subtitle="$isNew ? null : raw($item->name)" panel="top" kind="master"
+    <x-dl::form :title="$isNew ? 'Barang · Baru' : 'Barang · '.raw($item->code)" :subtitle="$isNew ? null : raw($item->name)" panel="top" kind="master"
         :status="$isNew ? 'new' : ($item->is_active ? 'active' : 'inactive')" :can-input="$sup" :hide="$sup ? [] : ['activate', 'deactivate']" :back="route('items.index')" :new-url="route('items.create')"
         :action="$isNew ? route('items.store') : route('items.update', $item)" :hidden="$isNew ? [] : ['_method' => 'PUT']"
         :created-at="$item->created_at?->format('Y-m-d H:i:s')" :updated-at="$item->updated_at?->format('Y-m-d H:i:s')">
         @unless ($isNew)
             <x-dl::kpi-row>
-                <x-dl::stat-box label="Stock on hand" :value="Locale::number($item->stock_qty, 2).' '.$item->unit" :tone="$below ? 'danger' : 'accent'" :sub="'Reorder point '.Locale::number($item->reorder_point, 2).' · '.($below ? 'REORDER' : 'OK')" />
+                <x-dl::stat-box label="Stock on hand" :value="Locale::number($item->stock_qty, 2).' '.$item->unit" :tone="$below ? 'danger' : 'accent'" :sub="'Titik pesan ulang '.Locale::number($item->reorder_point, 2).' · '.($below ? 'PESAN ULANG' : 'AMAN')" />
                 @if ($sup)
-                    <x-dl::stat-box label="Average cost" :value="Locale::money($item->avg_cost, 'IDR', 0)" tone="neutral" sub="Moving average of purchases" />
-                    <x-dl::stat-box label="Stock value" :value="Locale::money($item->stockValue(), 'IDR', 0)" tone="success" sub="Stock x average cost" />
+                    <x-dl::stat-box label="Average cost" :value="Locale::money($item->avg_cost, 'IDR', 0)" tone="neutral" sub="Rata-rata bergerak dari pembelian" />
+                    <x-dl::stat-box label="Stock value" :value="Locale::money($item->stockValue(), 'IDR', 0)" tone="success" sub="Stok x biaya rata-rata" />
                 @endif
             </x-dl::kpi-row>
         @endunless
@@ -49,6 +49,6 @@
                 <x-dl::field.decimal name="unit_price" label="Unit Price (IDR)" :decimals="2" :value="$v('unit_price') ?? 0" required :error="$e('unit_price')" tooltip="Reference price. Stock valuation uses the moving average of purchase prices." />
             @endif
         </x-dl::form.row>
-        <p class="dl-note">Alert shows when stock is at or below the reorder point (0 = no alert). The unit price is a reference only; valuation uses the moving average of purchase prices.</p>
+        <p class="dl-note">Peringatan muncul bila stok sama dengan atau di bawah titik pesan ulang (0 = tanpa peringatan). Harga satuan hanya acuan; valuasi memakai rata-rata bergerak harga pembelian.</p>
     </x-dl::form>
 @endsection

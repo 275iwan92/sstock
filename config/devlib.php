@@ -9,9 +9,12 @@ return [
     'brand' => ['name' => 'STOKU', 'tagline' => 'STOK SEDERHANA', 'logo' => '/media/brand/stoku.svg'],
 
     // Kop laporan cetak.
-    'company' => ['name' => 'Stoku', 'initials' => 'ST', 'tagline' => 'Maintenance & ATK Warehouse', 'address' => '', 'contact' => ''],
+    'company' => ['name' => 'Stoku', 'initials' => 'ST', 'tagline' => 'Gudang Maintenance & ATK', 'address' => '', 'contact' => ''],
 
     'lang' => env('DEVLIB_LANG', 'id'),
+
+    // Aplikasi satu bahasa: istilah tombol / status DevLib yang biasanya dipaksa English ikut kamus aplikasi (App\Support\Indonesian).
+    'translate_fixed' => true,
     'timezone' => env('APP_TIMEZONE', 'Asia/Jakarta'),
     'timezone_label' => 'WIB',
 

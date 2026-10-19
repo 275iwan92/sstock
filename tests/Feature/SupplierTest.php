@@ -61,6 +61,15 @@ class SupplierTest extends TestCase
         $this->assertSame('61256', $s->postal_code);
     }
 
+    public function test_validation_messages_are_in_indonesian(): void
+    {
+        $this->actingAs(User::factory()->create())->post(route('suppliers.store'), ['code' => '', 'name' => ''])->assertSessionHasErrors(['name', 'area']);
+        $messages = session('errors')->getBag('default');
+
+        $this->assertSame('nama wajib diisi.', mb_strtolower($messages->first('name')));
+        $this->assertStringContainsString('Wilayah wajib diisi', $messages->first('area'));
+    }
+
     public function test_region_is_required(): void
     {
         $this->seedGeo();

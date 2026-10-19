@@ -8,6 +8,7 @@ use App\Models\StockDocument;
 use App\Models\Supplier;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 /* REMARK
@@ -113,7 +114,7 @@ class StockFlowTest extends TestCase
         $this->receive($item, 10, 5);
         $this->issue($item, 5)->assertSessionHas('reorder');
         $this->assertTrue($item->fresh()->isBelowReorderPoint());
-        $this->actingAs($this->supervisor)->get(route('home'))->assertOk()->assertSee('Reorder Point Reached');
+        $this->actingAs($this->supervisor)->get(route('home'))->assertOk()->assertSee('di bawah titik pesan ulang');
     }
 
     public function test_data_entry_cannot_open_supervisor_screens(): void
@@ -191,16 +192,36 @@ class StockFlowTest extends TestCase
         $this->assertSame('rejected', $doc->fresh()->status);
     }
 
+    public function test_summary_stock_reports_opening_movement_and_closing_for_the_period(): void
+    {
+        $item = $this->item('P1', rop: 40);
+        Carbon::setTestNow('2026-09-10 10:00:00');
+        $this->receive($item, 100, 10);   // sebelum periode = saldo awal
+        Carbon::setTestNow('2026-10-05 09:00:00');
+        $this->issue($item, 30);
+        Carbon::setTestNow('2026-10-15 09:00:00');
+        $this->receive($item, 20, 10);
+        Carbon::setTestNow('2026-10-25 09:00:00');
+        $this->issue($item, 50);          // sesudah periode: tidak ikut
+        Carbon::setTestNow();
+
+        $html = $this->actingAs($this->supervisor)->get(route('reports.summary', ['from' => '2026-10-01', 'to' => '2026-10-20']))->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('/&quot;open&quot;:100(\.0)?,&quot;in&quot;:20(\.0)?,&quot;out&quot;:30(\.0)?,&quot;adj&quot;:0(\.0)?,&quot;end&quot;:90(\.0)?/', $html);
+
+        $later = $this->get(route('reports.summary', ['from' => '2026-10-21', 'to' => '2026-10-31']))->getContent();
+        $this->assertMatchesRegularExpression('/&quot;open&quot;:90(\.0)?,&quot;in&quot;:0(\.0)?,&quot;out&quot;:50(\.0)?,&quot;adj&quot;:0(\.0)?,&quot;end&quot;:40(\.0)?.*PESAN ULANG/', $later);
+    }
+
     public function test_reports_render_and_hide_valuation_from_data_entry(): void
     {
         $item = $this->item();
         $this->receive($item, 10, 1234);
 
         foreach (['reports.summary', 'reports.receiving', 'reports.issuance', 'reports.stock-card'] as $route) {
-            $this->actingAs($this->entry)->get(route($route, ['item_id' => $item->id]))->assertOk()->assertDontSee('Stock Value')->assertDontSee('Purchase Price')->assertDontSee('1234');
+            $this->actingAs($this->entry)->get(route($route, ['item_id' => $item->id]))->assertOk()->assertDontSee('Nilai Stok')->assertDontSee('Harga Beli')->assertDontSee('1234');
         }
-        $this->actingAs($this->supervisor)->get(route('reports.summary'))->assertOk()->assertSee('Total Stock Value');
-        $this->get(route('reports.receiving'))->assertOk()->assertSee('Purchase Price');
+        $this->actingAs($this->supervisor)->get(route('reports.summary'))->assertOk()->assertSee('Total Nilai Stok');
+        $this->get(route('reports.receiving'))->assertOk()->assertSee('Harga Beli');
         $this->get(route('reports.adjustment'))->assertOk();
         $this->get(route('reports.stock-card', ['item_id' => $item->id, 'from' => today()->subDay()->toDateString(), 'to' => today()->toDateString()]))->assertOk()->assertSee('Item I1');
     }

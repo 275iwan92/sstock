@@ -9,16 +9,16 @@
 @extends('layout', ['title' => 'Opname & Adjustment Report'])
 @section('body')
     <x-report-filter :from="$from" :to="$to">
-        <x-dl::field.select name="status" label="Status" :options="['' => 'All', 'draft' => 'Draft', 'approval' => 'Waiting Approval', 'approved' => 'Approved', 'rejected' => 'Rejected']" :value="request('status')" />
+        <x-dl::field.select name="status" label="Status" :options="['' => 'Semua', 'draft' => 'Draf', 'approval' => 'Menunggu Persetujuan', 'approved' => 'Disetujui', 'rejected' => 'Ditolak']" :value="request('status')" />
     </x-report-filter>
     <x-dl::report title="Opname & Adjustment Report" subtitle="Physical count vs system stock" :company="config('devlib.company')" :printed-by="raw(auth()->user()->name)" paper="a4l"
-        :criteria="['Period' => raw(Devlib\Locale::d($from).' — '.Devlib\Locale::d($to)), 'Status' => raw(request('status') ? ucfirst(request('status')) : 'All')]"
+        :criteria="['Period' => raw(Devlib\Locale::d($from).' — '.Devlib\Locale::d($to)), 'Status' => raw(['draft' => 'Draf', 'approval' => 'Menunggu Persetujuan', 'approved' => 'Disetujui', 'rejected' => 'Ditolak'][request('status')] ?? 'Semua')]"
         group-by="status" :groups="['status' => 'Per Status', 'doc' => 'Per Document']"
-        :summary="[['label' => 'Lines counted', 'value' => count($rows)], ['label' => 'Net value effect', 'sum' => 'effect', 'signed' => true]]"
+        :summary="[['label' => 'Baris dihitung', 'value' => count($rows)], ['label' => 'Dampak nilai bersih', 'sum' => 'effect', 'signed' => true]]"
         :columns="[
             ['key' => 'date', 'label' => 'Date & Time'],
             ['key' => 'doc', 'label' => 'Document No.', 'sub' => 'reason'],
-            ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['Approved' => 'success', 'Approval' => 'warn', 'Draft' => 'neutral', 'Rejected' => 'danger']],
+            ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['Disetujui' => 'success', 'Menunggu Persetujuan' => 'warn', 'Draf' => 'neutral', 'Ditolak' => 'danger']],
             ['key' => 'item', 'label' => 'Item', 'sub' => 'code'],
             ['key' => 'unit', 'label' => 'Unit'],
             ['key' => 'system', 'label' => 'System Qty', 'type' => 'number'],

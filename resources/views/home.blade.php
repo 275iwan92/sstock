@@ -1,7 +1,7 @@
 {{-- REMARK
  Tujuan       : Layar utama SStock: Layer Shell + dashboard (KPI, peringatan Reorder Point).
  Sumber hulu  : HomeController (modules menurut peran, KPI, daftar item di/bawah ROP), partial partials.reorder-alert.
- Input        : modules, user, open, below, popup, itemCount, stockValue, todayCount, pending.
+ Input        : modules, user, open, below, itemCount, stockValue, todayCount, pending.
  Output       : x-dl::layer-shell; tiap menu terbuka sebagai tab (iframe) layar masing-masing.
  Dipakai oleh : route home.
  Status       : Aktif.

@@ -24,20 +24,20 @@ class AuthController extends Controller
     public function login(Request $request): RedirectResponse
     {
         $data = $request->validate(['login' => ['required', 'string'], 'password' => ['required', 'string']], [
-            'login.required' => 'Enter your username or e-mail.',
-            'password.required' => 'Enter your password.',
+            'login.required' => 'Isi username atau e-mail Anda.',
+            'password.required' => 'Isi password Anda.',
         ]);
 
         $key = Str::lower($data['login']).'|'.$request->ip();
         if (RateLimiter::tooManyAttempts($key, 5)) {
-            return $this->fail($request, 'Too many attempts. Try again in '.RateLimiter::availableIn($key).' seconds.');
+            return $this->fail($request, 'Terlalu banyak percobaan. Coba lagi dalam '.RateLimiter::availableIn($key).' detik.');
         }
 
         $field = filter_var($data['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
         if (! Auth::attempt([$field => $data['login'], 'password' => $data['password'], 'is_active' => true], $request->boolean('remember'))) {
             RateLimiter::hit($key);
 
-            return $this->fail($request, 'Wrong username/e-mail or password, or the account is inactive.');
+            return $this->fail($request, 'Username/e-mail atau password salah, atau akun tidak aktif.');
         }
 
         RateLimiter::clear($key);

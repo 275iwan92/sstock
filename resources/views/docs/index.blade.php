@@ -19,7 +19,7 @@
             ['key' => 'doc_at', 'label' => 'Date & Time', 'type' => 'datetime'],
             ['key' => 'ref', 'label' => $refLabel],
             $sup ? ['key' => 'value', 'label' => 'Value', 'type' => 'money', 'decimals' => 2, 'sum' => true] : null,
-            ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['Confirmed' => 'success', 'Draft' => 'neutral', 'Waiting Approval' => 'warn', 'Approved' => 'success', 'Rejected' => 'danger']],
+            ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['Terkonfirmasi' => 'success', 'Draf' => 'neutral', 'Menunggu Persetujuan' => 'warn', 'Disetujui' => 'success', 'Ditolak' => 'danger']],
             ['key' => 'user', 'label' => 'Entered by'],
         ]))"
         :detail="['key' => 'lines', 'title' => 'Items', 'columns' => array_values(array_filter([
@@ -29,5 +29,5 @@
             ['key' => 'unit', 'label' => 'Unit'],
             $sup ? ['key' => 'cost', 'label' => 'Unit Cost', 'type' => 'money'] : null,
         ]))]"
-        :stats="$isAdj ? [['label' => 'All'], ['label' => 'Waiting approval', 'where' => ['status' => 'Waiting Approval'], 'tone' => 'warn'], ['label' => 'Draft', 'where' => ['status' => 'Draft']]] : [['label' => 'All']]" />
+        :stats="$isAdj ? [['label' => 'All'], ['label' => 'Waiting approval', 'where' => ['status' => 'Menunggu Persetujuan'], 'tone' => 'warn'], ['label' => 'Draft', 'where' => ['status' => 'Draf']]] : [['label' => 'All']]" />
 @endsection

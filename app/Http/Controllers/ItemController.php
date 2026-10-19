@@ -27,7 +27,7 @@ class ItemController extends Controller
             'id' => $i->id, 'code' => $i->code, 'name' => $i->name, 'category' => $i->category->name, 'unit' => $i->unit, 'location' => $i->location,
             'stock' => $i->stock_qty, 'rop' => $i->reorder_point, 'roq' => $i->reorder_qty, 'lead' => $i->lead_time_days,
             'price' => $sup ? $i->unit_price : null, 'value' => $sup ? $i->stockValue() : null,
-            'hue' => Palette::item($i->category->code, $i->code), 'level' => $i->isBelowReorderPoint() ? 'REORDER' : 'OK', 'tone' => $i->isBelowReorderPoint() ? 'danger' : null, 'active' => $i->is_active,
+            'hue' => Palette::item($i->category->code, $i->code), 'level' => $i->isBelowReorderPoint() ? 'PESAN ULANG' : 'AMAN', 'tone' => $i->isBelowReorderPoint() ? 'danger' : null, 'active' => $i->is_active,
         ])->all();
 
         return view('items.index', ['rows' => $rows, 'sup' => $sup, 'categories' => Category::orderBy('name')->pluck('name', 'name')->all()]);
@@ -47,7 +47,7 @@ class ItemController extends Controller
     {
         $item = Item::create($request->validated());
 
-        return redirect()->route('items.show', $item)->with('status', 'Item saved.');
+        return redirect()->route('items.show', $item)->with('status', 'Barang disimpan.');
     }
 
     public function update(ItemRequest $request, Item $item): RedirectResponse
@@ -56,12 +56,12 @@ class ItemController extends Controller
         if (in_array($action, ['activate', 'deactivate'], true)) {
             $item->update(['is_active' => $action === 'activate']);
 
-            return redirect()->route('items.show', $item)->with('status', $action === 'activate' ? 'Item activated.' : 'Item deactivated.');
+            return redirect()->route('items.show', $item)->with('status', $action === 'activate' ? 'Barang diaktifkan.' : 'Barang dinonaktifkan.');
         }
 
         $item->update($request->validated());
 
-        return redirect()->route('items.show', $item)->with('status', 'Item saved.');
+        return redirect()->route('items.show', $item)->with('status', 'Barang disimpan.');
     }
 
     private function categories(): array

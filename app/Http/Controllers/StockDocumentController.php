@@ -22,7 +22,7 @@ use Illuminate\Http\Request;
  */
 class StockDocumentController extends Controller
 {
-    private const STATUS = ['confirmed' => 'Confirmed', 'draft' => 'Draft', 'approval' => 'Waiting Approval', 'approved' => 'Approved', 'rejected' => 'Rejected'];
+    private const STATUS = ['confirmed' => 'Terkonfirmasi', 'draft' => 'Draf', 'approval' => 'Menunggu Persetujuan', 'approved' => 'Disetujui', 'rejected' => 'Ditolak'];
 
     public function __construct(private readonly StockDocuments $documents) {}
 
@@ -63,9 +63,9 @@ class StockDocumentController extends Controller
         $t = $request->type();
         [$doc, $below] = $this->documents->create($t, $request->safe()->only(['supplier_id', 'ref_no', 'recipient', 'department', 'reason', 'note', 'doc_at']), array_values($request->validated('lines')), $request->user());
 
-        $redirect = redirect()->route('docs.show', [$t->slug(), $doc])->with('status', $t === StockDocumentType::Adjustment ? "{$doc->doc_no} saved as draft." : "{$doc->doc_no} saved and posted to stock.");
+        $redirect = redirect()->route('docs.show', [$t->slug(), $doc])->with('status', $t === StockDocumentType::Adjustment ? "{$doc->doc_no} disimpan sebagai draf." : "{$doc->doc_no} disimpan dan diposting ke stok.");
         if ($below) {
-            $redirect->with('reorder', collect($below)->map(fn (Item $i) => "{$i->code} {$i->name} (stock ".Locale::number($i->stock_qty, 2).', ROP '.Locale::number($i->reorder_point, 2).')')->implode('; '));
+            $redirect->with('reorder', collect($below)->map(fn (Item $i) => "{$i->code} {$i->name} (stok ".Locale::number($i->stock_qty, 2).', titik pesan ulang '.Locale::number($i->reorder_point, 2).')')->implode('; '));
         }
 
         return $redirect;
@@ -81,12 +81,12 @@ class StockDocumentController extends Controller
             $this->documents->update($document, $request->safe()->only(['reason', 'note']), array_values($request->validated('lines')));
         }
         $message = match ($action) {
-            'save' => 'Draft saved.',
+            'save' => 'Draf disimpan.',
             'confirm' => $this->submit($document),
             'approve' => $this->approve($document, $request),
             'reject' => $this->reject($document, $request),
             'delete' => $this->delete($document),
-            default => abort(422, 'Unknown action.'),
+            default => abort(422, 'Aksi tidak dikenal.'),
         };
 
         return ($action === 'delete' ? redirect()->route('docs.index', $type) : redirect()->route('docs.show', [$type, $document]))->with('status', $message);
@@ -96,34 +96,34 @@ class StockDocumentController extends Controller
     {
         $this->documents->submit($document);
 
-        return "{$document->doc_no} confirmed and sent for approval.";
+        return "{$document->doc_no} dikonfirmasi dan dikirim untuk persetujuan.";
     }
 
     private function approve(StockDocument $document, Request $request): string
     {
         $this->documents->approve($document, $request->user());
 
-        return "{$document->doc_no} approved; the adjustment is posted to stock.";
+        return "{$document->doc_no} disetujui; penyesuaian diposting ke stok.";
     }
 
     private function reject(StockDocument $document, Request $request): string
     {
         $this->documents->reject($document, $request->user());
 
-        return "{$document->doc_no} rejected; stock was not changed.";
+        return "{$document->doc_no} ditolak; stok tidak berubah.";
     }
 
     private function delete(StockDocument $document): string
     {
         $this->documents->delete($document);
 
-        return "{$document->doc_no} deleted.";
+        return "{$document->doc_no} dihapus.";
     }
 
     private function type(Request $request, string $slug): StockDocumentType
     {
         $t = StockDocumentType::fromSlug($slug);
-        abort_if($t->supervisorOnly() && ! $request->user()->isSupervisor(), 403, 'Supervisor access only.');
+        abort_if($t->supervisorOnly() && ! $request->user()->isSupervisor(), 403, 'Hanya untuk Supervisor.');
 
         return $t;
     }
@@ -133,9 +133,9 @@ class StockDocumentController extends Controller
         $log = [];
         if ($doc->exists) {
             if (in_array($doc->status, ['approved', 'rejected'], true)) {
-                $log[] = ['at' => $doc->approved_at->format('Y-m-d H:i:s'), 'by' => $doc->approver->name, 'action' => ucfirst($doc->status), 'note' => null];
+                $log[] = ['at' => $doc->approved_at->format('Y-m-d H:i:s'), 'by' => $doc->approver->name, 'action' => self::STATUS[$doc->status] ?? $doc->status, 'note' => null];
             }
-            $log[] = ['at' => $doc->created_at->format('Y-m-d H:i:s'), 'by' => $doc->creator->name, 'action' => 'Created', 'note' => null];
+            $log[] = ['at' => $doc->created_at->format('Y-m-d H:i:s'), 'by' => $doc->creator->name, 'action' => 'Dibuat', 'note' => null];
         }
 
         return [

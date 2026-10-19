@@ -41,7 +41,7 @@
                 ['key' => 'counted_qty', 'label' => 'Counted Qty (physical)', 'type' => 'number', 'required' => true, 'width' => '150px'],
                 ['key' => 'diff', 'label' => 'Difference', 'type' => 'number', 'formula' => 'counted_qty - system_qty', 'width' => '110px'], $note],
         };
-        $title = $t->label().' · '.($isNew ? 'New' : raw($doc->doc_no));
+        $title = $t->label().' · '.($isNew ? 'Baru' : raw($doc->doc_no));
     @endphp
     @include('partials.flash')
     <x-dl::form :title="$title" :subtitle="$isNew ? null : raw($doc->supplier?->name ?? $doc->recipient ?? $doc->reason)" panel="top" kind="document" :status="$status"
@@ -52,11 +52,11 @@
         :created-by="$doc->creator?->name" :created-at="$doc->created_at?->format('Y-m-d H:i:s')"
         :updated-by="$doc->approver?->name ?? $doc->creator?->name" :updated-at="$doc->updated_at?->format('Y-m-d H:i:s')">
         <x-dl::form.row :cols="3">
-            <x-dl::field.display label="Document No." :value="raw($doc->doc_no ?? '(automatic)')" />
+            <x-dl::field.display label="Document No." :value="raw($doc->doc_no ?? '(otomatis)')" />
             @if ($t === T::Opening)
                 <x-dl::field.date name="doc_at" label="Balance As Of (period start)" :value="$v('doc_at') ? \Illuminate\Support\Carbon::parse($v('doc_at'))->format('Y-m-d') : today()->format('Y-m-d')" required :error="$e('doc_at')" hint="Only for items without any stock movement yet." />
             @else
-                <x-dl::field.display label="Date & Time" :value="raw($isNew ? 'Set when saved' : \Devlib\Locale::stamp($doc->doc_at))" />
+                <x-dl::field.display label="Date & Time" :value="raw($isNew ? 'Diisi saat disimpan' : \Devlib\Locale::stamp($doc->doc_at))" />
             @endif
             <x-dl::field.display label="Entered by" :value="raw($doc->creator?->name ?? auth()->user()->name)" />
         </x-dl::form.row>

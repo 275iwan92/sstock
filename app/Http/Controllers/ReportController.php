@@ -11,6 +11,7 @@ use App\Models\Supplier;
 use Devlib\Locale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 /* REMARK
  * Tujuan       : Laporan utama: Kartu Stok, Summary Stock, Penerimaan, Pengeluaran, Opname & Penyesuaian. Semua tampil sebagai x-dl::report (kop, kriteria, ringkasan, kelompok, cetak).
@@ -21,7 +22,7 @@ use Illuminate\Support\Carbon;
  */
 class ReportController extends Controller
 {
-    private const TYPE_LABEL = ['OPENING' => 'OPN', 'IN' => 'IN', 'OUT' => 'OUT', 'ADJ' => 'ADJ'];
+    private const TYPE_LABEL = ['OPENING' => 'AWAL', 'IN' => 'MASUK', 'OUT' => 'KELUAR', 'ADJ' => 'PENY'];
 
     public function stockCard(Request $request)
     {
@@ -36,7 +37,7 @@ class ReportController extends Controller
             $opening = $before?->balance_qty ?? 0.0;
             $rows = StockMovement::query()->where('item_id', $item->id)->whereBetween('moved_at', [$from, $to])->with(['document.supplier', 'user'])
                 ->orderBy('moved_at')->orderBy('id')->get()->map(fn (StockMovement $m) => [
-                    'date' => Locale::stamp($m->moved_at), 'month' => $m->moved_at->format('Y-m'),
+                    'date' => Locale::stamp($m->moved_at), 'month' => Locale::at($m->moved_at)->translatedFormat('F Y'),
                     'doc' => $m->document->doc_no, 'src' => $m->document->supplier?->name ?? $m->document->recipient ?? $m->document->reason,
                     'type' => self::TYPE_LABEL[$m->type], 'ref' => $m->document->ref_no ?? $m->document->department ?? $m->document->reason ?? '', 'user' => $m->user->name,
                     'in' => in_array($m->type, ['IN', 'OPENING'], true) ? $m->qty : 0, 'out' => $m->type === 'OUT' ? abs($m->qty) : 0, 'adj' => $m->type === 'ADJ' ? $m->qty : 0,
@@ -53,21 +54,46 @@ class ReportController extends Controller
     public function summary(Request $request)
     {
         $sup = $request->user()->isSupervisor();
-        $query = Item::query()->with('category')->orderBy('code');
-        $query->when($request->filled('category_id'), fn ($q) => $q->where('category_id', $request->query('category_id')));
-        $query->when($request->boolean('only_reorder'), fn ($q) => $q->belowReorderPoint());
-        $query->when(! $request->boolean('inactive'), fn ($q) => $q->where('is_active', true));
-        $items = $query->get();
+        [$from, $to] = $this->period($request);
+
+        $items = Item::query()->with('category')->orderBy('code')
+            ->when($request->filled('category_id'), fn ($q) => $q->where('category_id', $request->query('category_id')))
+            ->when(! $request->boolean('inactive'), fn ($q) => $q->where('is_active', true))->get();
+
+        // Saldo awal = saldo sesudah pergerakan terakhir sebelum periode; saldo akhir = sesudah pergerakan terakhir sampai akhir periode.
+        $opening = $this->lastMovements('<', $from);
+        $closing = $this->lastMovements('<=', $to);
+        $moves = StockMovement::query()->whereBetween('moved_at', [$from, $to])->selectRaw('item_id, type, sum(qty) as total')->groupBy('item_id', 'type')->get()->groupBy('item_id');
+
+        $rows = $items->map(function (Item $i) use ($opening, $closing, $moves, $sup) {
+            $m = ($moves[$i->id] ?? collect())->pluck('total', 'type');
+            $end = $closing[$i->id]->balance_qty ?? 0.0;
+            $cost = $closing[$i->id]->balance_avg_cost ?? 0.0;
+
+            return [
+                'code' => $i->code, 'name' => $i->name, 'loc' => $i->location, 'cat' => $i->category->name, 'unit' => $i->unit,
+                'open' => $opening[$i->id]->balance_qty ?? 0.0,
+                'in' => (float) ($m['IN'] ?? 0) + (float) ($m['OPENING'] ?? 0), 'out' => abs((float) ($m['OUT'] ?? 0)), 'adj' => (float) ($m['ADJ'] ?? 0),
+                'end' => $end, 'rop' => $i->reorder_point, 'roq' => $i->reorder_qty, 'lead' => $i->lead_time_days,
+                'status' => $i->is_active && $i->reorder_point > 0 && $end <= $i->reorder_point ? 'PESAN ULANG' : 'AMAN',
+                'cost' => $sup ? $cost : null, 'value' => $sup ? round($end * $cost, 2) : null,
+            ];
+        });
+        if ($request->boolean('only_reorder')) {
+            $rows = $rows->where('status', 'PESAN ULANG');
+        }
 
         return view('reports.summary', [
-            'sup' => $sup, 'categories' => Category::orderBy('name')->pluck('name', 'id')->all(), 'items' => $items,
-            'rows' => $items->map(fn (Item $i) => [
-                'code' => $i->code, 'name' => $i->name, 'loc' => $i->location, 'cat' => $i->category->name, 'unit' => $i->unit,
-                'stock' => $i->stock_qty, 'rop' => $i->reorder_point, 'roq' => $i->reorder_qty, 'lead' => $i->lead_time_days,
-                'status' => $i->isBelowReorderPoint() ? 'REORDER' : 'OK',
-                'cost' => $sup ? $i->avg_cost : null, 'value' => $sup ? $i->stockValue() : null,
-            ])->all(),
+            'sup' => $sup, 'from' => $from, 'to' => $to, 'categories' => Category::orderBy('name')->pluck('name', 'id')->all(), 'rows' => $rows->values()->all(),
         ]);
+    }
+
+    /** @return Collection<int, StockMovement> pergerakan terakhir tiap item (kunci = item_id) pada batas waktu */
+    private function lastMovements(string $operator, Carbon $at)
+    {
+        $ids = StockMovement::query()->where('moved_at', $operator, $at)->selectRaw('max(id) as id')->groupBy('item_id')->pluck('id');
+
+        return StockMovement::query()->whereIn('id', $ids)->get()->keyBy('item_id');
     }
 
     public function receiving(Request $request)
@@ -104,7 +130,7 @@ class ReportController extends Controller
             $cost = (float) ($l->unit_cost ?? $l->item->avg_cost);
 
             return [
-                'date' => Locale::stamp($d->doc_at), 'month' => $d->doc_at->format('Y-m'), 'doc' => $d->doc_no, 'status' => ucfirst($d->status),
+                'date' => Locale::stamp($d->doc_at), 'month' => Locale::at($d->doc_at)->translatedFormat('F Y'), 'doc' => $d->doc_no, 'status' => ['confirmed' => 'Terkonfirmasi', 'draft' => 'Draf', 'approval' => 'Menunggu Persetujuan', 'approved' => 'Disetujui', 'rejected' => 'Ditolak'][$d->status] ?? $d->status,
                 'party' => $d->supplier?->name ?? $d->recipient ?? '', 'dept' => $d->department ?? '', 'ref' => $d->ref_no ?? '', 'reason' => $d->reason ?? '',
                 'code' => $l->item->code, 'item' => $l->item->name, 'unit' => $l->item->unit, 'qty' => $l->qty,
                 'entered' => $l->entered_unit ? Locale::decimal($l->entered_qty, 3).' '.$l->entered_unit : '',

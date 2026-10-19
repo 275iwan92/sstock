@@ -49,7 +49,7 @@ class UnitController extends Controller
             return $unit;
         });
 
-        return redirect()->route('units.show', $unit)->with('status', 'Unit saved.');
+        return redirect()->route('units.show', $unit)->with('status', 'Satuan disimpan.');
     }
 
     public function update(UnitRequest $request, Unit $unit): RedirectResponse
@@ -58,7 +58,7 @@ class UnitController extends Controller
         if (in_array($action, ['activate', 'deactivate'], true)) {
             $unit->update(['is_active' => $action === 'activate']);
 
-            return redirect()->route('units.show', $unit)->with('status', $action === 'activate' ? 'Unit activated.' : 'Unit deactivated.');
+            return redirect()->route('units.show', $unit)->with('status', $action === 'activate' ? 'Satuan diaktifkan.' : 'Satuan dinonaktifkan.');
         }
 
         DB::transaction(function () use ($request, $unit) {
@@ -66,7 +66,7 @@ class UnitController extends Controller
             $this->syncConversions($unit, $request->validated('conversions', []));
         });
 
-        return redirect()->route('units.show', $unit)->with('status', 'Unit saved.');
+        return redirect()->route('units.show', $unit)->with('status', 'Satuan disimpan.');
     }
 
     public function toggle(Unit $unit): JsonResponse

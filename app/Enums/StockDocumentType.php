@@ -38,10 +38,10 @@ enum StockDocumentType: string
     public function label(): string
     {
         return match ($this) {
-            self::Opening => 'Opening Balance',
-            self::Receiving => 'Receiving',
-            self::Issuance => 'Issuance',
-            self::Adjustment => 'Stock Adjustment',
+            self::Opening => 'Saldo Awal',
+            self::Receiving => 'Penerimaan Barang',
+            self::Issuance => 'Pengeluaran Barang',
+            self::Adjustment => 'Penyesuaian Stok',
         };
     }
 

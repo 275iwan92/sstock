@@ -39,10 +39,10 @@ final class StockLedger
                 $balance = round($item->stock_qty + $signed, 3);
 
                 if ($balance < -self::EPS) {
-                    throw ValidationException::withMessages(['lines' => "Insufficient stock for {$item->code} {$item->name}: available ".rtrim(rtrim(number_format($item->stock_qty, 3, '.', ''), '0'), '.').', needed '.rtrim(rtrim(number_format(abs($signed), 3, '.', ''), '0'), '.').'.']);
+                    throw ValidationException::withMessages(['lines' => "Stok {$item->code} {$item->name} tidak cukup: tersedia ".rtrim(rtrim(number_format($item->stock_qty, 3, '.', ''), '0'), '.').', dibutuhkan '.rtrim(rtrim(number_format(abs($signed), 3, '.', ''), '0'), '.').'.']);
                 }
                 if ($doc->type === StockDocumentType::Opening && $item->movements()->exists()) {
-                    throw ValidationException::withMessages(['lines' => "{$item->code} already has stock movements; use a Stock Adjustment instead of an Opening Balance."]);
+                    throw ValidationException::withMessages(['lines' => "{$item->code} sudah punya pergerakan stok; pakai Penyesuaian Stok, bukan Saldo Awal."]);
                 }
 
                 // Penambahan memakai biaya baris (masuk / saldo awal) atau biaya rata-rata (penyesuaian +); pengurangan memakai biaya rata-rata.

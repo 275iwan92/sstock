@@ -24,27 +24,27 @@ final class Menu
         }
 
         $reports = [
-            $item('R-CARD', 'Stock Card', route('reports.stock-card'), 'report', 'fa-solid fa-clipboard-list'),
-            $item('R-SUM', 'Summary Stock', route('reports.summary'), 'report', 'fa-solid fa-table-list'),
-            $item('R-IN', 'Receiving Report', route('reports.receiving'), 'report', 'fa-solid fa-file-arrow-down'),
-            $item('R-OUT', 'Issuance Report', route('reports.issuance'), 'report', 'fa-solid fa-file-arrow-up'),
+            $item('R-CARD', 'Kartu Stok', route('reports.stock-card'), 'report', 'fa-solid fa-clipboard-list'),
+            $item('R-SUM', 'Ringkasan Stok', route('reports.summary'), 'report', 'fa-solid fa-table-list'),
+            $item('R-IN', 'Laporan Penerimaan', route('reports.receiving'), 'report', 'fa-solid fa-file-arrow-down'),
+            $item('R-OUT', 'Laporan Pengeluaran', route('reports.issuance'), 'report', 'fa-solid fa-file-arrow-up'),
         ];
         if ($user->isSupervisor()) {
-            $reports[] = $item('R-ADJ', 'Opname & Adjustment Report', route('reports.adjustment'), 'report', 'fa-solid fa-file-circle-check');
+            $reports[] = $item('R-ADJ', 'Laporan Opname & Penyesuaian', route('reports.adjustment'), 'report', 'fa-solid fa-file-circle-check');
         }
 
         $master = [
-            $item('ITM', 'Items', route('items.index'), 'grid', 'fa-solid fa-box'),
+            $item('ITM', 'Barang', route('items.index'), 'grid', 'fa-solid fa-box'),
             $item('SUP', 'Suppliers', route('suppliers.index'), 'grid', 'fa-solid fa-truck'),
         ];
         if ($user->isSupervisor()) {
-            $master[] = $item('UOM', 'Units', route('units.index'), 'grid', 'fa-solid fa-ruler');
+            $master[] = $item('UOM', 'Satuan', route('units.index'), 'grid', 'fa-solid fa-ruler');
         }
 
         return [
-            ['code' => 'MST', 'short' => 'MST', 'label' => 'Master Data', 'icon' => 'fa-solid fa-boxes-stacked', 'children' => $master],
-            ['code' => 'TRX', 'short' => 'TRX', 'label' => 'Transactions', 'icon' => 'fa-solid fa-right-left', 'children' => $trx],
-            ['code' => 'RPT', 'short' => 'RPT', 'label' => 'Reports', 'icon' => 'fa-solid fa-chart-column', 'children' => $reports],
+            ['code' => 'MST', 'short' => 'MST', 'label' => 'Data Master', 'icon' => 'fa-solid fa-boxes-stacked', 'children' => $master],
+            ['code' => 'TRX', 'short' => 'TRX', 'label' => 'Transaksi', 'icon' => 'fa-solid fa-right-left', 'children' => $trx],
+            ['code' => 'RPT', 'short' => 'RPT', 'label' => 'Laporan', 'icon' => 'fa-solid fa-chart-column', 'children' => $reports],
         ];
     }
 }

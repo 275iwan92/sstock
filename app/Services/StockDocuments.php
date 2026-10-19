@@ -60,7 +60,7 @@ final class StockDocuments
     public function submit(StockDocument $doc): void
     {
         $this->assertStatus($doc, ['draft']);
-        abort_if($doc->lines()->doesntExist(), 422, 'Add at least one line before confirming.');
+        abort_if($doc->lines()->doesntExist(), 422, 'Tambahkan minimal satu baris sebelum konfirmasi.');
         $doc->update(['status' => 'approval']);
     }
 
@@ -70,7 +70,7 @@ final class StockDocuments
         DB::transaction(function () use ($doc, $approver) {
             foreach ($doc->lines()->with('item')->get() as $line) {
                 if (abs($line->item->stock_qty - (float) $line->system_qty) > 0.0005) {
-                    throw ValidationException::withMessages(['lines' => "Stock of {$line->item->code} changed since the count (system {$line->system_qty}, now {$line->item->stock_qty}). Reject this document and count again."]);
+                    throw ValidationException::withMessages(['lines' => "Stok {$line->item->code} berubah sejak penghitungan (sistem {$line->system_qty}, sekarang {$line->item->stock_qty}). Tolak dokumen ini lalu hitung ulang."]);
                 }
             }
             $this->ledger->post($doc, $approver, now());
@@ -92,7 +92,7 @@ final class StockDocuments
 
     private function assertStatus(StockDocument $doc, array $allowed): void
     {
-        abort_unless($doc->type === StockDocumentType::Adjustment && in_array($doc->status, $allowed, true), 422, 'This action is not allowed in the current status.');
+        abort_unless($doc->type === StockDocumentType::Adjustment && in_array($doc->status, $allowed, true), 422, 'Aksi ini tidak diizinkan pada status sekarang.');
     }
 
     private function writeLines(StockDocument $doc, array $lines): void
@@ -127,11 +127,11 @@ final class StockDocuments
     {
         $factor = UnitConverter::factor($row['unit'], $item->unit);
         if ($factor === null) {
-            throw ValidationException::withMessages(['lines' => "No conversion from {$row['unit']} to {$item->unit} for {$item->code}. Add it in Master Data > Units."]);
+            throw ValidationException::withMessages(['lines' => "Belum ada konversi dari {$row['unit']} ke {$item->unit} untuk {$item->code}. Tambahkan di Data Master > Satuan."]);
         }
         $qty = round((float) $row['qty'] * $factor, 3);
         if ($qty <= 0) {
-            throw ValidationException::withMessages(['lines' => "The quantity of {$item->code} is too small to convert into {$item->unit}."]);
+            throw ValidationException::withMessages(['lines' => "Jumlah {$item->code} terlalu kecil untuk dikonversi ke {$item->unit}."]);
         }
 
         return [$qty, round((float) $row['unit_cost'] / $factor, 4), ['entered_qty' => $row['qty'], 'entered_unit' => $row['unit'], 'entered_unit_cost' => $row['unit_cost']]];

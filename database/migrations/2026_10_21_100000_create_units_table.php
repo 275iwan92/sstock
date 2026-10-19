@@ -15,8 +15,8 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     private const DEFAULTS = [
-        'pcs' => 'Pieces', 'box' => 'Box', 'set' => 'Set', 'pack' => 'Pack', 'roll' => 'Roll', 'pair' => 'Pair', 'unit' => 'Unit',
-        'sheet' => 'Sheet', 'kg' => 'Kilogram', 'gram' => 'Gram', 'meter' => 'Meter', 'liter' => 'Liter', 'can' => 'Can', 'bottle' => 'Bottle',
+        'pcs' => 'Buah', 'box' => 'Dus', 'set' => 'Set', 'pack' => 'Pak', 'roll' => 'Gulung', 'pair' => 'Pasang', 'unit' => 'Unit',
+        'sheet' => 'Lembar', 'kg' => 'Kilogram', 'gram' => 'Gram', 'meter' => 'Meter', 'liter' => 'Liter', 'can' => 'Kaleng', 'bottle' => 'Botol',
     ];
 
     public function up(): void

@@ -18,20 +18,20 @@
             :criteria="array_filter([
                 'Item Code' => raw($item->code), 'Item Name' => raw($item->name), 'Unit' => raw($item->unit), 'Location' => raw($item->location ?? '—'),
                 'Period' => raw(Devlib\Locale::d($from).' — '.Devlib\Locale::d($to)),
-                'Valuation' => $sup ? 'Moving average' : null,
+                'Valuation' => $sup ? 'Rata-rata bergerak' : null,
             ])"
             :opening="$opening" group-by="month" :groups="['month' => 'Per Month']"
             :summary="[
-                ['label' => 'Opening Balance', 'value' => $opening],
-                ['label' => 'Total In', 'sum' => 'in', 'signed' => true, 'plus' => true],
-                ['label' => 'Total Out', 'sum' => 'out'],
-                ['label' => 'Adjustment', 'sum' => 'adj', 'signed' => true],
-                ['label' => 'Closing Balance', 'last' => 'end'],
+                ['label' => 'Saldo Awal', 'value' => $opening],
+                ['label' => 'Total Masuk', 'sum' => 'in', 'signed' => true, 'plus' => true],
+                ['label' => 'Total Keluar', 'sum' => 'out'],
+                ['label' => 'Penyesuaian', 'sum' => 'adj', 'signed' => true],
+                ['label' => 'Saldo Akhir', 'last' => 'end'],
             ]"
             :columns="array_values(array_filter([
                 ['key' => 'date', 'label' => 'Date & Time'],
                 ['key' => 'doc', 'label' => 'Document No.', 'sub' => 'src'],
-                ['key' => 'type', 'label' => 'Type', 'type' => 'badge', 'tones' => ['OPN' => 'success', 'IN' => 'info', 'OUT' => 'danger', 'ADJ' => 'warn']],
+                ['key' => 'type', 'label' => 'Type', 'type' => 'badge', 'tones' => ['AWAL' => 'success', 'MASUK' => 'info', 'KELUAR' => 'danger', 'PENY' => 'warn']],
                 ['key' => 'ref', 'label' => 'Reference / Note'],
                 ['key' => 'user', 'label' => 'User'],
                 ['key' => 'open', 'label' => 'Opening', 'type' => 'number'],

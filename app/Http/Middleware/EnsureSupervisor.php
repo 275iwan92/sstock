@@ -15,7 +15,7 @@ class EnsureSupervisor
 {
     public function handle(Request $request, Closure $next): Response
     {
-        abort_unless($request->user()?->isSupervisor(), 403, 'Supervisor access only.');
+        abort_unless($request->user()?->isSupervisor(), 403, 'Hanya untuk Supervisor.');
 
         return $next($request);
     }

@@ -43,7 +43,7 @@ class SupplierController extends Controller
     {
         $supplier = Supplier::create($request->validated());
 
-        return redirect()->route('suppliers.show', $supplier)->with('status', 'Supplier saved.');
+        return redirect()->route('suppliers.show', $supplier)->with('status', 'Supplier disimpan.');
     }
 
     public function update(SupplierRequest $request, Supplier $supplier): RedirectResponse
@@ -52,12 +52,12 @@ class SupplierController extends Controller
         if (in_array($action, ['activate', 'deactivate'], true)) {
             $supplier->update(['is_active' => $action === 'activate']);
 
-            return redirect()->route('suppliers.show', $supplier)->with('status', $action === 'activate' ? 'Supplier activated.' : 'Supplier deactivated.');
+            return redirect()->route('suppliers.show', $supplier)->with('status', $action === 'activate' ? 'Supplier diaktifkan.' : 'Supplier dinonaktifkan.');
         }
 
         $supplier->update($request->validated());
 
-        return redirect()->route('suppliers.show', $supplier)->with('status', 'Supplier saved.');
+        return redirect()->route('suppliers.show', $supplier)->with('status', 'Supplier disimpan.');
     }
 
     public function toggle(Supplier $supplier): JsonResponse

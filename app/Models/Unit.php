@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Unit extends Model
 {
     // Jenis satuan; menentukan warna kotak di grid (App\Support\Palette).
-    public const KINDS = ['count' => 'Count (pcs, box, set ...)', 'weight' => 'Weight (kg, gram ...)', 'length' => 'Length (meter ...)', 'volume' => 'Volume (liter ...)', 'area' => 'Area (m2 ...)', 'other' => 'Other'];
+    public const KINDS = ['count' => 'Hitungan (pcs, box, set ...)', 'weight' => 'Berat (kg, gram ...)', 'length' => 'Panjang (meter ...)', 'volume' => 'Volume (liter ...)', 'area' => 'Luas (m2 ...)', 'other' => 'Lainnya'];
 
     protected function casts(): array
     {

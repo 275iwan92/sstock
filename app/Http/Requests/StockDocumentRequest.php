@@ -69,12 +69,12 @@ class StockDocumentRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'lines.required' => 'Add at least one item line.',
-            'lines.min' => 'Add at least one item line.',
-            'lines.*.item_id.required' => 'Choose an item on every line.',
-            'lines.*.item_id.distinct' => 'The same item appears on more than one line.',
-            'lines.*.item_id.exists' => 'A chosen item does not exist or is inactive.',
-            'lines.*.qty.gt' => 'Quantity must be greater than 0.',
+            'lines.required' => 'Tambahkan minimal satu baris barang.',
+            'lines.min' => 'Tambahkan minimal satu baris barang.',
+            'lines.*.item_id.required' => 'Pilih barang di setiap baris.',
+            'lines.*.item_id.distinct' => 'Barang yang sama muncul di lebih dari satu baris.',
+            'lines.*.item_id.exists' => 'Barang yang dipilih tidak ada atau nonaktif.',
+            'lines.*.qty.gt' => 'Jumlah harus lebih dari 0.',
         ];
     }
 }

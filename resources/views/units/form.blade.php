@@ -15,7 +15,7 @@
         $code = $unit->code ?: 'unit';
     @endphp
     @include('partials.flash')
-    <x-dl::form :title="$isNew ? 'Unit · New' : 'Unit · '.raw($unit->code)" :subtitle="$isNew ? null : raw($unit->name)" panel="top" kind="master"
+    <x-dl::form :title="$isNew ? 'Satuan · Baru' : 'Satuan · '.raw($unit->code)" :subtitle="$isNew ? null : raw($unit->name)" panel="top" kind="master"
         :status="$isNew ? 'new' : ($unit->is_active ? 'active' : 'inactive')" :back="route('units.index')" :new-url="route('units.create')"
         :action="$isNew ? route('units.store') : route('units.update', $unit)" :hidden="$isNew ? [] : ['_method' => 'PUT']"
         :created-at="$unit->created_at?->format('Y-m-d H:i:s')" :updated-at="$unit->updated_at?->format('Y-m-d H:i:s')">
@@ -30,12 +30,12 @@
             </x-dl::form.row>
         @endunless
         <x-slot:detail>
-            <x-dl::lines name="conversions" :title="'Conversions · 1 '.$code.' ='" add-label="+ Add Conversion" :rows="$conversions" :min-rows="0"
+            <x-dl::lines name="conversions" :title="'Konversi · 1 '.$code.' ='" add-label="+ Add Conversion" :rows="$conversions" :min-rows="0"
                 :columns="[
                     ['key' => 'factor', 'label' => 'Factor', 'type' => 'number', 'required' => true, 'width' => '160px'],
                     ['key' => 'to_unit', 'label' => 'Unit', 'type' => 'select', 'options' => $targets, 'required' => true, 'width' => '280px'],
                 ]" />
-            <p class="dl-note">Same for every item that uses the unit. The reverse direction is calculated (1 / factor), so enter each pair once.</p>
+            <p class="dl-note">Berlaku sama untuk semua barang yang memakai satuan ini. Arah sebaliknya dihitung otomatis (1 / faktor), jadi isi tiap pasangan satu kali saja.</p>
         </x-slot:detail>
     </x-dl::form>
 @endsection

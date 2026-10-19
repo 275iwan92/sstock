@@ -35,7 +35,7 @@ class SampleTransactionSeeder extends Seeder
         // Saldo awal: seluruh item pada awal periode (bulan lalu), nilai = harga acuan.
         Carbon::setTestNow($monthStart->copy()->setTime(8, 0));
         $opening = array_map(fn ($r) => ['item_id' => $item($r[0]), 'qty' => $r[9], 'unit_cost' => $r[5]], ItemSeeder::ITEMS);
-        $docs->create(StockDocumentType::Opening, ['doc_at' => $monthStart->toDateString(), 'note' => 'Opening balance of the period'], $opening, $sup);
+        $docs->create(StockDocumentType::Opening, ['doc_at' => $monthStart->toDateString(), 'note' => 'Saldo awal periode'], $opening, $sup);
 
         // Penerimaan.
         Carbon::setTestNow($monthStart->copy()->addDays(6)->setTime(9, 30));
@@ -51,28 +51,28 @@ class SampleTransactionSeeder extends Seeder
 
         // Pengeluaran; SPR-0002, SPR-0005 dan TLS-0002 berakhir di/bawah Reorder Point.
         Carbon::setTestNow($monthStart->copy()->addDays(15)->setTime(10, 5));
-        $docs->create(StockDocumentType::Issuance, ['recipient' => 'Budi (Teknisi)', 'department' => 'Maintenance', 'reason' => 'Overhaul press machine 2'], [
+        $docs->create(StockDocumentType::Issuance, ['recipient' => 'Budi (Teknisi)', 'department' => 'Maintenance', 'reason' => 'Overhaul mesin press 2'], [
             ['item_id' => $item('SPR-0002'), 'qty' => 850],
             ['item_id' => $item('SPR-0005'), 'qty' => 1500],
             ['item_id' => $item('SPR-0008'), 'qty' => 4],
             ['item_id' => $item('TLS-0002'), 'qty' => 3],
         ], $entry);
         Carbon::setTestNow($monthStart->copy()->addDays(20)->setTime(8, 45));
-        $docs->create(StockDocumentType::Issuance, ['recipient' => 'Sari', 'department' => 'Admin', 'reason' => 'Office stationery'], [
+        $docs->create(StockDocumentType::Issuance, ['recipient' => 'Sari', 'department' => 'Admin', 'reason' => 'Alat tulis kantor'], [
             ['item_id' => $item('ATK-0001'), 'qty' => 18],
             ['item_id' => $item('ATK-0002'), 'qty' => 6],
         ], $entry);
 
         // Opname: satu disetujui (susut baut), satu masih menunggu persetujuan.
         Carbon::setTestNow(now()->subDays(5)->setTime(16, 0));
-        [$approved] = $docs->create(StockDocumentType::Adjustment, ['reason' => 'Monthly stock opname - fasteners'], [
+        [$approved] = $docs->create(StockDocumentType::Adjustment, ['reason' => 'Opname stok bulanan - baut dan mur'], [
             ['item_id' => $item('SPR-0001'), 'counted_qty' => 4960],
         ], $sup);
         $docs->submit($approved);
         $docs->approve($approved, $sup);
 
         Carbon::setTestNow(now()->subDays(1)->setTime(15, 30));
-        [$pending] = $docs->create(StockDocumentType::Adjustment, ['reason' => 'Opname - ATK shelf A1'], [
+        [$pending] = $docs->create(StockDocumentType::Adjustment, ['reason' => 'Opname - rak ATK A1'], [
             ['item_id' => $item('ATK-0002'), 'counted_qty' => 18],
             ['item_id' => $item('ATK-0003'), 'counted_qty' => 11],
         ], $sup);

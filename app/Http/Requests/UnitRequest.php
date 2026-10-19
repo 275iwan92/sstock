@@ -38,12 +38,12 @@ class UnitRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'code.regex' => 'Use lowercase letters, digits, and . _ / - only (for example pcs, box, m2).',
-            'conversions.*.to_unit.required' => 'Choose the unit to convert to on every conversion line.',
-            'conversions.*.to_unit.distinct' => 'The same target unit appears on more than one conversion line.',
-            'conversions.*.to_unit.not_in' => 'A unit cannot be converted to itself.',
-            'conversions.*.factor.required' => 'Enter a factor on every conversion line.',
-            'conversions.*.factor.gt' => 'The factor must be greater than 0.',
+            'code.regex' => 'Gunakan huruf kecil, angka, dan . _ / - saja (misalnya pcs, box, m2).',
+            'conversions.*.to_unit.required' => 'Pilih satuan tujuan di setiap baris konversi.',
+            'conversions.*.to_unit.distinct' => 'Satuan tujuan yang sama muncul di lebih dari satu baris konversi.',
+            'conversions.*.to_unit.not_in' => 'Satuan tidak bisa dikonversi ke dirinya sendiri.',
+            'conversions.*.factor.required' => 'Isi faktor di setiap baris konversi.',
+            'conversions.*.factor.gt' => 'Faktor harus lebih dari 0.',
         ];
     }
 

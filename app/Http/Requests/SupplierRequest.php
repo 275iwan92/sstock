@@ -32,13 +32,13 @@ class SupplierRequest extends FormRequest
             'contact_name' => ['nullable', 'string', 'max:100'],
             'contact_mobile' => ['nullable', 'string', 'max:40'],
             'address' => ['nullable', 'string', 'max:255'],
-            'area' => ['required', 'string', fn ($attr, $value, $fail) => GeoArea::find($value) ? null : $fail('Choose a region from the list (at least down to the city).')],
+            'area' => ['required', 'string', fn ($attr, $value, $fail) => GeoArea::find($value) ? null : $fail('Pilih wilayah dari daftar (minimal sampai kota).')],
         ];
     }
 
     public function messages(): array
     {
-        return ['area.required' => 'Region is required: search and choose at least the city.'];
+        return ['area.required' => 'Wilayah wajib diisi: cari dan pilih minimal sampai kota.'];
     }
 
     public function validated($key = null, $default = null)
