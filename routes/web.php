@@ -13,6 +13,7 @@ use App\Http\Controllers\GroupController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\ModuleController;
+use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\RecipientController;
 use App\Http\Controllers\ReorderOrderController;
 use App\Http\Controllers\ReportController;
@@ -25,6 +26,12 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthController::class, 'show'])->name('login');
     Route::post('login', [AuthController::class, 'login'])->name('login.attempt');
+
+    // Lupa password: tautan reset lewat e-mail (maks 5 permintaan / menit / IP).
+    Route::get('forgot-password', [PasswordResetController::class, 'request'])->name('password.request');
+    Route::post('forgot-password', [PasswordResetController::class, 'email'])->middleware('throttle:5,1')->name('password.email');
+    Route::get('reset-password/{token}', [PasswordResetController::class, 'reset'])->name('password.reset');
+    Route::post('reset-password', [PasswordResetController::class, 'update'])->middleware('throttle:5,1')->name('password.update');
 });
 
 Route::middleware(['auth', 'module'])->group(function () {

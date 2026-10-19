@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\Wallpapers;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,6 +19,8 @@ class AuthController extends Controller
 {
     public function show()
     {
+        defer(fn () => Wallpapers::sync());   // sesudah respons terkirim: login tidak menunggu konversi
+
         return view('login', ['error' => session('error'), 'username' => old('login', '')]);
     }
 
