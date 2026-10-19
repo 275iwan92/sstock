@@ -15,6 +15,9 @@ return [
 
     // Aplikasi satu bahasa: istilah tombol / status DevLib yang biasanya dipaksa English ikut kamus aplikasi (App\Support\Indonesian).
     'translate_fixed' => true,
+
+    // Tombol Kembali selalu ke alamat grid-nya, bukan ke layar sebelumnya (setelah Simpan, "sebelumnya" = form isian: berisiko input ganda).
+    'back_history' => false,
     'timezone' => env('APP_TIMEZONE', 'Asia/Jakarta'),
     'timezone_label' => 'WIB',
 

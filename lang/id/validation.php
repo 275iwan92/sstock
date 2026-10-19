@@ -39,7 +39,7 @@ return [
         'code' => 'kode', 'name' => 'nama', 'category_id' => 'kategori', 'unit' => 'satuan', 'location' => 'lokasi',
         'unit_price' => 'harga satuan', 'reorder_point' => 'titik pesan ulang', 'reorder_qty' => 'jumlah pesan ulang', 'lead_time_days' => 'lead time',
         'phone' => 'telepon kantor', 'contact_name' => 'nama kontak', 'contact_mobile' => 'HP kontak', 'address' => 'alamat jalan', 'area' => 'wilayah',
-        'supplier_id' => 'supplier', 'ref_no' => 'no. referensi', 'recipient' => 'penerima', 'department' => 'departemen', 'reason' => 'alasan', 'note' => 'catatan',
+        'supplier_id' => 'supplier', 'recipient_id' => 'penerima', 'department_id' => 'departemen', 'group_id' => 'grup', 'role' => 'peran', 'username' => 'username', 'email' => 'e-mail', 'ref_no' => 'no. referensi', 'recipient' => 'penerima', 'department' => 'departemen', 'reason' => 'alasan', 'note' => 'catatan',
         'doc_at' => 'tanggal', 'kind' => 'jenis', 'conversions' => 'konversi', 'lines' => 'baris barang',
         'lines.*.item_id' => 'barang', 'lines.*.qty' => 'jumlah', 'lines.*.unit' => 'satuan', 'lines.*.unit_cost' => 'harga', 'lines.*.counted_qty' => 'jumlah hitung', 'lines.*.note' => 'catatan baris',
         'conversions.*.to_unit' => 'satuan tujuan', 'conversions.*.factor' => 'faktor',
