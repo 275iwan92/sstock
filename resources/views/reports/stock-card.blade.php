@@ -1,0 +1,47 @@
+{{-- REMARK
+ Tujuan       : Kartu Stok per item: histori pergerakan (saldo awal, masuk, keluar, penyesuaian, saldo berjalan) dalam rentang tanggal, lengkap tanggal, jam, dokumen, user.
+ Sumber hulu  : ReportController@stockCard (stock_movements). Kolom biaya & nilai saldo hanya untuk Supervisor.
+ Input        : sup, from, to, item, rows, opening, items (pilihan item).
+ Output       : filter + x-dl::report (bisa dicetak).
+ Dipakai oleh : route reports.stock-card (menu Reports > Stock Card).
+ Status       : Aktif.
+--}}
+@extends('layout', ['title' => 'Stock Card'])
+@section('body')
+    <x-report-filter :from="$from" :to="$to">
+        <x-dl::field.select name="item_id" label="Item" :options="$items" :value="$item?->id" required />
+    </x-report-filter>
+    @if (! $item)
+        <x-dl::empty-state title="Choose an item" message="Select an item and a period, then press Apply to see its stock card." icon="file" />
+    @else
+        <x-dl::report title="Stock Card" subtitle="Stock movement history per item" :company="config('devlib.company')" :printed-by="raw(auth()->user()->name)" paper="a4l"
+            :criteria="array_filter([
+                'Item Code' => raw($item->code), 'Item Name' => raw($item->name), 'Unit' => raw($item->unit), 'Location' => raw($item->location ?? '—'),
+                'Period' => raw(Devlib\Locale::d($from).' — '.Devlib\Locale::d($to)),
+                'Valuation' => $sup ? 'Moving average' : null,
+            ])"
+            :opening="$opening" group-by="month" :groups="['month' => 'Per Month']"
+            :summary="[
+                ['label' => 'Opening Balance', 'value' => $opening],
+                ['label' => 'Total In', 'sum' => 'in', 'signed' => true, 'plus' => true],
+                ['label' => 'Total Out', 'sum' => 'out'],
+                ['label' => 'Adjustment', 'sum' => 'adj', 'signed' => true],
+                ['label' => 'Closing Balance', 'last' => 'end'],
+            ]"
+            :columns="array_values(array_filter([
+                ['key' => 'date', 'label' => 'Date & Time'],
+                ['key' => 'doc', 'label' => 'Document No.', 'sub' => 'src'],
+                ['key' => 'type', 'label' => 'Type', 'type' => 'badge', 'tones' => ['OPN' => 'success', 'IN' => 'info', 'OUT' => 'danger', 'ADJ' => 'warn']],
+                ['key' => 'ref', 'label' => 'Reference / Note'],
+                ['key' => 'user', 'label' => 'User'],
+                ['key' => 'open', 'label' => 'Opening', 'type' => 'number'],
+                ['key' => 'in', 'label' => 'In', 'type' => 'number', 'sum' => true, 'signed' => true],
+                ['key' => 'out', 'label' => 'Out', 'type' => 'number', 'sum' => true],
+                ['key' => 'adj', 'label' => 'Adjustment', 'type' => 'number', 'sum' => true, 'signed' => true],
+                ['key' => 'end', 'label' => 'Balance', 'type' => 'number', 'running' => 'in - out + adj', 'prev' => 'open', 'bold' => true],
+                $sup ? ['key' => 'cost', 'label' => 'Unit Cost', 'type' => 'money'] : null,
+                $sup ? ['key' => 'bal_value', 'label' => 'Balance Value', 'type' => 'money'] : null,
+            ]))"
+            :rows="$rows" :signatures="[['Prepared by', 'Warehouse'], ['Checked by', 'Supervisor']]" source="stock_movements" />
+    @endif
+@endsection

@@ -1,0 +1,32 @@
+{{-- REMARK
+ Tujuan       : Laporan Stock Opname & Penyesuaian: stok sistem vs fisik, selisih, alasan, tanggal, jam, status persetujuan dan dampak nilai.
+ Sumber hulu  : ReportController@adjustment (stock_document_lines tipe ADJ). Hanya Supervisor.
+ Input        : sup, from, to, rows.
+ Output       : filter (periode + status) + x-dl::report.
+ Dipakai oleh : route reports.adjustment (menu Reports > Opname & Adjustment Report).
+ Status       : Aktif.
+--}}
+@extends('layout', ['title' => 'Opname & Adjustment Report'])
+@section('body')
+    <x-report-filter :from="$from" :to="$to">
+        <x-dl::field.select name="status" label="Status" :options="['' => 'All', 'draft' => 'Draft', 'approval' => 'Waiting Approval', 'approved' => 'Approved', 'rejected' => 'Rejected']" :value="request('status')" />
+    </x-report-filter>
+    <x-dl::report title="Opname & Adjustment Report" subtitle="Physical count vs system stock" :company="config('devlib.company')" :printed-by="raw(auth()->user()->name)" paper="a4l"
+        :criteria="['Period' => raw(Devlib\Locale::d($from).' — '.Devlib\Locale::d($to)), 'Status' => raw(request('status') ? ucfirst(request('status')) : 'All')]"
+        group-by="status" :groups="['status' => 'Per Status', 'doc' => 'Per Document']"
+        :summary="[['label' => 'Lines counted', 'value' => count($rows)], ['label' => 'Net value effect', 'sum' => 'effect', 'signed' => true]]"
+        :columns="[
+            ['key' => 'date', 'label' => 'Date & Time'],
+            ['key' => 'doc', 'label' => 'Document No.', 'sub' => 'reason'],
+            ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['Approved' => 'success', 'Approval' => 'warn', 'Draft' => 'neutral', 'Rejected' => 'danger']],
+            ['key' => 'item', 'label' => 'Item', 'sub' => 'code'],
+            ['key' => 'unit', 'label' => 'Unit'],
+            ['key' => 'system', 'label' => 'System Qty', 'type' => 'number'],
+            ['key' => 'counted', 'label' => 'Counted Qty', 'type' => 'number'],
+            ['key' => 'qty', 'label' => 'Difference', 'type' => 'number', 'signed' => true],
+            ['key' => 'effect', 'label' => 'Value Effect', 'type' => 'money', 'sum' => true, 'signed' => true],
+            ['key' => 'user', 'label' => 'Counted by'],
+            ['key' => 'approver', 'label' => 'Approved / Rejected by'],
+        ]"
+        :rows="$rows" :signatures="[['Counted by', 'Warehouse'], ['Approved by', 'Supervisor']]" source="stock_document_lines (ADJ)" />
+@endsection
