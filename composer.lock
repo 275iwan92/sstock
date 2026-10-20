@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "90c699f90c671d0b68aa9ac1fd400080",
+    "content-hash": "4bad22fc27419c96a507d0aac61a6bdd",
     "packages": [
         {
             "name": "brick/math",
@@ -1058,6 +1058,46 @@
                 }
             ],
             "time": "2026-08-24T17:13:02+00:00"
+        },
+        {
+            "name": "jo/devlib",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "../devlib",
+                "reference": "b25d00ad18cdcf22f2a8328e715f30fb5d5d1d45"
+            },
+            "require": {
+                "illuminate/support": "^13.0",
+                "illuminate/view": "^13.0",
+                "php": "^8.3"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Devlib\\DevlibServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Devlib\\": "src/"
+                }
+            },
+            "license": [
+                "proprietary"
+            ],
+            "authors": [
+                {
+                    "name": "Jo"
+                }
+            ],
+            "description": "DevLib — library induk komponen UI/UX (x-dl::*) dan acuan engine untuk proyek Laravel; dibuat oleh Jo, dipakai semua proyek",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "laravel/framework",
@@ -5915,41 +5955,6 @@
             "time": "2026-10-13T05:48:51+00:00"
         },
         {
-            "name": "telasih/devlib",
-            "version": "dev-main",
-            "dist": {
-                "type": "path",
-                "url": "../devlib",
-                "reference": "fe84d142a77d373a3d066eb401fb3e65ef16a28a"
-            },
-            "require": {
-                "illuminate/support": "^13.0",
-                "illuminate/view": "^13.0",
-                "php": "^8.3"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "Devlib\\DevlibServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Devlib\\": "src/"
-                }
-            },
-            "license": [
-                "proprietary"
-            ],
-            "description": "DevLib — library induk komponen UI/UX ERP Telasih Makmur (repo sendiri, dipakai tmerp, situs devlib.test, dan proyek lain)",
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
-        },
-        {
             "name": "tijsverkoyen/css-to-inline-styles",
             "version": "v2.4.0",
             "source": {
@@ -8492,7 +8497,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "telasih/devlib": 20
+        "jo/devlib": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,
