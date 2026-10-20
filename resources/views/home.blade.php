@@ -8,7 +8,8 @@
 --}}
 @extends('layout', ['title' => 'Home', 'bodyClass' => 'sstock-bare'])
 @section('body')
-    <x-dl::layer-shell :classic="false" :without="['chat', 'ai', 'theme']" :modules="$modules" :user="$user" :logout-action="route('logout')" :open="$open" :fresh="$fresh" menu-source="App\Support\Menu">
+    {{-- Help & support membuka Technical Guide (HTML, English) dan hanya ada untuk Administrator. --}}
+    <x-dl::layer-shell :classic="false" :without="$admin ? ['chat', 'ai', 'theme'] : ['chat', 'ai', 'theme', 'help']" :help-url="$admin ? route('help.technical-guide') : null" :modules="$modules" :user="$user" :logout-action="route('logout')" :open="$open" :fresh="$fresh" menu-source="App\Support\Menu">
         <x-slot:dashboard>
             @include('partials.flash')
             <x-dl::quote :quotes="\Devlib\Components\Frame::textLines('motivasi-harian.txt')" order="day" />

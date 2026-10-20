@@ -26,6 +26,7 @@ class HomeController extends Controller
         return view('home', [
             'modules' => Menu::modules($user),
             'user' => ['name' => $user->name, 'email' => $user->email, 'role' => $user->roleLabel()],
+            'admin' => $user->isAdministrator(),
             'open' => $request->query('open'),
             'fresh' => (bool) session('fresh'),
             'below' => $below,

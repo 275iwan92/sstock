@@ -58,6 +58,7 @@ Route::middleware(['auth', 'module'])->group(function () {
         Route::get('groups/{group}', [GroupController::class, 'show'])->name('groups.show');
         Route::put('groups/{group}', [GroupController::class, 'update'])->name('groups.update');
         Route::get('modules', [ModuleController::class, 'index'])->name('modules.index');
+        Route::view('help/technical-guide', 'help.technical-guide')->name('help.technical-guide');
     });
 
     // Master Item: semua boleh melihat; ubah hanya Supervisor.

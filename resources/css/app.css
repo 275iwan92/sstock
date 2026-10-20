@@ -68,3 +68,51 @@ body.dl-body:not(.sstock-bare) { padding: 0 16px 16px; }
 @media (max-width: 1100px) { .sstock-split { grid-template-columns: 1fr; } .sstock-box .dl-chart svg { max-height: 240px; } }
 .sstock-dd-new { font-weight: 600; color: var(--dl-accent, #2563eb); border-bottom: 1px solid var(--dl-border); }
 .sstock-quickadd__err { color: var(--dl-danger, #c0392b); font-size: .85rem; margin: 6px 0 0; }
+
+/* REMARK
+ * Tujuan       : Tampilan halaman Technical Guide (Help): daftar isi di kiri, isi di kanan, kotak alur, tabel, lencana status. Khusus SStock.
+ * Sumber hulu  : token warna DevLib (--dl-surface, --dl-border, --dl-accent, --dl-accent-soft, --dl-danger, --dl-success).
+ * Dipakai oleh : resources/views/help/technical-guide.blade.php.
+ */
+.sstock-guide { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 24px; max-width: 1180px; margin: 0 auto; padding: 20px; line-height: 1.6; }
+.sstock-guide .g-toc { position: sticky; top: 16px; align-self: start; display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+.sstock-guide .g-toc a { color: inherit; opacity: .75; text-decoration: none; }
+.sstock-guide .g-toc a:hover { opacity: 1; color: var(--dl-accent); }
+.sstock-guide h1 { font-size: 26px; font-weight: 700; margin: 0 0 4px; }
+.sstock-guide h2 { font-size: 19px; font-weight: 700; margin: 34px 0 10px; padding-top: 10px; border-top: 1px solid var(--dl-border); scroll-margin-top: 12px; }
+.sstock-guide h3 { font-size: 15px; font-weight: 700; margin: 20px 0 8px; }
+.sstock-guide p, .sstock-guide li { font-size: 14px; }
+.sstock-guide .g-lead { opacity: .8; margin-bottom: 8px; }
+.sstock-guide .g-note { font-size: 13px; opacity: .8; margin-top: 10px; }
+.sstock-guide code { font-size: 12.5px; background: var(--dl-accent-soft); padding: 1px 5px; border-radius: 4px; }
+.sstock-guide .g-code { background: var(--dl-surface); border: 1px solid var(--dl-border); border-radius: 8px; padding: 12px 14px; font-size: 12.5px; overflow-x: auto; }
+.sstock-guide .g-list, .sstock-guide .g-steps { padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+.sstock-guide .g-list { list-style: disc; }
+.sstock-guide .g-steps { list-style: decimal; }
+.sstock-guide .g-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 8px 0; }
+.sstock-guide .g-table th, .sstock-guide .g-table td { text-align: left; vertical-align: top; padding: 7px 10px; border: 1px solid var(--dl-border); }
+.sstock-guide .g-table th { background: var(--dl-surface); font-weight: 700; }
+.sstock-guide .g-st { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.sstock-guide .g-green { background: color-mix(in srgb, var(--dl-success) 18%, transparent); color: var(--dl-success); }
+.sstock-guide .g-red { background: color-mix(in srgb, var(--dl-danger) 16%, transparent); color: var(--dl-danger); }
+.sstock-guide .g-yellow { background: color-mix(in srgb, #f59e0b 22%, transparent); color: #b45309; }
+.sstock-guide .g-grey { background: var(--dl-surface); border: 1px solid var(--dl-border); }
+.sstock-guide .g-flow { display: flex; flex-direction: column; align-items: stretch; gap: 0; background: var(--dl-surface); border: 1px solid var(--dl-border); border-radius: 12px; padding: 16px; }
+.sstock-guide .g-row { display: grid; gap: 10px; }
+.sstock-guide .g-row-2 { grid-template-columns: repeat(2, 1fr); }
+.sstock-guide .g-row-3 { grid-template-columns: repeat(3, 1fr); }
+.sstock-guide .g-row-5 { grid-template-columns: repeat(5, 1fr); }
+.sstock-guide .g-group { border: 1px dashed var(--dl-border); border-radius: 12px; padding: 10px; }
+.sstock-guide .g-cap { font-size: 12px; opacity: .7; margin-bottom: 8px; }
+.sstock-guide .g-arrow { text-align: center; font-size: 18px; opacity: .6; line-height: 1.6; }
+.sstock-guide .g-box { border: 1px solid var(--dl-border); border-radius: 8px; padding: 9px 12px; text-align: center; display: flex; flex-direction: column; gap: 2px; }
+.sstock-guide .g-box b { font-size: 14px; }
+.sstock-guide .g-box small { font-size: 12px; opacity: .8; }
+.sstock-guide .g-gray { background: color-mix(in srgb, var(--dl-border) 35%, transparent); }
+.sstock-guide .g-teal { background: color-mix(in srgb, #14b8a6 16%, transparent); border-color: #14b8a6; }
+.sstock-guide .g-purple { background: var(--dl-accent-soft); border-color: var(--dl-accent); }
+@media (max-width: 860px) {
+    .sstock-guide { grid-template-columns: 1fr; }
+    .sstock-guide .g-toc { position: static; }
+    .sstock-guide .g-row-3, .sstock-guide .g-row-5 { grid-template-columns: 1fr 1fr; }
+}
