@@ -265,7 +265,7 @@
             <li>Untuk konversi, tekan <b>+ Tambah Konversi</b>, pilih satuan tujuan dan isi <b>Faktor</b> (mis. 1 box = 12 pcs: faktor 12). Arah sebaliknya dihitung otomatis; isi tiap pasangan satu kali saja.</li>
             <li>Tekan <b>Simpan</b>.</li>
         </ol>
-        <p class="g-note">Konversi dipakai di Penerimaan Barang: Anda boleh menerima dalam satuan lain (mis. box) dan sistem mengubahnya ke satuan stok barang. Tanpa aturan konversi, satuan itu ditolak.</p>
+        <p class="g-note">Konversi dipakai di Penerimaan dan Pengeluaran Barang: Anda boleh memakai satuan lain (mis. box) dan sistem mengubahnya ke satuan stok barang. Bila konversinya belum ada, muncul jendela <b>Konversi satuan belum ada</b> di form itu (lihat bagian Penerimaan Barang), sehingga tidak perlu membuka master Satuan lebih dulu.</p>
         @endif
 
         @if ($can('CAT'))
@@ -309,7 +309,7 @@
         <ol class="g-steps">
             <li>Buka <b>Penerimaan Barang</b>, tekan <b>+ Data Baru</b>.</li>
             <li>Pilih <b>Supplier</b> (wajib). Isi <b>No. Referensi (surat jalan / PO / faktur)</b> bila ada. <b>Penerima</b> dan <b>Departemen</b> opsional.</li>
-            <li>Tekan <b>+ Tambah Barang</b>, pilih barang, lalu isi <b>Tanggal Kedaluwarsa</b> (wajib untuk barang berkedaluwarsa; barang lain mengabaikannya), <b>Jml</b>, <b>Satuan</b>, dan <b>Harga Beli / Satuan</b>. Satu kedatangan biasanya satu tanggal, jadi cukup satu baris. Kolom <b>Subtotal</b> dan <b>= Dalam satuan stok</b> terisi otomatis. Satuan boleh berbeda dari satuan barang bila ada konversinya di master Satuan.</li>
+            <li>Tekan <b>+ Tambah Barang</b>, pilih barang, lalu isi <b>Tanggal Kedaluwarsa</b> (wajib untuk barang berkedaluwarsa; barang lain mengabaikannya), <b>Jml</b>, <b>Satuan</b>, dan <b>Harga Beli / Satuan</b>. Satu kedatangan biasanya satu tanggal, jadi cukup satu baris. Kolom <b>Subtotal</b> dan <b>= Dalam satuan stok</b> terisi otomatis. Satuan boleh berbeda dari satuan stok barang. Bila konversinya belum ada, saat <b>Simpan</b> / <b>Konfirmasi</b> muncul jendela <b>Konversi satuan belum ada</b>: isi angka pada "1 pak = ... pcs" untuk tiap pasangan, tekan <b>Simpan Konversi</b>, lalu tekan Simpan / Konfirmasi lagi. Konversi tersimpan di master Satuan dan berlaku untuk semua barang; stok tetap dicatat dalam satuan stok.</li>
             <li>Isi <b>Catatan</b> bila perlu, tekan <b>Simpan</b> (menjadi Draf), periksa, lalu <b>Konfirmasi</b>.</li>
         </ol>
         <ul class="g-list">
@@ -324,7 +324,7 @@
         <ol class="g-steps">
             <li>Buka <b>Pengeluaran Barang</b>, tekan <b>+ Data Baru</b>.</li>
             <li>Pilih <b>Penerima</b> (wajib), <b>Departemen</b> (opsional; kosong = departemen bawaan penerima), dan isi <b>Keperluan (maintenance / ATK ...)</b>.</li>
-            <li>Tekan <b>+ Tambah Barang</b>, pilih barang. Barang berkedaluwarsa muncul per batch, dengan yang <b>kedaluwarsanya paling cepat di atas</b> (FEFO); kolom <b>Tersedia</b> menunjukkan stok batch itu. Isi <b>Jml</b>; bila melebihi stok batch yang dipilih, sisanya otomatis diambil dari batch berikutnya (kedaluwarsa paling cepat dulu). Batch yang sudah kedaluwarsa tidak ditawarkan.</li>
+            <li>Tekan <b>+ Tambah Barang</b>, pilih barang. Barang berkedaluwarsa muncul per batch, dengan yang <b>kedaluwarsanya paling cepat di atas</b> (FEFO); kolom <b>Tersedia</b> menunjukkan stok batch itu. Isi <b>Jml</b> dan <b>Satuan</b> (bawaan = satuan stok; satuan lain dikonversi otomatis, kolom <b>= Dalam satuan stok</b> menunjukkan hasilnya, dan jendela <b>Konversi satuan belum ada</b> muncul bila konversinya belum ada). Bila melebihi stok batch yang dipilih, sisanya otomatis diambil dari batch berikutnya (kedaluwarsa paling cepat dulu). Batch yang sudah kedaluwarsa tidak ditawarkan.</li>
             <li>Bila Anda memilih batch yang kedaluwarsanya lebih jauh padahal ada batch lebih cepat yang masih punya stok, form menampilkan <b>peringatan kuning</b> (hanya peringatan, tidak memblokir).</li>
             <li><b>Simpan</b>, periksa, lalu <b>Konfirmasi</b>. Stok berkurang pada nilai biaya rata-rata.</li>
         </ol>

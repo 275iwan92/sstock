@@ -306,8 +306,38 @@ final class StockDocuments
         return $parts;
     }
 
+    /**
+     * Penerimaan dan Pengeluaran boleh memakai satuan selain satuan stok barang; konversinya harus ada. Semua pasangan yang belum ada dikumpulkan
+     * (bukan satu per satu) dan dikirim ke form lewat flash `missing_conversions` supaya layar menampilkan jendela isi konversi.
+     */
+    private function assertConversions(StockDocumentType $type, array $lines): void
+    {
+        if (! in_array($type, [StockDocumentType::Receiving, StockDocumentType::Issuance], true)) {
+            return;
+        }
+        $missing = [];
+        foreach ($lines as $row) {
+            $from = $row['unit'] ?? null;
+            $stock = ! empty($row['item_id']) ? Item::query()->find($row['item_id']) : (! empty($row['product_id']) ? Product::query()->find($row['product_id']) : null);
+            if ($from && $stock && $from !== $stock->unit && UnitConverter::factor($from, $stock->unit) === null) {
+                $missing["{$from}>{$stock->unit}"][] = $stock->code;
+            }
+        }
+        if ($missing) {
+            $pairs = [];
+            foreach ($missing as $key => $codes) {
+                [$from, $to] = explode('>', $key);
+                $pairs[] = ['from' => $from, 'to' => $to, 'items' => implode(', ', array_unique($codes))];
+            }
+            session()->flash('missing_conversions', $pairs);
+
+            throw ValidationException::withMessages(['lines' => 'Belum ada konversi satuan: '.collect($pairs)->map(fn ($p) => "{$p['from']} ke {$p['to']} ({$p['items']})")->implode('; ').'. Isi konversinya di jendela yang muncul.']);
+        }
+    }
+
     private function writeLines(StockDocument $doc, array $lines): void
     {
+        $this->assertConversions($doc->type, $lines);
         foreach ($lines as $row) {
             $item = $this->resolveItem($row);
             $isAdjustment = $doc->type === StockDocumentType::Adjustment;
@@ -315,13 +345,15 @@ final class StockDocuments
             $cost = $row['unit_cost'] ?? null;
             $entered = [];
 
-            // Penerimaan dalam satuan lain: simpan yang diketik, masukkan ke stok dalam satuan stok item.
-            if ($doc->type === StockDocumentType::Receiving && ($row['unit'] ?? $item->unit) !== $item->unit) {
+            // Penerimaan / Pengeluaran dalam satuan lain: simpan yang diketik, proses ke stok dalam satuan stok item.
+            if (in_array($doc->type, [StockDocumentType::Receiving, StockDocumentType::Issuance], true) && ($row['unit'] ?? $item->unit) !== $item->unit) {
                 [$qty, $cost, $entered] = $this->toStockUnit($item, $row);
             }
 
             $parts = $doc->type === StockDocumentType::Issuance ? $this->allocate($item, (float) $qty) : [[$item, $qty]];
             foreach ($parts as [$target, $partQty]) {
+                // Pengeluaran yang disambung ke batch lain: jumlah yang diketik dibagi sebanding dengan bagian stoknya.
+                $partEntered = $entered ? ['entered_qty' => round($partQty * $entered['entered_qty'] / $qty, 3)] + $entered : [];
                 $doc->lines()->create([
                     'item_id' => $target->id,
                     'qty' => $partQty,
@@ -329,12 +361,12 @@ final class StockDocuments
                     'system_qty' => $isAdjustment ? $target->stock_qty : null,
                     'counted_qty' => $isAdjustment ? $row['counted_qty'] : null,
                     'note' => $row['note'] ?? null,
-                ] + $entered);
+                ] + $partEntered);
             }
         }
     }
 
-    /** @return array{0: float, 1: float, 2: array<string, mixed>} qty dan biaya per satuan stok + data yang diketik */
+    /** @return array{0: float, 1: ?float, 2: array<string, mixed>} qty dan biaya per satuan stok + data yang diketik */
     private function toStockUnit(Item $item, array $row): array
     {
         $factor = UnitConverter::factor($row['unit'], $item->unit);
@@ -346,7 +378,9 @@ final class StockDocuments
             throw ValidationException::withMessages(['lines' => "Jumlah {$item->code} terlalu kecil untuk dikonversi ke {$item->unit}."]);
         }
 
-        return [$qty, round((float) $row['unit_cost'] / $factor, 4), ['entered_qty' => $row['qty'], 'entered_unit' => $row['unit'], 'entered_unit_cost' => $row['unit_cost']]];
+        $cost = $row['unit_cost'] ?? null;   // Pengeluaran tidak punya harga: biaya dari rata-rata stok
+
+        return [$qty, $cost === null ? null : round((float) $cost / $factor, 4), ['entered_qty' => $row['qty'], 'entered_unit' => $row['unit'], 'entered_unit_cost' => $cost]];
     }
 
     // PREFIX-YYMM-NNNN, urut per jenis per bulan; kolom doc_no unik menjaga dari nomor ganda.

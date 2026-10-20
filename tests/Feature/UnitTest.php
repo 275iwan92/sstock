@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\Item;
+use App\Models\Recipient;
 use App\Models\StockDocument;
 use App\Models\StockDocumentLine;
 use App\Models\Supplier;
@@ -137,6 +138,46 @@ class UnitTest extends TestCase
         $this->actingAs(User::factory()->create())->post(route('docs.store', 'receiving'), ['supplier_id' => $supplier->id, 'lines' => [['item_id' => $item->id, 'qty' => 1, 'unit' => 'kg', 'unit_cost' => 10]]])->assertSessionHasErrors('lines');
         $this->assertSame(0.0, $item->fresh()->stock_qty);
         $this->assertSame(0, StockDocumentLine::count());
+    }
+
+    public function test_missing_conversion_is_flashed_for_the_popup_and_can_be_saved_by_data_entry(): void
+    {
+        $supplier = Supplier::create(['code' => 'S1', 'name' => 'S One']);
+        $item = $this->makeItem(array_merge($this->itemPayload(), ['code' => 'C-4', 'unit' => 'pcs']));
+        $payload = ['supplier_id' => $supplier->id, 'lines' => [['item_id' => $item->id, 'qty' => 2, 'unit' => 'box', 'unit_cost' => 1200]]];
+
+        $this->actingAs(User::factory()->create())->post(route('docs.store', 'receiving'), $payload)
+            ->assertSessionHasErrors('lines')->assertSessionHas('missing_conversions', [['from' => 'box', 'to' => 'pcs', 'items' => 'C-4']]);
+
+        $this->postJson(route('docs.conversion', 'receiving'), ['from' => 'box', 'to' => 'pcs', 'factor' => 12])->assertOk();
+        $this->assertSame(12.0, UnitConverter::factor('box', 'pcs'));
+        $this->postJson(route('docs.conversion', 'receiving'), ['from' => 'box', 'to' => 'box', 'factor' => 12])->assertStatus(422);
+        $this->postJson(route('docs.conversion', 'receiving'), ['from' => 'box', 'to' => 'pcs', 'factor' => 0])->assertStatus(422);
+
+        $this->post(route('docs.store', 'receiving'), $payload)->assertSessionHasNoErrors();
+        $this->assertSame(24.0, StockDocumentLine::firstOrFail()->qty);
+    }
+
+    public function test_issuance_in_another_unit_is_converted_and_asks_for_a_missing_conversion(): void
+    {
+        $user = User::factory()->create();
+        $recipient = Recipient::create(['name' => 'Budi']);
+        $item = $this->makeItem(array_merge($this->itemPayload(), ['code' => 'C-5', 'unit' => 'pcs']));
+        $supplier = Supplier::create(['code' => 'S1', 'name' => 'S One']);
+        $this->receiveAs($user, ['supplier_id' => $supplier->id, 'lines' => [['item_id' => $item->id, 'qty' => 100, 'unit' => 'pcs', 'unit_cost' => 10]]]);
+        $payload = ['recipient_id' => $recipient->id, 'lines' => [['item_id' => $item->id, 'qty' => 2, 'unit' => 'box']]];
+
+        $this->post(route('docs.store', 'issuance'), $payload)->assertSessionHas('missing_conversions', [['from' => 'box', 'to' => 'pcs', 'items' => 'C-5']]);
+
+        UnitConversion::create(['from_unit' => 'box', 'to_unit' => 'pcs', 'factor' => 12]);
+        $this->post(route('docs.store', 'issuance'), $payload)->assertRedirect();
+        $doc = StockDocument::latest('id')->firstOrFail();
+        $this->put(route('docs.update', ['issuance', $doc]), $payload + ['_action' => 'confirm'])->assertRedirect();
+
+        $line = $doc->lines()->firstOrFail();
+        $this->assertSame([24.0, 2.0, 'box'], [$line->qty, $line->entered_qty, $line->entered_unit]);
+        $this->assertSame(76.0, $item->fresh()->stock_qty);
+        $this->get(route('docs.show', ['issuance', $doc]))->assertOk();
     }
 
     public function test_receiving_in_the_stock_unit_needs_no_conversion(): void

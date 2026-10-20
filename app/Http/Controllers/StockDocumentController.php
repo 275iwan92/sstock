@@ -11,6 +11,7 @@ use App\Models\Recipient;
 use App\Models\StockDocument;
 use App\Models\Supplier;
 use App\Models\Unit;
+use App\Models\UnitConversion;
 use App\Services\StockDocuments;
 use Devlib\Locale;
 use Illuminate\Http\RedirectResponse;
@@ -68,6 +69,20 @@ class StockDocumentController extends Controller
         $doc = $this->documents->create($t, $request->safe()->only(['supplier_id', 'ref_no', 'recipient_id', 'department_id', 'reason', 'note', 'doc_at']), array_values($request->validated('lines')), $request->user());
 
         return redirect()->route('docs.show', [$t->slug(), $doc])->with('status', "{$doc->doc_no} disimpan sebagai draf. Belum diproses ke stok sebelum Confirm.");
+    }
+
+    // Jendela "Belum ada konversi" di form Penerimaan / Pengeluaran: 1 {from} = {factor} {to}, berlaku untuk semua barang (arah sebaliknya dihitung).
+    public function conversion(Request $request, string $type)
+    {
+        abort_unless(in_array($this->type($request, $type), [StockDocumentType::Receiving, StockDocumentType::Issuance], true), 404);
+        $data = $request->validate([
+            'from' => ['required', 'different:to', 'exists:units,code'],
+            'to' => ['required', 'exists:units,code'],
+            'factor' => ['required', 'numeric', 'gt:0', 'max:999999999'],
+        ], ['factor.gt' => 'Faktor harus lebih dari 0.', 'factor.required' => 'Isi faktor konversi.']);
+        UnitConversion::updateOrCreate(['from_unit' => $data['from'], 'to_unit' => $data['to']], ['factor' => $data['factor']]);
+
+        return response()->json(['ok' => true]);
     }
 
     // Siklus: save (draf), confirm (diproses ke stok; penyesuaian: diajukan), approve / reject (penyesuaian), cancel (dengan alasan), delete (hanya draf).

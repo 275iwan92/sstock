@@ -33,9 +33,11 @@
                 ['key' => 'unit_cost', 'label' => 'Purchase Price / Unit', 'type' => 'money', 'required' => true, 'width' => '150px'],
                 ['key' => 'subtotal', 'label' => 'Subtotal', 'type' => 'money', 'formula' => 'qty * unit_cost', 'sum' => true, 'width' => '150px'],
                 ['key' => 'stock_qty', 'label' => '= In stock unit', 'type' => 'display', 'width' => '120px'], $note],
-            T::Issuance => [$item, $unit,
+            T::Issuance => [$item,
                 ['key' => 'available', 'label' => 'Available', 'type' => 'display', 'width' => '100px'],
-                ['key' => 'qty', 'label' => 'Qty', 'type' => 'number', 'required' => true, 'sum' => true, 'width' => '110px'], $note],
+                ['key' => 'qty', 'label' => 'Qty', 'type' => 'number', 'required' => true, 'width' => '110px'],
+                ['key' => 'unit', 'label' => 'Unit', 'type' => 'select', 'options' => $units, 'required' => true, 'width' => '150px'],
+                ['key' => 'stock_qty', 'label' => '= In stock unit', 'type' => 'display', 'width' => '120px'], $note],
             T::Opening => [$item, $expiry, $unit,
                 ['key' => 'qty', 'label' => 'Opening Qty', 'type' => 'number', 'required' => true, 'sum' => true, 'width' => '120px'],
                 ['key' => 'unit_cost', 'label' => 'Unit Value', 'type' => 'money', 'required' => true, 'width' => '140px'],
@@ -50,6 +52,9 @@
     @include('partials.flash')
     @if (! empty($cancelProblem))
         <x-dl::alert tone="warn" :message="raw($cancelProblem)" />
+    @endif
+    @if (! $locked && in_array($t, [T::Receiving, T::Issuance], true))
+        @include('docs.conversion-modal')
     @endif
     @if (! empty($fefo))
         <x-dl::alert tone="warn" :message="raw(implode(' ', $fefo))" />

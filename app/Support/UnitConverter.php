@@ -8,7 +8,7 @@ use App\Models\UnitConversion;
  * Tujuan       : Mengubah jumlah antar satuan memakai master konversi: langsung (1 box = 12 pcs), kebalikannya (1 / faktor), atau satuan yang sama (faktor 1). Tanpa rantai (box > pcs > gram tidak dihitung otomatis).
  * Sumber hulu  : unit_conversions.
  * Output       : factor(from, to) atau null bila tidak ada aturannya; convert(qty, from, to).
- * Dipakai oleh : StockDocuments (Penerimaan: satuan baris dikonversi ke satuan stok barang).
+ * Dipakai oleh : StockDocuments (Penerimaan dan Pengeluaran: satuan baris dikonversi ke satuan stok barang).
  * Status       : Aktif.
  */
 final class UnitConverter

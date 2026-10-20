@@ -114,6 +114,7 @@ Route::middleware(['auth', 'module'])->group(function () {
         Route::get('/', 'index')->name('docs.index');
         Route::get('create', 'create')->name('docs.create');
         Route::post('/', 'store')->name('docs.store');
+        Route::post('conversion', 'conversion')->name('docs.conversion');
         Route::get('{document}', 'show')->name('docs.show');
         Route::put('{document}', 'update')->name('docs.update');
     });
