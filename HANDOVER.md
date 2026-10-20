@@ -1,63 +1,49 @@
-# Serah terima Stoku (kode proyek: sstock, dulu "Simple Stock") — 2026-10-19
+# Serah terima Stoku (kode proyek: sstock, dulu "Simple Stock", baris kedua "STOK SEDERHANA") — 2026-10-20
 
-## Lokasi & akses
-- Folder: `C:\Users\iwanp\Herd\sstock` (sejajar `tmerp` dan `devlib`)
-- Situs: http://sstock.test (otomatis lewat Herd; folder `Herd` sudah di-park)
-- GitHub: https://github.com/275iwan92/sstock (privat, branch `main`)
+Tempel seluruh teks ini di awal sesi baru, lalu baca juga `CLAUDE.md` bila perlu. Bahasa kerja dengan pemilik: Indonesia, ringkas.
 
-## Stack
-- Laravel 13.37, PHP 8.4 (Herd), Vite + Tailwind 4
-- `telasih/devlib` lewat Composer path repository `../devlib` (symlink), terdaftar otomatis
-- Database: MySQL 8, database `sstock`, user `sstock_usr` (dibuat otomatis oleh `php artisan sstock:install`; nilai di `.env.example`)
-- `.env`: `APP_NAME=SStock`, `APP_URL=http://sstock.test`
+## 1. ATURAN KERJA (wajib dipatuhi)
+1. **Selalu commit dan push** setiap selesai perubahan, walau belum "ok" / tes gagal / belum selesai (pemilik memakainya sebagai backup). Pesan commit bahasa Indonesia, akhiri dengan baris atribusi yang diminta sistem. Jangan force-push, jangan commit rahasia (`.env`). Repo `../devlib` TIDAK punya remote: cukup commit di sana. Bila push gagal "Connection reset", ulangi.
+2. **Seluruh tampilan harus Bahasa Indonesia.** Kode layar menulis label English (kebiasaan DevLib), kamus `App\Support\Indonesian` menerjemahkannya (`Lang::translateUsing`, `config('devlib.translate_fixed')=true`). Label baru WAJIB ditambah ke kamus lalu dicek di layar. Teks yang dirangkai di PHP (pesan, status, menu) ditulis langsung Indonesia. Pesan validasi: `lang/id/validation.php` (termasuk nama atribut). Mata uang tetap kode `IDR`.
+3. **Aturan DevLib** (`C:\Users\iwanp\Herd\devlib`, paket `telasih/devlib`, komponen `x-dl::*`): DevLib membuat, aplikasi mewarisi; layar = deklarasi `x-dl::*`, tanpa HTML mentah / warna literal; nilai data dibungkus `raw()`. Ada aplikasi besar (tmerp) yang menu/perilakunya berbeda: setiap perubahan DevLib harus OPT-IN (default perilaku lama tidak berubah), lalu commit di repo devlib. Perbaiki akar masalah di DevLib, bukan akal-akalan di aplikasi.
+4. **Gaya grid:** transaksi POLOS (nomor dokumen tebal, hanya Status berwarna); master memakai kotak warna per baris (`box`, `hue` dari `App\Support\Palette`).
+5. **Setiap form dokumen harus punya Confirm (artinya diproses ke stok), Delete selama belum Confirm, dan Cancel.** Selama belum Confirm stok TIDAK berubah. Tombol **Kembali selalu ke GRID** (bukan layar sebelumnya). Form tidak boleh bisa terkirim dua kali (penjaga di `layout.blade.php`).
+6. **Cancel dokumen yang sudah Confirm:** pengguna mengajukan + wajib menulis alasan, lalu Supervisor menyetujui/menolak; Supervisor/Administrator yang menekan Cancel langsung berlaku. Sebelum menerima pengajuan sistem MENGHITUNG apakah stok masih cukup untuk menarik dokumen itu kembali; bila tidak cukup, pembatalan DITOLAK dan pengguna harus membuat Stock Adjustment. Hitungan juga tampil sebagai peringatan di form sebelum tombol ditekan, dan diulang saat persetujuan.
+7. **Mode Ponytail aktif** (plugin): ubah sekecil mungkin tapi lengkap (termasuk tes, fixture, pemanggil), akhiri jawaban dengan 1-2 baris "apa yang dilewati / risiko". Jawab terus terang bila ada yang gagal atau tidak sempat dicek; jelaskan akar masalah, bukan hanya perbaikan.
+8. Verifikasi di browser (http://sstock.test) bila menyangkut tampilan; setelah mengubah `resources/css/app.css` jalankan `npm run build` dan muat ulang keras. Kembalikan viewport emulasi ke `desktop` setelah menguji. Jangan membuat data uji permanen di database lokal (bersihkan yang Anda buat).
+9. Tanya pemilik hanya bila benar-benar buntu; selebihnya ambil keputusan masuk akal, sebutkan asumsinya.
 
-## Sudah dikerjakan
-- Proyek Laravel dibuat, devlib terpasang (`@source` Tailwind ke `../../../devlib/*`)
-- **Aplikasi stok lengkap (2026-10-19)**: login (`x-dl::frame` + `x-dl::login-box`), Layer Shell dengan menu per peran, dashboard KPI + popup Reorder Point
-- Opening screen: 6 KPI yang bisa diklik (membuka tab menu terkait), tabel Reorder ringkas (nama, Reorder Qty, stok) di kiri, dan (hanya Supervisor) grafik garis nilai stok di kanan: per minggu (12 minggu terakhir), otomatis per bulan setelah riwayat >180 hari (`App\Services\StockValuation`)
-- Pemesanan ulang: tabel `reorder_orders` (tanggal pesan + no. PO per barang); tombol "Catat Pemesanan" di opening screen; ditutup otomatis oleh Receiving; status tampil sebagai badge di tabel reorder
-- Master Departemen dan Penerima (Data Master, semua peran): Issuance memilih dari dropdown (`recipient_id`, `department_id`; nama disalin ke kolom teks `recipient`/`department`; departemen kosong = departemen bawaan penerima). Baris "Penerima baru" / "Departemen baru" di atas dropdown membuka dialog tambah cepat (`docs/quick-add.blade.php`, JSON ke `recipients.store` / `departments.store`)
-- Keamanan (hanya peran Administrator = hak Supervisor + menu Keamanan): Pengguna (tambah/ubah, peran, grup, password; tidak bisa menonaktifkan/mengubah peran akun sendiri), Grup (`user_groups`; tabel hak akses per modul di form grup: Tidak ada / RO hanya baca / RW baca-tulis, disimpan di `user_group_modules.access`; RO menolak semua permintaan non-GET ke modul itu), Daftar Modul (baca saja). Daftar modul tunggal di `App\Support\Modules` (menu, pengaturan grup, penjagaan URL lewat middleware `EnsureModuleAccess`). Akses = peran cukup DAN modul dicentang di grup; pengguna tanpa grup memakai bawaan peran. Menu profil: Chat, Asisten AI, Tema dihapus (`:without` di DevLib layer-shell), Setup diganti halaman Bahasa
-- Wallpaper otomatis: gambar apa pun (PNG, WebP, BMP, GIF, AVIF, atau JPG terlalu besar) yang ditaruh di `public/media/bg/sstock` diubah ke JPG siap pakai saat halaman login dibuka (`App\Support\Wallpapers`, atau manual `php artisan sstock:wallpapers`); lebar maks 2560 px, rasio ganjil dipotong tengah ke 16:9, file asli dipindah ke `storage/app/wallpaper-source`. Butuh ekstensi PHP GD dan folder wallpaper yang bisa ditulis server
-- Tombol Kembali selalu ke grid (config `devlib.back_history=false`, opsi baru di DevLib; bawaan DevLib tetap "layar sebelumnya"). Layout menolak kirim form ganda selama 8 detik setelah kiriman pertama (cegah dokumen/stok ganda karena klik Simpan dua kali)
-- Lupa password: tautan "Lupa password?" di login → isi username/e-mail → tautan reset dikirim ke e-mail akun (broker password Laravel, berlaku 60 menit, sekali pakai; akun nonaktif/tidak dikenal tidak dikirimi, pesan tetap sama). `PasswordResetController`, layar `resources/views/auth/*`. Saat ini `MAIL_MAILER=log`: e-mail hanya tertulis di `storage/logs/laravel.log`; untuk produksi isi SMTP (`MAIL_*` di `.env`) supaya e-mail benar-benar terkirim
-- Master: Item (kategori, satuan, rak, harga, Reorder Point/Qty, Lead Time), Supplier; kategori hanya lewat seeder
-- Supplier: telepon kantor (PSTN, kolom `phone`), nama kontak + HP kontak, alamat jalan, lalu satu kotak cari `geo_area` (kecamatan > kota/kabupaten > provinsi > negara + kode pos, wajib; kode pos disimpan server dari wilayah terpilih); grid punya satu kolom "City, Country"
-- Master Satuan (Master Data > Units, Supervisor): kode tetap, nama, aktif/nonaktif; Item memilih satuan dari master (foreign key `items.unit` > `units.code`). Konversi satu aturan untuk semua item (`unit_conversions`: 1 box = 12 pcs; arah sebaliknya dihitung, tanpa rantai) lewat tabel Conversions di form Unit; `App\Support\UnitConverter`
-- Receiving boleh dalam satuan lain dari satuan stok item: baris punya kolom Unit, jumlah + harga dikonversi ke satuan stok saat Save (qty/unit_cost = satuan stok, entered_* = yang diketik); tanpa aturan konversi ditolak. Issuance, Opening, Adjustment tetap satuan stok
-- Tampilan grid: transaksi POLOS (nomor dokumen tebal di kolom pertama, hanya Status yang berwarna, untuk data banyak); master memakai kotak warna per baris: Items per kategori (ATK hijau, Sparepart biru, Tools ungu, variasi per item), Units per jenis (berat oranye, panjang toska, volume biru muda, hitungan indigo), Suppliers warna dari nama (`App\Support\Palette`). Memakai prop baru `hue` pada kolom identity di DevLib (`grid.js`, `Grid.php`; perubahan ada di repo `../devlib` dan harus di-commit di sana)
-- **Bahasa: seluruh tampilan Indonesia.** Kode layar tetap menulis label English (kebiasaan DevLib); kamus `App\Support\Indonesian` menerjemahkannya (`Lang::translateUsing`). Istilah tombol/status DevLib yang biasanya dipaksa English ikut kamus lewat `config('devlib.translate_fixed')` (perubahan opsional di `../devlib`: `Button`, `Badge`, `Form::steps`; belum di-commit di repo itu). Teks yang dirangkai di PHP (pesan, menu, jenis dokumen, nilai status) ditulis langsung Indonesia; pesan validasi di `lang/id/validation.php`. Label baru: tambahkan ke kamus, lalu cek layar. Mata uang tetap kode `IDR` (aturan DevLib)
-- Wilayah: tabel `geo_*` salinan tmerp (`tm2mst`, id sama; 250 negara, ±80 rb kelurahan) lewat `php artisan sstock:import-geo` (otomatis di `sstock:install`, tidak fatal bila gagal); logika cari di `App\Support\GeoArea`, lookup di `App\Support\GeoLookup`. Pencarian ±1 detik (join 5 tabel, LIKE di tengah kata)
-- Transaksi (`docs/{type}`) semua jenis: **Draf** (disimpan, BELUM menyentuh stok, boleh Hapus) > **Confirm** (diproses ke stok; tanggal/jam = saat Confirm; saldo awal memakai tanggalnya) > **Cancel** (hanya Supervisor/Administrator, alasan wajib; stok dikembalikan lewat baris pembalik `stock_movements.reversal_of`, baris asal tidak diubah; ditolak bila stok tidak cukup untuk menarik penerimaan; pemesanan ulang yang tertutup oleh penerimaan itu terbuka lagi). Dokumen dibatalkan/draf tidak dihitung di laporan Penerimaan/Pengeluaran dan KPI hari ini. Stock Adjustment: Draf > Confirm (diajukan) > Approve (Supervisor, baru diproses ke stok) / Reject; Cancel menarik pengajuan atau membalik yang sudah disetujui. Kartu Stok menandai baris pembalik "(BATAL)"
-- Buku besar `stock_movements` + saldo `items.stock_qty/avg_cost` (moving average) hanya diubah `App\Services\StockLedger`
-- Laporan `x-dl::report` (bisa dicetak): Stock Card, Summary Stock, Receiving, Issuance, Opname & Adjustment
-- Peran: `data_entry` (Receiving, Issuance, lihat stok; tanpa harga/nilai) dan `supervisor` (semua + Opening, Adjustment, parameter item, nilai valuasi)
-- Seeder: akun (lihat `database/seeders/UserSeeder.php`), kategori, supplier, 24 item contoh, riwayat transaksi contoh
-- DDL MySQL 8: `database/sql/sstock_mysql_ddl.sql` (dihasilkan dari migrasi; migrasi tetap sumber kebenaran)
-- Tes: `php artisan test` (alur stok, hak akses, laporan); diuji juga di browser (login, dashboard, form, laporan, approval)
+## 2. Lokasi, stack, akun
+- Folder `C:\Users\iwanp\Herd\sstock` (sejajar `tmerp` dan `devlib`), situs http://sstock.test (Herd), GitHub https://github.com/275iwan92/sstock (privat, `main`).
+- Laravel 13.37, PHP 8.4, Vite + Tailwind 4, MySQL 8 (db `sstock`, user `sstock_usr`, dibuat oleh `php artisan sstock:install`). Tes memakai SQLite in-memory.
+- Akun uji (hanya untuk pengembangan/UAT, ganti sebelum produksi; ada di `UserSeeder`): `admin` / `admin` (Administrator), `supervisor` / `1qa2ws3ed` (Supervisor), `entry` / `12345678` (Data Entry).
+- Perintah: `php artisan test` (61 tes lulus saat serah terima), `vendor\bin\pint --dirty`, `npm run build`, `php artisan sstock:wallpapers`, `php artisan sstock:import-geo`.
 
-## Belum dikerjakan / sengaja dilewati
-- Cetak dokumen tunggal (nota Receiving/Issuance); yang ada baru cetak laporan
-- Layar kelola user, kategori, dan ganti password (user baru lewat tinker/seeder)
-- Terjemahan Indonesia untuk label layar (label English, bahasa tampilan `id` hanya untuk angka/tanggal dan teks baku DevLib)
-- Persetujuan penyesuaian boleh oleh pembuat yang sama (belum ada pemisahan tugas)
-- Tanggal/jam transaksi = waktu server saat Save (tidak bisa diisi mundur, kecuali tanggal Opening Balance)
-- `CLAUDE.md` khusus sstock
+## 3. Yang sudah ada
+- **Master:** Barang (kategori, satuan, rak, harga, Reorder Point/Qty, Lead Time info), Supplier (kontak + wilayah `geo_*` salinan tmerp), Satuan + konversi (`UnitConverter`), Departemen, Penerima (dropdown di dokumen + baris "Penerima baru"/"Departemen baru" membuka dialog tambah cepat `docs/quick-add.blade.php`, dialog dipindah ke `<body>`).
+- **Transaksi (`docs/{type}`, 4 jenis):** Saldo Awal, Penerimaan (boleh satuan lain, dikonversi), Pengeluaran, Penyesuaian. Siklus: Draf (bisa Hapus, belum ke stok) > Confirm (diproses; tanggal/jam = saat Confirm) > Cancel (lihat aturan 6; stok dibalik lewat baris pembalik `stock_movements.reversal_of`, baris asal tidak diubah). Penyesuaian: Draf > Confirm (diajukan) > Approve Supervisor (baru ke stok) / Reject. Status `cancel_pending` = pengajuan pembatalan menunggu Supervisor (di form tampil lewat tahap persetujuan DevLib). Penerimaan yang dibatalkan membuka lagi pemesanan ulang yang ditutupnya. Departemen + Penerima ada di Penerimaan, Pengeluaran, Penyesuaian (opsional kecuali Penerima di Pengeluaran; nama disalin ke kolom teks dokumen; departemen kosong = bawaan penerima).
+- **Stok:** buku besar `stock_movements` + `items.stock_qty/avg_cost` (moving average) HANYA diubah `App\Services\StockLedger` (`post`, `reverse`, `assertReversible`); siklus dokumen di `App\Services\StockDocuments`.
+- **Laporan** (`x-dl::report`, filter tanggal dari-sampai di semua): Kartu Stok (baris pembalik bertanda "(BATAL)"), Ringkasan Stok, Penerimaan, Pengeluaran (hanya dokumen Confirm / pembatalan-menunggu; draf & dibatalkan tidak dihitung), Opname & Penyesuaian. Harga/nilai hanya untuk Supervisor.
+- **Opening screen:** 6 KPI bisa diklik (membuka tab menu), tabel Reorder ringkas dengan badge Status Pesanan (merah "Belum dipesan" / hijau "Dipesan tgl · PO"), tombol "Catat Pemesanan" (`reorder_orders`, ditutup otomatis oleh Penerimaan Confirm), dan (Supervisor saja) grafik batang horizontal nilai stok per minggu dalam satu bulan dengan tombol Bulan lalu/depan (`App\Services\StockValuation`). Grafik mengecil di layar sempit.
+- **Keamanan** (menu menempel di bawah panel kiri, `pin` di DevLib): peran `data_entry` < `supervisor` < `administrator`; menu Pengguna (tambah/ubah, peran, grup, password; tidak bisa menonaktifkan/mengubah peran akun sendiri), Grup (`user_groups`, tabel hak akses per modul: Tidak ada / RO / RW di `user_group_modules.access`), Daftar Modul (baca saja). Daftar modul tunggal di `App\Support\Modules` (menu, pengaturan grup, penjagaan URL lewat middleware `EnsureModuleAccess`; RO menolak semua permintaan non-GET). Akses = peran cukup DAN modul diberikan grup; tanpa grup = bawaan peran; Administrator selalu penuh. Menu profil: Chat, Asisten AI, Tema dihapus (`:without` di DevLib layer-shell), "Setup" diganti halaman Bahasa (Indonesia/English; terjemahan kamus hanya aktif untuk `id`).
+- **Login:** wallpaper acak dari semua `.jpg` di `public/media/bg/sstock` (foto buatan pemilik). Gambar PNG/WebP/BMP/GIF/AVIF atau JPG besar yang ditaruh di folder itu otomatis diubah ke JPG (`App\Support\Wallpapers`, jalan lewat `defer()` setelah halaman terkirim, atau `sstock:wallpapers`); lebar maks 2560, rasio ganjil dipotong ke 16:9, file asli pindah ke `storage/app/wallpaper-source` (tidak ikut git). Lupa password: tautan reset e-mail (`PasswordResetController`, `resources/views/auth/*`, berlaku 60 menit, sekali pakai, pesan sama untuk semua akun, akun nonaktif tidak dikirimi). `MAIL_MAILER=log`: e-mail hanya tertulis di `storage/logs/laravel.log`; produksi harus mengisi SMTP (`MAIL_*`).
+- **Perubahan DevLib yang sudah dibuat (semua opt-in, sudah di-commit di `../devlib`):** `hue`/`box` kolom identity grid, `translate_fixed`, Layer Shell `:without` dan `pin`, `config devlib.back_history` (false = Kembali selalu ke alamat tombol), tombol hapus `x-dl::lines` pada baris terakhir mengosongkan baris, isian di dalam modal bersarang tidak ikut validasi form induk.
 
-## Database dan deploy pertama
-- `php artisan sstock:install` (dipanggil `composer setup`): bila database + user belum ada, membuatnya lewat akun admin MySQL
-  (`--admin-user/--admin-password`, atau env `DB_ADMIN_USERNAME/DB_ADMIN_PASSWORD`, atau ditanya), lalu `migrate` dan `db:seed` (seed hanya bila belum ada user). Aman dijalankan ulang.
-- Tes memakai SQLite in-memory (`phpunit.xml`), tidak menyentuh MySQL. DDL referensi: `database/sql/sstock_mysql_ddl.sql`.
-- Login: wallpaper `public/media/bg/sstock` (enam foto JPG 1920x1080: ATK/ruang kerja, gear bengkel, gudang; foto buatan pemilik, bukan gambar DevLib; file asli PNG ada di `storage/app/wallpaper-source`, tidak ikut git; login memilih acak dari semua `.jpg` di folder itu), kutipan `public/media/text/*.txt` (salinan DevLib).
+## 4. Catatan teknis penting
+- Alat: heredoc Python di bash sering gagal bila isinya berisi `\` atau tanda kutip, pakai tool Write/Edit atau berkas skrip di scratchpad; tinker satu baris dengan `$` gagal, pakai berkas skrip (`php artisan tinker <berkas.php>`). Peringatan CRLF git tidak berbahaya.
+- Widget DevLib: select = `[data-dl-select]` + input tersembunyi `[data-dl-value]`; modal dibuka dengan class `is-on` pada `[data-dl-modal-id]`; validasi form menghitung `.dl-field__req` yang kosong; Back komponen memakai `history.back()` kecuali `DL_BACK_HISTORY=false`.
+- Migrasi terbaru: reorder_orders, departments+recipients (+kolom di stock_documents), user_groups(+modules,+access), confirm/cancel/reversal_of, cancel_request. `database/sql/sstock_mysql_ddl.sql` sudah KETINGGALAN (hanya sampai `add_kind_to_units`); migrasi tetap sumber kebenaran, regenerasi bila perlu.
+- Pembuat dokumen yang sama masih boleh menyetujui penyesuaian (belum ada pemisahan tugas). Supervisor yang menekan Cancel tidak perlu persetujuan orang lain.
+- Tombol Simpan pada modul berakses RO masih tampil (server menolak dengan pesan); menyembunyikannya belum dikerjakan.
 
-## Menjalankan di mesin lain
+## 5. Belum dikerjakan
+- Cetak dokumen tunggal (nota Penerimaan/Pengeluaran); yang ada baru cetak laporan.
+- Pemisahan tugas pembuat vs penyetuju, kategori barang hanya lewat seeder, perkiraan tiba pemesanan dari `lead_time_days`, batalkan/ubah pencatatan pemesanan ulang, regenerasi DDL referensi, SMTP produksi.
+- Foto portrait wallpaper (layar HP memakai foto lanskap yang dipotong).
+
+## 6. Menjalankan di mesin lain
 ```bash
-git clone https://github.com/275iwan92/sstock.git   # taruh sejajar dengan devlib
+git clone https://github.com/275iwan92/sstock.git   # taruh sejajar dengan ../devlib
 composer setup    # install, .env, key, buat DB + user MySQL, migrate, seed, build
 ```
-Lalu daftarkan folder ke Herd (park/link) → http://sstock.test
-
-## Catatan kerja
-- Aturan tmerp (`tmerp/CLAUDE.md`, skill `tmerp/.ai/skills/devlib-oo`): DevLib membuat, aplikasi mewarisi;
-  layar = deklarasi `x-dl::*`, tanpa HTML mentah / warna literal; label English, nilai data dibungkus `raw()`.
-- Perubahan pada devlib di-commit di repo devlib (`C:\Users\iwanp\Herd\devlib`), bukan di sstock.
+Daftarkan folder ke Herd (park/link) lalu buka http://sstock.test.
