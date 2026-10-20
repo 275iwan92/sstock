@@ -76,6 +76,9 @@ final class Indonesian
         'Near expiry / expired' => 'Hampir kedaluwarsa / kedaluwarsa', 'Expiry Report' => 'Laporan Kedaluwarsa',
         'Expires within (days)' => 'Kedaluwarsa dalam (hari)', 'Days Left' => 'Sisa Hari', 'Items with stock that are expired or about to expire' => 'Barang yang masih ada stoknya dan sudah / hampir kedaluwarsa',
 
+        // Data Contoh
+        'Sample Data' => 'Data Contoh',
+
         // Form Satuan
         'Unit Code' => 'Kode Satuan', 'Unit Name' => 'Nama Satuan', 'Short, lowercase (pcs, box, kg). Cannot be changed after saving.' => 'Singkat, huruf kecil (pcs, box, kg). Tidak bisa diubah setelah disimpan.',
         'Sets the colour of the unit in lists (for example weight units share one colour).' => 'Menentukan warna satuan di daftar (misalnya satuan berat satu warna).',

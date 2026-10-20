@@ -16,50 +16,53 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('geo_country', function (Blueprint $table) {
-            $table->unsignedBigInteger('id_country')->primary();
-            $table->string('country_code', 20)->nullable();
-            $table->string('iso_code', 20)->nullable();
-            $table->string('country_name', 255);
-            $table->string('call_country_no', 30)->nullable();
-            $table->boolean('activate')->default(true);
-        });
+        // Data wilayah disalin dari tmerp dan sengaja dipertahankan saat data contoh disegarkan (SampleData), jadi tabelnya hanya dibuat bila belum ada.
+        if (! Schema::hasTable('geo_country')) {
+            Schema::create('geo_country', function (Blueprint $table) {
+                $table->unsignedBigInteger('id_country')->primary();
+                $table->string('country_code', 20)->nullable();
+                $table->string('iso_code', 20)->nullable();
+                $table->string('country_name', 255);
+                $table->string('call_country_no', 30)->nullable();
+                $table->boolean('activate')->default(true);
+            });
 
-        Schema::create('geo_region', function (Blueprint $table) {
-            $table->unsignedBigInteger('id_region')->primary();
-            $table->unsignedBigInteger('country_id')->index();
-            $table->string('region_code', 50)->nullable();
-            $table->string('region_name', 255);
-            $table->boolean('is_active')->default(true);
-        });
+            Schema::create('geo_region', function (Blueprint $table) {
+                $table->unsignedBigInteger('id_region')->primary();
+                $table->unsignedBigInteger('country_id')->index();
+                $table->string('region_code', 50)->nullable();
+                $table->string('region_name', 255);
+                $table->boolean('is_active')->default(true);
+            });
 
-        Schema::create('geo_city', function (Blueprint $table) {
-            $table->unsignedBigInteger('id_city')->primary();
-            $table->unsignedBigInteger('region_id')->index();
-            $table->string('city_code', 50)->nullable();
-            $table->string('city_type', 50)->nullable();
-            $table->string('city_name', 255)->index();
-            $table->string('post_code', 20)->nullable()->index();
-            $table->boolean('activate')->default(true);
-        });
+            Schema::create('geo_city', function (Blueprint $table) {
+                $table->unsignedBigInteger('id_city')->primary();
+                $table->unsignedBigInteger('region_id')->index();
+                $table->string('city_code', 50)->nullable();
+                $table->string('city_type', 50)->nullable();
+                $table->string('city_name', 255)->index();
+                $table->string('post_code', 20)->nullable()->index();
+                $table->boolean('activate')->default(true);
+            });
 
-        Schema::create('geo_district', function (Blueprint $table) {
-            $table->unsignedBigInteger('id_district')->primary();
-            $table->unsignedBigInteger('city_id')->index();
-            $table->string('district_code', 50)->nullable();
-            $table->string('district_name', 255)->index();
-            $table->string('post_code', 20)->nullable()->index();
-            $table->boolean('activate')->default(true);
-        });
+            Schema::create('geo_district', function (Blueprint $table) {
+                $table->unsignedBigInteger('id_district')->primary();
+                $table->unsignedBigInteger('city_id')->index();
+                $table->string('district_code', 50)->nullable();
+                $table->string('district_name', 255)->index();
+                $table->string('post_code', 20)->nullable()->index();
+                $table->boolean('activate')->default(true);
+            });
 
-        Schema::create('geo_village', function (Blueprint $table) {
-            $table->unsignedBigInteger('id_village')->primary();
-            $table->unsignedBigInteger('district_id')->index();
-            $table->string('village_code', 50)->nullable();
-            $table->string('village_name', 255)->index();
-            $table->string('post_code', 20)->nullable()->index();
-            $table->boolean('activate')->default(true);
-        });
+            Schema::create('geo_village', function (Blueprint $table) {
+                $table->unsignedBigInteger('id_village')->primary();
+                $table->unsignedBigInteger('district_id')->index();
+                $table->string('village_code', 50)->nullable();
+                $table->string('village_name', 255)->index();
+                $table->string('post_code', 20)->nullable()->index();
+                $table->boolean('activate')->default(true);
+            });
+        }
 
         // suppliers.phone = telepon kantor (PSTN); address = nama jalan; area_level + area_id = VILLAGE | DISTRICT | CITY + id-nya.
         Schema::table('suppliers', function (Blueprint $table) {

@@ -19,6 +19,7 @@ use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\RecipientController;
 use App\Http\Controllers\ReorderOrderController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SampleDataController;
 use App\Http\Controllers\StockDocumentController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UnitController;
@@ -58,6 +59,8 @@ Route::middleware(['auth', 'module'])->group(function () {
         Route::get('groups/{group}', [GroupController::class, 'show'])->name('groups.show');
         Route::put('groups/{group}', [GroupController::class, 'update'])->name('groups.update');
         Route::get('modules', [ModuleController::class, 'index'])->name('modules.index');
+        Route::get('sample', [SampleDataController::class, 'index'])->name('sample.index');
+        Route::post('sample', [SampleDataController::class, 'refresh'])->name('sample.refresh');
         Route::view('help/technical-guide', 'help.technical-guide')->name('help.technical-guide');
     });
 
