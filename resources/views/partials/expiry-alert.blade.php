@@ -19,21 +19,21 @@
     {{-- Tabel ditulis langsung (bukan x-dl::table) karena kolom status memakai x-dl::badge berwarna. --}}
     <div class="dl-table-wrap sstock-reorder">
         <table class="dl-table is-striped">
-            <thead><tr>@foreach (['Item', 'Expiry Date', 'Current Stock', 'Status'] as $c)<th>{{ \Devlib\Lang::text($c) }}</th>@endforeach</tr></thead>
+            <thead><tr>@foreach (['Item', 'Expiry Date', 'Current Stock'] as $c)<th>{{ \Devlib\Lang::text($c) }}</th>@endforeach</tr></thead>
             <tbody>
                 @foreach ($expiring as $i)
                     @php $left = today()->diffInDays($i->expiry_date, false); @endphp
                     <tr>
                         <td>{{ $i->name }}<br><small>{{ $i->code }}</small></td>
-                        <td>{{ \Devlib\Locale::d($i->expiry_date) }}</td>
-                        <td>{{ \Devlib\Locale::number($i->stock_qty, 2) }} {{ $i->unit }}</td>
                         <td>
+                            {{ \Devlib\Locale::d($i->expiry_date) }}<br>
                             @if ($i->expiryState() === 'KEDALUWARSA')
-                                <x-dl::badge tone="danger" icon="fa-triangle-exclamation" :label="'Kedaluwarsa '.abs($left).' hari lalu'" />
+                                <x-dl::badge tone="danger" icon="fa-triangle-exclamation" :label="'Lewat '.abs($left).' hari'" />
                             @else
-                                <x-dl::badge tone="warn" icon="fa-hourglass-half" :label="$left ? 'Sisa '.$left.' hari' : 'Kedaluwarsa hari ini'" />
+                                <x-dl::badge tone="warn" icon="fa-hourglass-half" :label="$left ? 'Sisa '.$left.' hari' : 'Hari ini'" />
                             @endif
                         </td>
+                        <td>{{ \Devlib\Locale::number($i->stock_qty, 2) }} {{ $i->unit }}</td>
                     </tr>
                 @endforeach
             </tbody>
