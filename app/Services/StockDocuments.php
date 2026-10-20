@@ -238,15 +238,19 @@ final class StockDocuments
             return [];
         }
         $out = [];
-        foreach ($doc->lines()->with('item')->get() as $line) {
+        $lines = $doc->lines()->with('item')->get();
+        $taken = $lines->groupBy('item_id')->map(fn ($l) => (float) $l->sum('qty'));  // yang diambil dokumen ini sendiri (termasuk sambungan otomatis antar batch)
+        foreach ($lines as $line) {
             $item = $line->item;
             if (! $item->expiry_date) {
                 continue;
             }
             $earlier = Item::query()->where('product_id', $item->product_id)->where('id', '!=', $item->id)->where('stock_qty', '>', 0)
-                ->whereNotNull('expiry_date')->where('expiry_date', '<', $item->expiry_date)->orderBy('expiry_date')->first();
+                ->whereNotNull('expiry_date')->where('expiry_date', '<', $item->expiry_date)->orderBy('expiry_date')->get()
+                ->first(fn (Item $e) => $e->stock_qty - ($taken[$e->id] ?? 0) > 0.0005);
             if ($earlier) {
-                $out[] = "{$item->name}: batch {$item->code} (kedaluwarsa ".$item->expiry_date->format('d-m-Y').") dipilih, padahal batch {$earlier->code} (kedaluwarsa ".$earlier->expiry_date->format('d-m-Y').') masih ada stok '.rtrim(rtrim(number_format($earlier->stock_qty, 3, ',', '.'), '0'), ',').'. Keluarkan yang kedaluwarsa lebih dulu.';
+                $left = $earlier->stock_qty - ($taken[$earlier->id] ?? 0);
+                $out[] = "{$item->name}: batch {$item->code} (kedaluwarsa ".$item->expiry_date->format('d-m-Y').") dipilih, padahal batch {$earlier->code} (kedaluwarsa ".$earlier->expiry_date->format('d-m-Y').') masih ada stok '.rtrim(rtrim(number_format($left, 3, ',', '.'), '0'), ',').'. Keluarkan yang kedaluwarsa lebih dulu.';
             }
         }
 

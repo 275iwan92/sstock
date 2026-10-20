@@ -169,6 +169,7 @@ class ItemCodeTest extends TestCase
         // Mengeluarkan 15 dengan memilih batch pertama (stok 10): 10 darinya, sisa 5 dari batch berikutnya.
         $doc = $docs->create(StockDocumentType::Issuance, ['recipient_id' => $recipient->id], [['item_id' => $first->id, 'qty' => 15]], $user);
         $this->assertEqualsCanonicalizing([[$first->id, 10.0], [$second->id, 5.0]], $doc->lines->map(fn ($l) => [$l->item_id, $l->qty])->all());
+        $this->assertSame([], $docs->fefoWarnings($doc));            // draf: batch pertama habis diambil dokumen yang sama, jadi sambungan ke batch kedua bukan pelanggaran FEFO
         $docs->confirm($doc, $user);
         $this->assertSame([0.0, 25.0], [$first->fresh()->stock_qty, $second->fresh()->stock_qty]);
         $this->assertSame([], $docs->fefoWarnings($doc->fresh()));   // batch pertama sudah habis: tidak ada yang lebih cepat kedaluwarsa
