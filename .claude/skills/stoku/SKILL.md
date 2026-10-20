@@ -12,11 +12,14 @@ Bahasa kerja dengan pemilik: Indonesia, ringkas. Daftar fitur, akun uji, dan hal
 2. **Semua tampilan Bahasa Indonesia.** Label layar boleh English (kebiasaan DevLib), lalu tambahkan ke kamus `App\Support\Indonesian` dan cek di layar. Teks yang dirangkai di PHP ditulis langsung Indonesia. Pesan validasi: `lang/id/validation.php` (termasuk nama atribut). Mata uang tetap `IDR`.
 3. **DevLib** (`C:\Users\iwanp\Herd\devlib`, `telasih/devlib`, `x-dl::*`): layar = deklarasi `x-dl::*`, tanpa HTML mentah atau warna literal; nilai data dibungkus `raw()`. Perubahan DevLib harus OPT-IN (tmerp memakai DevLib dengan perilaku lama), commit di repo devlib. Perbaiki akar masalah di DevLib, bukan akal-akalan di aplikasi.
 4. **Gaya grid:** transaksi polos (nomor dokumen tebal, hanya Status berwarna); master memakai kotak warna per baris (`box`, `hue` dari `App\Support\Palette`).
-5. **Form dokumen:** wajib ada Confirm (diproses ke stok), Delete selama belum Confirm, dan Cancel. Sebelum Confirm stok TIDAK berubah. Kembali selalu ke GRID. Form tidak boleh terkirim dua kali (penjaga di `layout.blade.php`).
+5. **Form dokumen:** wajib ada Confirm (diproses ke stok), Delete selama belum Confirm, dan Cancel. Sebelum Confirm stok TIDAK berubah. Form tidak boleh terkirim dua kali (penjaga di `layout.blade.php`).
 6. **Cancel dokumen yang sudah Confirm:** pengguna mengajukan dengan alasan, Supervisor menyetujui/menolak; Supervisor/Administrator langsung berlaku. Sistem menghitung dulu apakah stok cukup untuk menarik dokumen; bila tidak, DITOLAK dan pengguna membuat Stock Adjustment. Hitungan juga jadi peringatan di form dan diulang saat persetujuan.
 7. **Stok** hanya diubah lewat `App\Services\StockLedger` (`post`, `reverse`, `assertReversible`); siklus dokumen di `App\Services\StockDocuments`. Pembalikan = baris baru `reversal_of`, baris asal tidak diubah.
 8. **Verifikasi** tampilan di http://sstock.test. Setelah mengubah `resources/css/app.css` jalankan `npm run build` dan muat ulang keras. Kembalikan viewport emulasi ke `desktop`. Jangan tinggalkan data uji di database lokal.
 9. Tanya pemilik hanya bila benar-benar buntu; selebihnya putuskan sendiri dan sebutkan asumsinya.
+
+## Tombol Kembali
+Setiap form (dokumen maupun master) wajib punya tombol Kembali yang menuju GRID modulnya, bukan layar sebelumnya. Caranya: pada komponen toolbar form isi prop `:back="route('<modul>.index')"` (lihat `resources/views/items/form.blade.php`). `config/devlib.php` `back_history => false` (`DL_BACK_HISTORY=false`) membuat tombol memakai alamat itu, bukan `history.back()`. Jangan memakai `history.back()` atau `url()->previous()` di form baru.
 
 ## Perintah
 `php artisan test` (SQLite in-memory), `vendor\bin\pint --dirty`, `npm run build`, `php artisan sstock:wallpapers`, `php artisan sstock:import-geo`.
