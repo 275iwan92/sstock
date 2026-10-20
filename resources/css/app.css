@@ -116,3 +116,6 @@ body.dl-body:not(.sstock-bare) { padding: 0 16px 16px; }
     .sstock-guide .g-toc { position: static; }
     .sstock-guide .g-row-3, .sstock-guide .g-row-5 { grid-template-columns: 1fr 1fr; }
 }
+
+/* DevLib mengunci body.dl-body (height 100vh, overflow hidden) karena layar DevLib punya wadah scroll sendiri; halaman Technical Guide tidak, jadi body-nya yang menggulir. */
+body.dl-body:has(.sstock-guide) { overflow-y: auto; }
