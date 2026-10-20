@@ -194,7 +194,7 @@
         <ul class="g-list">
             <li><b>Home screen</b> (<code>HomeController</code>): clickable KPIs, Reorder Point alert with order status, near-expiry alert, approval queue and stock-value chart (Supervisor).</li>
             <li><b>Re-order log:</b> "Record order" creates a <code>reorder_orders</code> row; a confirmed Receiving closes it automatically.</li>
-            <li><b>Reports</b> (<code>ReportController</code>): Stock Card, Stock Summary, Receiving, Issuance (confirmed and cancel-pending documents only), Expiry, Opname &amp; Adjustment (Supervisor).</li>
+            <li><b>Reports</b> (<code>ReportController</code>): Stock Card, Stock Summary (reorder status per product from the closing balance of non-expired batches; Expiry stays per batch), Receiving, Issuance (confirmed and cancel-pending documents only), Expiry, Opname &amp; Adjustment (Supervisor).</li>
         </ul>
 
         @include('help.diagram', ['name' => 'tg-reorder-flow', 'caption' => 'Re-order flow: alert, Record Order, and closing by Receiving.'])
