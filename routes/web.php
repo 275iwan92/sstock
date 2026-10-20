@@ -12,10 +12,10 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\ItemController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RecipientController;
 use App\Http\Controllers\ReorderOrderController;
 use App\Http\Controllers\ReportController;
@@ -66,12 +66,12 @@ Route::middleware(['auth', 'module'])->group(function () {
         Route::view('help/technical-guide', 'help.technical-guide')->name('help.technical-guide');
     });
 
-    // Master Item: semua boleh melihat; ubah hanya Supervisor.
+    // Master Barang: semua boleh melihat dan menambah barang baru; ubah parameter dan aktif / nonaktif hanya Supervisor (dicek ProductRequest dan grup di bawah).
+    Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
+    Route::post('products', [ProductController::class, 'store'])->name('products.store');
     Route::middleware('supervisor')->group(function () {
-        Route::get('items/create', [ItemController::class, 'create'])->name('items.create');
-        Route::post('items', [ItemController::class, 'store'])->name('items.store');
-        Route::put('items/{item}', [ItemController::class, 'update'])->name('items.update');
-        Route::post('items/{item}/toggle', [ItemController::class, 'toggle'])->name('items.toggle');
+        Route::put('products/{product}', [ProductController::class, 'update'])->name('products.update');
+        Route::post('products/{product}/toggle', [ProductController::class, 'toggle'])->name('products.toggle');
 
         Route::get('units', [UnitController::class, 'index'])->name('units.index');
         Route::get('units/create', [UnitController::class, 'create'])->name('units.create');
@@ -89,8 +89,8 @@ Route::middleware(['auth', 'module'])->group(function () {
             Route::post("{$path}/{{$param}}/toggle", [$controller, 'toggle'])->name("{$path}.toggle");
         }
     });
-    Route::get('items', [ItemController::class, 'index'])->name('items.index');
-    Route::get('items/{item}', [ItemController::class, 'show'])->name('items.show');
+    Route::get('products', [ProductController::class, 'index'])->name('products.index');
+    Route::get('products/{product}', [ProductController::class, 'show'])->name('products.show');
 
     Route::get('suppliers/create', [SupplierController::class, 'create'])->name('suppliers.create');
     Route::post('suppliers', [SupplierController::class, 'store'])->name('suppliers.store');

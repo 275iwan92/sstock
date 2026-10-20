@@ -47,7 +47,7 @@ class ReportController extends Controller
 
         return view('reports.stock-card', [
             'sup' => $sup, 'from' => $from, 'to' => $to, 'item' => $item, 'rows' => $rows, 'opening' => $opening,
-            'items' => Item::query()->orderBy('code')->get()->mapWithKeys(fn ($i) => [$i->id => "{$i->code} · {$i->name}"])->all(),
+            'items' => Item::query()->orderBy('code')->get()->mapWithKeys(fn ($i) => [$i->id => $i->label()])->all(),
         ]);
     }
 
@@ -56,7 +56,7 @@ class ReportController extends Controller
         $sup = $request->user()->isSupervisor();
         [$from, $to] = $this->period($request);
 
-        $items = Item::query()->with('category')->orderBy('code')
+        $items = Item::query()->with('category', 'product')->orderBy('code')
             ->when($request->filled('category_id'), fn ($q) => $q->where('category_id', $request->query('category_id')))
             ->when(! $request->boolean('inactive'), fn ($q) => $q->where('is_active', true))->get();
 
@@ -65,7 +65,16 @@ class ReportController extends Controller
         $closing = $this->lastMovements('<=', $to);
         $moves = StockMovement::query()->whereBetween('moved_at', [$from, $to])->selectRaw('item_id, type, sum(qty) as total')->groupBy('item_id', 'type')->get()->groupBy('item_id');
 
-        $rows = $items->map(function (Item $i) use ($opening, $closing, $moves, $sup) {
+        // Titik pesan ulang per produk: stok akhir batch yang belum kedaluwarsa pada akhir periode dijumlahkan (batch tanpa produk berdiri sendiri).
+        $available = [];
+        foreach ($items as $i) {
+            if (! $i->expiry_date || $i->expiry_date->gte($to->copy()->startOfDay())) {
+                $key = $i->product_id ?? 'i'.$i->id;
+                $available[$key] = ($available[$key] ?? 0) + ($closing[$i->id]->balance_qty ?? 0.0);
+            }
+        }
+
+        $rows = $items->map(function (Item $i) use ($opening, $closing, $moves, $sup, $available) {
             $m = ($moves[$i->id] ?? collect())->pluck('total', 'type');
             $end = $closing[$i->id]->balance_qty ?? 0.0;
             $cost = $closing[$i->id]->balance_avg_cost ?? 0.0;
@@ -75,7 +84,7 @@ class ReportController extends Controller
                 'open' => $opening[$i->id]->balance_qty ?? 0.0,
                 'in' => (float) ($m['IN'] ?? 0) + (float) ($m['OPENING'] ?? 0), 'out' => abs((float) ($m['OUT'] ?? 0)), 'adj' => (float) ($m['ADJ'] ?? 0),
                 'end' => $end, 'rop' => $i->reorder_point, 'roq' => $i->reorder_qty, 'lead' => $i->lead_time_days,
-                'status' => $i->is_active && $i->reorder_point > 0 && $end <= $i->reorder_point ? 'PESAN ULANG' : 'AMAN',
+                'status' => $i->is_active && $i->reorder_point > 0 && ($available[$i->product_id ?? 'i'.$i->id] ?? 0) <= $i->reorder_point ? 'PESAN ULANG' : 'AMAN',
                 'cost' => $sup ? $cost : null, 'value' => $sup ? round($end * $cost, 2) : null,
             ];
         });

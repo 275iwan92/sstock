@@ -1,0 +1,51 @@
+<svg class="g-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-labelledby="tg-adjustment-lifecycle-t tg-adjustment-lifecycle-d">
+<title id="tg-adjustment-lifecycle-t">Adjustment lifecycle</title>
+<desc id="tg-adjustment-lifecycle-d">An adjustment is saved as draft; Confirm submits it for approval without touching stock. A Supervisor approves (posted to the ledger) or rejects it. A submitted adjustment can be withdrawn. An approved adjustment is cancelled by a Supervisor with reversal rows.</desc>
+<defs><marker id="m-tg-adjustment-lifecycle" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="n n-gray"  x="20" y="40" width="110" height="54" rx="9"/>
+<text class="t b" x="75" y="71" text-anchor="middle">(new)</text>
+<rect class="n n-gray"  x="170" y="40" width="120" height="54" rx="9"/>
+<text class="t b" x="230" y="63" text-anchor="middle">draft</text>
+<text class="t s" x="230" y="79" text-anchor="middle">stock unchanged</text>
+<rect class="n n-warn"  x="340" y="40" width="160" height="54" rx="9"/>
+<text class="t b" x="420" y="63" text-anchor="middle">approval</text>
+<text class="t s" x="420" y="79" text-anchor="middle">submitted, not posted</text>
+<rect class="n n-ok"  x="640" y="40" width="160" height="54" rx="9"/>
+<text class="t b" x="720" y="63" text-anchor="middle">approved</text>
+<text class="t s" x="720" y="79" text-anchor="middle">posted to the ledger</text>
+<rect class="n n-bad"  x="350" y="170" width="120" height="54" rx="9"/>
+<text class="t b" x="410" y="193" text-anchor="middle">rejected</text>
+<text class="t s" x="410" y="209" text-anchor="middle">stock unchanged</text>
+<rect class="n n-bad"  x="180" y="170" width="130" height="54" rx="9"/>
+<text class="t b" x="245" y="193" text-anchor="middle">cancelled</text>
+<text class="t s" x="245" y="209" text-anchor="middle">withdrawn, nothing posted</text>
+<rect class="n n-warn"  x="620" y="170" width="200" height="60" rx="9"/>
+<text class="t b" x="720" y="196" text-anchor="middle">cancel_pending</text>
+<text class="t s" x="720" y="212" text-anchor="middle">unreachable for Data Entry: module is Supervisor only</text>
+<rect class="n n-bad"  x="620" y="320" width="200" height="54" rx="9"/>
+<text class="t b" x="720" y="343" text-anchor="middle">cancelled</text>
+<text class="t s" x="720" y="359" text-anchor="middle">reversal rows added</text>
+<path class="e" d="M130,67 L170,67" marker-end="url(#m-tg-adjustment-lifecycle)"/>
+<text class="el" x="134" y="60" text-anchor="start">Save</text>
+<path class="e" d="M290,67 L340,67" marker-end="url(#m-tg-adjustment-lifecycle)"/>
+<text class="el" x="294" y="56" text-anchor="start">Confirm (submit)</text>
+<path class="e" d="M500,67 L640,67" marker-end="url(#m-tg-adjustment-lifecycle)"/>
+<text class="el" x="520" y="54" text-anchor="start">Approve</text>
+<text class="el" x="520" y="68" text-anchor="start">(Supervisor)</text>
+<path class="e" d="M430,94 L430,170" marker-end="url(#m-tg-adjustment-lifecycle)"/>
+<text class="el" x="438" y="140" text-anchor="start">Reject (Supervisor)</text>
+<path class="e" d="M355,94 L355,122 L245,122 L245,170" marker-end="url(#m-tg-adjustment-lifecycle)"/>
+<text class="el" x="252" y="114" text-anchor="start">Withdraw (Cancel)</text>
+<path class="e" d="M700,94 L700,170" marker-end="url(#m-tg-adjustment-lifecycle)"/>
+<text class="el" x="708" y="125" text-anchor="start">Cancel by Data</text>
+<text class="el" x="708" y="139" text-anchor="start">Entry + reason</text>
+<path class="e" d="M700,230 L700,320" marker-end="url(#m-tg-adjustment-lifecycle)"/>
+<text class="el" x="708" y="280" text-anchor="start">Approve</text>
+<path class="e" d="M820,200 L860,200 L860,67 L800,67" marker-end="url(#m-tg-adjustment-lifecycle)"/>
+<text class="el" x="852" y="140" text-anchor="end">Reject</text>
+<path class="e" d="M640,94 L585,94 L585,347 L620,347" marker-end="url(#m-tg-adjustment-lifecycle)"/>
+<text class="el" x="579" y="200" text-anchor="end">Cancel by</text>
+<text class="el" x="579" y="214" text-anchor="end">Supervisor /</text>
+<text class="el" x="579" y="228" text-anchor="end">Administrator</text>
+<text class="t s" x="20" y="400" text-anchor="start">Approve is refused when the item stock changed since it was counted (line.system_qty differs): reject it and count again.</text>
+</svg>

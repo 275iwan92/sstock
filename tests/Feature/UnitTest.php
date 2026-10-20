@@ -62,7 +62,7 @@ class UnitTest extends TestCase
         $sup = User::factory()->supervisor()->create();
         Unit::create(['code' => 'old', 'name' => 'Old unit', 'is_active' => false]);
 
-        $this->actingAs($sup)->post(route('items.store'), $this->itemPayload(['unit' => 'ghost']))->assertSessionHasErrors('unit');
+        $this->actingAs($sup)->post(route('products.store'), $this->itemPayload(['unit' => 'ghost']))->assertSessionHasErrors('unit');
         $this->assertSame(0, Item::count());
     }
 
@@ -70,11 +70,11 @@ class UnitTest extends TestCase
     {
         $sup = User::factory()->supervisor()->create();
         Unit::create(['code' => 'old', 'name' => 'Old unit', 'is_active' => false]);
-        $this->actingAs($sup)->post(route('items.store'), $this->itemPayload(['unit' => 'old']))->assertSessionHasErrors('unit');
+        $this->actingAs($sup)->post(route('products.store'), $this->itemPayload(['unit' => 'old']))->assertSessionHasErrors('unit');
 
-        $item = Item::create(array_merge($this->itemPayload(), ['code' => 'U-2', 'unit' => 'box']));
+        $item = $this->makeItem(array_merge($this->itemPayload(), ['code' => 'U-2', 'unit' => 'box']));
         Unit::where('code', 'box')->update(['is_active' => false]);
-        $this->put(route('items.update', $item), array_merge($this->itemPayload(), ['_action' => 'save', 'code' => 'U-2', 'unit' => 'box', 'name' => 'Renamed']))->assertRedirect();
+        $this->put(route('products.update', $item->product), array_merge($this->itemPayload(), ['_action' => 'save', 'code' => 'U-2', 'unit' => 'box', 'name' => 'Renamed']))->assertRedirect();
         $this->assertSame('Renamed', $item->fresh()->name);
     }
 
@@ -113,7 +113,7 @@ class UnitTest extends TestCase
     {
         $entry = User::factory()->create();
         $supplier = Supplier::create(['code' => 'S1', 'name' => 'S One']);
-        $item = Item::create(array_merge($this->itemPayload(), ['code' => 'C-1', 'unit' => 'pcs']));
+        $item = $this->makeItem(array_merge($this->itemPayload(), ['code' => 'C-1', 'unit' => 'pcs']));
         UnitConversion::create(['from_unit' => 'box', 'to_unit' => 'pcs', 'factor' => 12]);
 
         $this->receiveAs($entry, ['supplier_id' => $supplier->id, 'lines' => [['item_id' => $item->id, 'qty' => 5, 'unit' => 'box', 'unit_cost' => 1200]]]);
@@ -132,7 +132,7 @@ class UnitTest extends TestCase
     public function test_receiving_without_a_conversion_is_rejected(): void
     {
         $supplier = Supplier::create(['code' => 'S1', 'name' => 'S One']);
-        $item = Item::create(array_merge($this->itemPayload(), ['code' => 'C-2', 'unit' => 'pcs']));
+        $item = $this->makeItem(array_merge($this->itemPayload(), ['code' => 'C-2', 'unit' => 'pcs']));
 
         $this->actingAs(User::factory()->create())->post(route('docs.store', 'receiving'), ['supplier_id' => $supplier->id, 'lines' => [['item_id' => $item->id, 'qty' => 1, 'unit' => 'kg', 'unit_cost' => 10]]])->assertSessionHasErrors('lines');
         $this->assertSame(0.0, $item->fresh()->stock_qty);
@@ -142,7 +142,7 @@ class UnitTest extends TestCase
     public function test_receiving_in_the_stock_unit_needs_no_conversion(): void
     {
         $supplier = Supplier::create(['code' => 'S1', 'name' => 'S One']);
-        $item = Item::create(array_merge($this->itemPayload(), ['code' => 'C-3', 'unit' => 'pcs']));
+        $item = $this->makeItem(array_merge($this->itemPayload(), ['code' => 'C-3', 'unit' => 'pcs']));
 
         $this->receiveAs(User::factory()->create(), ['supplier_id' => $supplier->id, 'lines' => [['item_id' => $item->id, 'qty' => 7, 'unit' => 'pcs', 'unit_cost' => 10]]]);
         $this->assertSame(7.0, $item->fresh()->stock_qty);

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\StockDocumentType;
 use App\Models\Item;
+use App\Models\Product;
 use App\Models\StockDocument;
 use App\Models\StockMovement;
 use App\Models\User;
@@ -22,7 +23,7 @@ final class StockLedger
     private const EPS = 0.0005;
 
     /**
-     * @return array<int, Item> item yang SESUDAH posting berada di/bawah Reorder Point
+     * @return array<int, Product> produk yang SESUDAH posting berada di/bawah Reorder Point
      */
     public function post(StockDocument $doc, User $user, ?\DateTimeInterface $movedAt = null): array
     {
@@ -70,8 +71,10 @@ final class StockLedger
                     'user_id' => $user->id,
                 ]);
 
-                if ($item->isBelowReorderPoint()) {
-                    $touched[$item->id] = $item;
+                // Pesan ulang dihitung per produk (stok tersedia seluruh batch), bukan per batch.
+                $product = $item->product;
+                if ($product && ! isset($touched[$product->id]) && $product->isBelowReorderPoint()) {
+                    $touched[$product->id] = $product;
                 }
             }
         });

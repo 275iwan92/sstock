@@ -2,15 +2,22 @@
 
 namespace Tests\Feature;
 
+use App\Enums\StockDocumentType;
 use App\Models\Category;
 use App\Models\Item;
 use App\Models\Location;
+use App\Models\Product;
+use App\Models\Recipient;
+use App\Models\StockDocument;
+use App\Models\Supplier;
 use App\Models\User;
+use App\Services\StockDocuments;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /* REMARK
- * Tujuan       : Menjaga kode barang otomatis ({AWALAN}-{URUT 4 DIGIT}[-{YYMM kedaluwarsa}]), master Kategori (awalan 3 karakter), dan master Lokasi Penyimpanan.
+ * Tujuan       : Menjaga model Barang dua tingkat: kode produk otomatis {AWALAN}-{URUT} tanpa tanggal, batch per tanggal kedaluwarsa ({kode produk}-{YYMMDD}) yang dibuat oleh Penerimaan,
+ *                pengeluaran FEFO, titik pesan ulang per produk (stok kedaluwarsa tidak dihitung), master Kategori (awalan 3 karakter) dan Lokasi Penyimpanan, serta peringatan kedaluwarsa.
  * Dipakai oleh : php artisan test.
  * Status       : Aktif.
  */
@@ -23,31 +30,61 @@ class ItemCodeTest extends TestCase
         return array_merge(['name' => 'Barang uji', 'category_id' => $cat->id, 'unit' => 'pcs', 'unit_price' => 100, 'reorder_point' => 1, 'reorder_qty' => 5, 'lead_time_days' => 1], $extra);
     }
 
-    public function test_code_follows_category_prefix_running_number_and_expiry(): void
+    private function product(array $extra = [], ?string $code = null): Product
     {
-        $atk = Category::create(['code' => 'ATK', 'name' => 'ATK']);
-        $tls = Category::create(['code' => 'TLS', 'name' => 'Tools']);
-        $this->actingAs(User::factory()->supervisor()->create());
+        $cat = Category::firstOrCreate(['code' => 'ATK'], ['name' => 'ATK']);
 
-        $this->post(route('items.store'), $this->payload($atk))->assertRedirect();
-        $this->post(route('items.store'), $this->payload($atk, ['expiry_date' => '2027-03-15']))->assertRedirect();
-        $this->post(route('items.store'), $this->payload($tls))->assertRedirect();
-
-        $this->assertEqualsCanonicalizing(['ATK-0001', 'ATK-0002-2703', 'TLS-0001'], Item::pluck('code')->all());
+        return Product::register($this->payload($cat, $extra), $code);
     }
 
-    public function test_code_category_and_expiry_are_fixed_after_saving(): void
+    // Penerimaan (draf lalu Confirm) lewat jalur resmi; baris = [produk, jumlah, tanggal kedaluwarsa].
+    private function receive(array $lines, ?User $by = null): void
+    {
+        $docs = app(StockDocuments::class);
+        $by ??= User::factory()->create();
+        $doc = $docs->create(StockDocumentType::Receiving, ['supplier_id' => Supplier::firstOrCreate(['code' => 'S1'], ['name' => 'S'])->id], array_map(
+            fn ($l) => ['product_id' => $l[0]->id, 'qty' => $l[1], 'unit_cost' => 10, 'expiry_date' => $l[2] ?? null], $lines), $by);
+        $docs->confirm($doc, $by);
+    }
+
+    public function test_product_code_follows_category_prefix_and_running_number(): void
     {
         $atk = Category::create(['code' => 'ATK', 'name' => 'ATK']);
         $tls = Category::create(['code' => 'TLS', 'name' => 'Tools']);
         $this->actingAs(User::factory()->supervisor()->create());
-        $this->post(route('items.store'), $this->payload($atk, ['expiry_date' => '2027-03-15']));
-        $item = Item::firstOrFail();
 
-        $this->put(route('items.update', $item), ['_action' => 'save'] + $this->payload($tls, ['name' => 'Baru', 'code' => 'HACK', 'expiry_date' => '2030-01-01']))->assertRedirect();
+        $this->post(route('products.store'), $this->payload($atk))->assertRedirect();
+        $this->post(route('products.store'), $this->payload($atk, ['tracks_expiry' => 1]))->assertRedirect();
+        $this->post(route('products.store'), $this->payload($tls))->assertRedirect();
 
-        $item->refresh();
-        $this->assertSame(['ATK-0001-2703', $atk->id, '2027-03-15', 'Baru'], [$item->code, $item->category_id, $item->expiry_date->format('Y-m-d'), $item->name]);
+        $this->assertEqualsCanonicalizing(['ATK-0001', 'ATK-0002', 'TLS-0001'], Product::pluck('code')->all());
+        // Barang biasa langsung punya satu batch berkode sama; barang berkedaluwarsa belum punya batch sampai ada penerimaan bertanggal.
+        $this->assertEqualsCanonicalizing(['ATK-0001', 'TLS-0001'], Item::pluck('code')->all());
+    }
+
+    public function test_data_entry_can_add_an_item_but_only_the_supervisor_completes_its_parameters(): void
+    {
+        $atk = Category::create(['code' => 'ATK', 'name' => 'ATK']);
+
+        $this->actingAs(User::factory()->create())->post(route('products.store'), ['name' => 'Spidol', 'category_id' => $atk->id, 'unit' => 'pcs'])->assertRedirect();
+        $product = Product::firstOrFail();
+        $this->assertSame([0.0, 0.0, 'ATK-0001'], [$product->unit_price, $product->reorder_point, $product->code]);
+
+        $this->put(route('products.update', $product), ['_action' => 'save', 'name' => 'X', 'unit' => 'pcs'])->assertForbidden();
+    }
+
+    public function test_code_category_and_expiry_flag_are_fixed_after_saving(): void
+    {
+        $atk = Category::create(['code' => 'ATK', 'name' => 'ATK']);
+        $tls = Category::create(['code' => 'TLS', 'name' => 'Tools']);
+        $this->actingAs(User::factory()->supervisor()->create());
+        $this->post(route('products.store'), $this->payload($atk, ['tracks_expiry' => 1]));
+        $product = Product::firstOrFail();
+
+        $this->put(route('products.update', $product), ['_action' => 'save'] + $this->payload($tls, ['name' => 'Baru', 'code' => 'HACK', 'tracks_expiry' => 0]))->assertRedirect();
+
+        $product->refresh();
+        $this->assertSame(['ATK-0001', $atk->id, true, 'Baru'], [$product->code, $product->category_id, $product->tracks_expiry, $product->name]);
     }
 
     public function test_category_prefix_must_be_three_characters_and_unique(): void
@@ -69,11 +106,11 @@ class ItemCodeTest extends TestCase
         $off = Category::create(['code' => 'OFF', 'name' => 'Nonaktif', 'is_active' => false]);
         $this->actingAs(User::factory()->supervisor()->create());
 
-        $this->post(route('items.store'), $this->payload($cat, ['location' => 'A1']))->assertRedirect();
-        $this->post(route('items.store'), $this->payload($cat, ['location' => 'GHOST']))->assertSessionHasErrors('location');
-        $this->post(route('items.store'), $this->payload($cat, ['location' => 'OLD']))->assertSessionHasErrors('location');
-        $this->post(route('items.store'), $this->payload($off))->assertSessionHasErrors('category_id');
-        $this->assertSame(1, Item::count());
+        $this->post(route('products.store'), $this->payload($cat, ['location' => 'A1']))->assertRedirect();
+        $this->post(route('products.store'), $this->payload($cat, ['location' => 'GHOST']))->assertSessionHasErrors('location');
+        $this->post(route('products.store'), $this->payload($cat, ['location' => 'OLD']))->assertSessionHasErrors('location');
+        $this->post(route('products.store'), $this->payload($off))->assertSessionHasErrors('category_id');
+        $this->assertSame(1, Product::count());
     }
 
     public function test_location_master_is_supervisor_only_and_code_stays(): void
@@ -90,24 +127,94 @@ class ItemCodeTest extends TestCase
         $this->get(route('categories.index'))->assertOk();
     }
 
+    public function test_receiving_creates_one_batch_per_expiry_date_and_reuses_the_same_date(): void
+    {
+        $lem = $this->product(['tracks_expiry' => true, 'name' => 'Lem']);
+
+        $this->receive([[$lem, 10, '2026-03-15']]);
+        $this->receive([[$lem, 5, '2026-03-15'], [$lem, 20, '2026-06-20']]);
+
+        $this->assertEqualsCanonicalizing(['ATK-0001-260315' => 15.0, 'ATK-0001-260620' => 20.0], $lem->items()->pluck('stock_qty', 'code')->all());
+        $this->assertSame(35.0, (float) $lem->items()->sum('stock_qty'));
+    }
+
+    public function test_an_expiring_product_needs_a_date_on_every_receiving_line_and_unused_batches_are_removed(): void
+    {
+        $lem = $this->product(['tracks_expiry' => true, 'name' => 'Lem']);
+        $sup = Supplier::create(['code' => 'S1', 'name' => 'S']);
+        $this->actingAs(User::factory()->create());
+
+        $line = ['product_id' => $lem->id, 'qty' => 5, 'unit_cost' => 10];
+        $this->post(route('docs.store', 'receiving'), ['supplier_id' => $sup->id, 'lines' => [$line]])->assertSessionHasErrors('lines.0.expiry_date');
+
+        $this->post(route('docs.store', 'receiving'), ['supplier_id' => $sup->id, 'lines' => [$line + ['expiry_date' => '2026-03-15']]])->assertRedirect();
+        $doc = StockDocument::firstOrFail();
+        $this->assertSame(1, $lem->items()->count());                                       // batch dibuat oleh draf
+
+        $this->put(route('docs.update', ['receiving', $doc]), ['_action' => 'delete'])->assertRedirect();
+        $this->assertSame(0, $lem->items()->count());                                       // draf dihapus: batch yang tidak terpakai ikut hilang
+    }
+
+    public function test_issuance_spills_over_to_the_next_batch_in_fefo_order_and_warns_about_a_later_pick(): void
+    {
+        $lem = $this->product(['tracks_expiry' => true, 'name' => 'Lem']);
+        $future = today()->addYear();
+        $this->receive([[$lem, 30, $future->copy()->addMonths(4)->toDateString()], [$lem, 10, $future->toDateString()]]);
+        $first = $lem->batchFor($future->toDateString());                                  // kedaluwarsa lebih cepat, stok 10
+        $second = $lem->batchFor($future->copy()->addMonths(4)->toDateString());           // stok 30
+        $docs = app(StockDocuments::class);
+        $user = User::factory()->create();
+        $recipient = Recipient::create(['name' => 'Budi']);
+
+        // Mengeluarkan 15 dengan memilih batch pertama (stok 10): 10 darinya, sisa 5 dari batch berikutnya.
+        $doc = $docs->create(StockDocumentType::Issuance, ['recipient_id' => $recipient->id], [['item_id' => $first->id, 'qty' => 15]], $user);
+        $this->assertEqualsCanonicalizing([[$first->id, 10.0], [$second->id, 5.0]], $doc->lines->map(fn ($l) => [$l->item_id, $l->qty])->all());
+        $docs->confirm($doc, $user);
+        $this->assertSame([0.0, 25.0], [$first->fresh()->stock_qty, $second->fresh()->stock_qty]);
+        $this->assertSame([], $docs->fefoWarnings($doc->fresh()));   // batch pertama sudah habis: tidak ada yang lebih cepat kedaluwarsa
+
+        // Memilih batch yang kedaluwarsanya lebih jauh padahal yang lebih cepat masih ada stok: hanya peringatan.
+        $this->receive([[$lem, 4, $future->toDateString()]]);
+        $later = $docs->create(StockDocumentType::Issuance, ['recipient_id' => $recipient->id], [['item_id' => $second->id, 'qty' => 1]], $user);
+        $this->assertStringContainsString('Keluarkan yang kedaluwarsa lebih dulu', implode(' ', $docs->fefoWarnings($later)));
+    }
+
+    public function test_reorder_point_counts_the_available_stock_of_the_whole_product_without_expired_batches(): void
+    {
+        $lem = $this->product(['tracks_expiry' => true, 'name' => 'Lem', 'reorder_point' => 10]);
+        $this->receive([[$lem, 50, today()->subDays(5)->toDateString()], [$lem, 5, today()->addDays(90)->toDateString()]]);
+
+        // 55 di rak, tetapi 50 sudah kedaluwarsa: tersedia 5 <= titik 10.
+        $this->assertTrue($lem->fresh()->isBelowReorderPoint());
+        $this->assertSame([$lem->id], Product::belowReorderPoint()->pluck('id')->all());
+
+        $this->receive([[$lem, 20, today()->addDays(120)->toDateString()]]);                // dua batch sehat: 25 > 10
+        $this->assertFalse($lem->fresh()->isBelowReorderPoint());
+        $this->assertSame([], Product::belowReorderPoint()->pluck('id')->all());
+    }
+
     public function test_expiry_state_and_alerts_only_count_active_items_that_still_have_stock(): void
     {
-        $cat = Category::create(['code' => 'ATK', 'name' => 'ATK']);
-        $mk = fn (string $code, string $exp, float $stock, bool $active = true) => tap(Item::create(['code' => $code, 'name' => $code, 'category_id' => $cat->id, 'unit' => 'pcs', 'unit_price' => 1, 'expiry_date' => $exp, 'is_active' => $active])->forceFill(['stock_qty' => $stock]), fn ($i) => $i->save());
-        $expired = $mk('A-1', today()->subDays(3)->toDateString(), 5);
-        $soon = $mk('A-2', today()->addDays(10)->toDateString(), 5);
-        $mk('A-3', today()->addDays(90)->toDateString(), 5);       // masih lama
-        $mk('A-4', today()->subDays(3)->toDateString(), 0);        // stok habis: tidak ada yang dibuang
-        $mk('A-5', today()->subDays(3)->toDateString(), 5, false); // nonaktif
+        $mk = function (string $name, int $days, float $stock, bool $active = true) {
+            $item = $this->product(['tracks_expiry' => true, 'name' => $name])->batchFor(today()->addDays($days));
+            $item->forceFill(['stock_qty' => $stock, 'is_active' => $active])->save();
+
+            return $item;
+        };
+        $expired = $mk('Uji Lama', -3, 5);
+        $soon = $mk('Uji Sebentar', 10, 5);
+        $mk('Uji Jauh', 90, 5);              // masih lama
+        $mk('Uji Habis', -3, 0);             // stok habis: tidak ada yang dibuang
+        $mk('Uji Nonaktif', -3, 5, false);   // nonaktif
 
         $this->assertSame(['KEDALUWARSA', 'HAMPIR'], [$expired->expiryState(), $soon->expiryState()]);
-        $this->assertSame(['A-1', 'A-2'], Item::nearExpiry()->orderBy('expiry_date')->pluck('code')->all());
+        $this->assertSame(['Uji Lama', 'Uji Sebentar'], Item::nearExpiry()->orderBy('expiry_date')->pluck('name')->all());
 
         $this->actingAs(User::factory()->supervisor()->create());
         $this->get(route('home'))->assertOk()->assertSee('Pisahkan dari rak');
         $report = $this->get(route('reports.expiry'))->assertOk()->assertSee('KEDALUWARSA')->assertSee('HAMPIR')->getContent();
-        $this->assertStringNotContainsString('A-3', $report);
-        $this->assertStringContainsString('A-3', $this->get(route('reports.expiry', ['days' => 120]))->getContent());
+        $this->assertStringNotContainsString('Uji Jauh', $report);
+        $this->assertStringContainsString('Uji Jauh', $this->get(route('reports.expiry', ['days' => 120]))->getContent());
     }
 
     public function test_the_sample_data_builds_and_shows_the_expiry_alerts(): void
@@ -115,9 +222,10 @@ class ItemCodeTest extends TestCase
         $this->seed();
 
         $this->assertSame(0, Item::whereNull('location')->count());
+        $this->assertSame(0, Item::whereNull('product_id')->count());
         $this->assertSame(Location::count(), Location::whereIn('code', Item::pluck('location'))->count());
-        $this->assertSame(2, Item::nearExpiry()->count());  // satu sudah lewat, satu hampir; yang ke-3 masih lama
-        $this->assertTrue(Item::where('code', 'like', 'ATK-%-%')->exists());
+        $this->assertSame(2, Item::nearExpiry()->count());  // satu sudah lewat, satu hampir; dua batch lain masih lama
+        $this->assertSame(2, Product::where('name', 'Lem Kayu Fox 100 ml')->firstOrFail()->items()->count());   // satu produk, dua batch
         $this->actingAs(User::where('username', 'supervisor')->firstOrFail())->get(route('home'))->assertOk()->assertSee('Lem Kayu Fox 100 ml');
     }
 }

@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
-use App\Models\Item;
+use App\Models\Product;
 use App\Models\User;
 use App\Models\UserGroup;
 use App\Support\Menu;
@@ -54,7 +54,7 @@ class SecurityTest extends TestCase
         $this->assertSame(['ISS'], $this->codes($entry));
         $this->actingAs($entry)->get(route('docs.index', 'issuance'))->assertOk();
         $this->get(route('docs.index', 'receiving'))->assertForbidden();
-        $this->get(route('items.index'))->assertForbidden();
+        $this->get(route('products.index'))->assertForbidden();
         $this->get(route('reports.summary'))->assertForbidden();
         $this->get(route('docs.index', 'opening'))->assertForbidden();
         $this->get(route('home'))->assertOk();
@@ -68,10 +68,10 @@ class SecurityTest extends TestCase
         $this->actingAs($entry);
 
         $this->assertSame(['ro', 'rw', null], [$entry->moduleAccess('ITM'), $entry->moduleAccess('RCV'), $entry->moduleAccess('ISS')]);
-        $this->get(route('items.index'))->assertOk();                                    // RO: boleh lihat
+        $this->get(route('products.index'))->assertOk();                                 // RO: boleh lihat
         $this->get(route('docs.create', 'receiving'))->assertOk();                       // RW: boleh buka form
-        $item = Item::create(['code' => 'X1', 'name' => 'Item X', 'category_id' => Category::create(['code' => 'ATK', 'name' => 'ATK'])->id, 'unit' => 'pcs', 'unit_price' => 1]);
-        $this->postJson(route('items.toggle', $item))->assertForbidden();                // RO: perubahan ditolak
+        $product = Product::register(['name' => 'Item X', 'category_id' => Category::create(['code' => 'ATK', 'name' => 'ATK'])->id, 'unit' => 'pcs', 'unit_price' => 1], 'X1');
+        $this->postJson(route('products.toggle', $product))->assertForbidden();                // RO: perubahan ditolak
         $this->post(route('docs.store', 'issuance'), [])->assertForbidden();             // ISS tanpa akses
     }
 

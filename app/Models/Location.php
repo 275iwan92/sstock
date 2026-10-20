@@ -15,6 +15,11 @@ class Location extends Model
         return ['is_active' => 'boolean'];
     }
 
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class, 'location', 'code');
+    }
+
     public function items(): HasMany
     {
         return $this->hasMany(Item::class, 'location', 'code');

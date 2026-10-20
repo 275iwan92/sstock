@@ -1,0 +1,35 @@
+<svg class="g-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 250" role="img" aria-labelledby="ug-masuk-t ug-masuk-d">
+<title id="ug-masuk-t">Alur masuk ke Stoku</title>
+<desc id="ug-masuk-d">Isi username atau e-mail dan password untuk masuk ke Beranda. Bila lupa password, minta tautan reset lewat e-mail, lalu pilih password baru. Dari Beranda, pilih menu di panel kiri untuk membuka tab kerja.</desc>
+<defs><marker id="m-ug-masuk" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="n n-in"  x="20" y="30" width="200" height="70" rx="9"/>
+<text class="t b" x="120" y="53" text-anchor="middle">Halaman masuk</text>
+<text class="t s" x="120" y="69" text-anchor="middle">username atau e-mail</text>
+<text class="t s" x="120" y="85" text-anchor="middle">+ password</text>
+<rect class="n n-ok"  x="290" y="30" width="180" height="70" rx="9"/>
+<text class="t b" x="380" y="61" text-anchor="middle">Beranda</text>
+<text class="t s" x="380" y="77" text-anchor="middle">ringkasan dan peringatan</text>
+<rect class="n n-gray"  x="540" y="30" width="160" height="70" rx="9"/>
+<text class="t b" x="620" y="61" text-anchor="middle">Pilih menu</text>
+<text class="t s" x="620" y="77" text-anchor="middle">panel kiri</text>
+<rect class="n n-teal"  x="750" y="30" width="130" height="70" rx="9"/>
+<text class="t b" x="815" y="61" text-anchor="middle">Tab kerja</text>
+<text class="t s" x="815" y="77" text-anchor="middle">grid atau form</text>
+<path class="e" d="M220,65 L290,65" marker-end="url(#m-ug-masuk)"/>
+<path class="e" d="M470,65 L540,65" marker-end="url(#m-ug-masuk)"/>
+<path class="e" d="M700,65 L750,65" marker-end="url(#m-ug-masuk)"/>
+<rect class="n n-warn"  x="20" y="150" width="200" height="60" rx="9"/>
+<text class="t b" x="120" y="176" text-anchor="middle">Lupa password?</text>
+<text class="t s" x="120" y="192" text-anchor="middle">Kirim tautan reset</text>
+<rect class="n n-gray"  x="290" y="150" width="200" height="60" rx="9"/>
+<text class="t b" x="390" y="176" text-anchor="middle">Buka tautan di e-mail</text>
+<text class="t s" x="390" y="192" text-anchor="middle">berlaku 60 menit, sekali pakai</text>
+<rect class="n n-gray"  x="560" y="150" width="200" height="60" rx="9"/>
+<text class="t b" x="660" y="176" text-anchor="middle">Password baru</text>
+<text class="t s" x="660" y="192" text-anchor="middle">minimal 8 karakter</text>
+<path class="e" d="M120,100 L120,150" marker-end="url(#m-ug-masuk)"/>
+<path class="e" d="M220,180 L290,180" marker-end="url(#m-ug-masuk)"/>
+<path class="e" d="M490,180 L560,180" marker-end="url(#m-ug-masuk)"/>
+<path class="e" d="M760,180 L820,180 L820,125 L380,125 L380,100" marker-end="url(#m-ug-masuk)"/>
+<text class="el" x="560" y="140" text-anchor="start">Masuk dengan password baru</text>
+</svg>

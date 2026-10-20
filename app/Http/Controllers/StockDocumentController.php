@@ -6,6 +6,7 @@ use App\Enums\StockDocumentType;
 use App\Http\Requests\StockDocumentRequest;
 use App\Models\Department;
 use App\Models\Item;
+use App\Models\Product;
 use App\Models\Recipient;
 use App\Models\StockDocument;
 use App\Models\Supplier;
@@ -98,7 +99,7 @@ class StockDocumentController extends Controller
 
         $redirect = ($action === 'delete' ? redirect()->route('docs.index', $type) : redirect()->route('docs.show', [$type, $document]))->with('status', $message);
         if ($reorder) {
-            $redirect->with('reorder', collect($reorder)->map(fn (Item $i) => "{$i->code} {$i->name} (stok ".Locale::number($i->stock_qty, 2).', titik pesan ulang '.Locale::number($i->reorder_point, 2).')')->implode('; '));
+            $redirect->with('reorder', collect($reorder)->map(fn (Product $p) => "{$p->code} {$p->name} (stok tersedia ".Locale::number($p->available(), 2).', titik pesan ulang '.Locale::number($p->reorder_point, 2).')')->implode('; '));
         }
 
         return $redirect;
@@ -195,30 +196,35 @@ class StockDocumentController extends Controller
             'departments' => Department::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id')->all(),
             'suppliers' => Supplier::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id')->all(),
             'units' => Unit::query()->where('is_active', true)->orderBy('code')->get()->mapWithKeys(fn (Unit $u) => [$u->code => "{$u->code} · {$u->name}"])->all(),
-            'lines' => $this->lineRows($doc),
+            'lines' => $this->lineRows($doc, $t),
+            'fefo' => $doc->exists && $doc->status === 'draft' ? $this->documents->fefoWarnings($doc) : [],
         ];
     }
 
     // Baris tabel item: dari input lama (validasi gagal) atau dari dokumen. Kolom pilihan item butuh label teksnya (item_id_label).
-    private function lineRows(StockDocument $doc): array
+    private function lineRows(StockDocument $doc, StockDocumentType $t): array
     {
+        $byProduct = in_array($t, [StockDocumentType::Receiving, StockDocumentType::Opening], true);
         $old = old('lines');
         if (is_array($old)) {
             $items = Item::query()->whereIn('id', array_filter(array_column($old, 'item_id')))->get()->keyBy('id');
+            $products = Product::query()->whereIn('id', array_filter(array_column($old, 'product_id')))->get()->keyBy('id');
 
-            return array_map(fn ($r) => $this->lineRow($r, $items[$r['item_id'] ?? 0] ?? null), array_values($old));
+            return array_map(fn ($r) => $this->lineRow($r, $items[$r['item_id'] ?? 0] ?? null, $products[$r['product_id'] ?? 0] ?? null), array_values($old));
         }
 
         return $doc->exists ? $doc->lines->map(fn ($l) => $this->lineRow([
-            'item_id' => $l->item_id, 'qty' => $l->entered_qty ?? $l->qty, 'unit' => $l->entered_unit ?? $l->item->unit, 'unit_cost' => $l->entered_unit_cost ?? $l->unit_cost,
+            ($byProduct ? 'product_id' : 'item_id') => $byProduct ? $l->item->product_id : $l->item_id,
+            'expiry_date' => $byProduct ? $l->item->expiry_date?->format('Y-m-d') : null, 'qty' => $l->entered_qty ?? $l->qty, 'unit' => $l->entered_unit ?? $l->item->unit, 'unit_cost' => $l->entered_unit_cost ?? $l->unit_cost,
             'stock_qty' => $l->qty, 'system_qty' => $l->system_qty, 'counted_qty' => $l->counted_qty, 'note' => $l->note,
-        ], $l->item))->all() : [];
+        ], $l->item, $byProduct ? $l->item->product : null))->all() : [];
     }
 
-    private function lineRow(array $row, ?Item $item): array
+    private function lineRow(array $row, ?Item $item, ?Product $product = null): array
     {
         return $row + [
-            'item_id_label' => $item ? "{$item->code} · {$item->name}" : '',
+            'item_id_label' => $item?->label() ?? '',
+            'product_id_label' => $product ? "{$product->code} · {$product->name}" : '',
             'unit' => $item?->unit, 'available' => $item?->stock_qty, 'system_qty' => $item?->stock_qty,
         ];
     }

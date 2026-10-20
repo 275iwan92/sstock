@@ -1,0 +1,51 @@
+<svg class="g-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 590" role="img" aria-labelledby="tg-stock-ledger-t tg-stock-ledger-d">
+<title id="tg-stock-ledger-t">Stock ledger flow</title>
+<desc id="tg-stock-ledger-d">Document lines are posted by StockDocuments through StockLedger::post inside one transaction: lock the item row, compute the signed quantity, refuse a negative balance, pick the cost, compute the moving average, then update items and insert a stock_movements row. Cancel calls reverse, which adds new rows with reversal_of.</desc>
+<defs><marker id="m-tg-stock-ledger" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="n n-gray"  x="20" y="20" width="860" height="50" rx="9"/>
+<text class="t b" x="450" y="41" text-anchor="middle">Document lines</text>
+<text class="t s" x="450" y="57" text-anchor="middle">item (batch), qty, unit_cost; Adjustment: counted_qty vs system_qty; Receiving: entered qty/unit converted by UnitConverter</text>
+<rect class="n n-purple"  x="20" y="105" width="860" height="46" rx="9"/>
+<text class="t b" x="450" y="124" text-anchor="middle">StockDocuments::confirm / approve</text>
+<text class="t s" x="450" y="140" text-anchor="middle">one DB transaction; sets status, confirmed_by / approved_by</text>
+<path class="e" d="M450,70 L450,105" marker-end="url(#m-tg-stock-ledger)"/>
+<rect class="g" x="20" y="186" width="860" height="210" rx="12"/>
+<text class="t s" x="32" y="203">StockLedger::post(document), per line</text>
+<rect class="n n-in"  x="34" y="215" width="156" height="128" rx="9"/>
+<text class="t b" x="112" y="283" text-anchor="middle">1 Lock</text>
+<text class="t s" x="112" y="258" text-anchor="middle">items row,</text>
+<text class="t s" x="112" y="273" text-anchor="middle">lockForUpdate</text>
+<rect class="n n-in"  x="204" y="215" width="156" height="128" rx="9"/>
+<text class="t b" x="282" y="283" text-anchor="middle">2 Signed qty</text>
+<text class="t s" x="282" y="258" text-anchor="middle">Issuance -,</text>
+<text class="t s" x="282" y="273" text-anchor="middle">Opening/Receiving +,</text>
+<text class="t s" x="282" y="288" text-anchor="middle">Adjustment own sign; 0</text>
+<text class="t s" x="282" y="303" text-anchor="middle">skipped</text>
+<rect class="n n-in"  x="374" y="215" width="156" height="128" rx="9"/>
+<text class="t b" x="452" y="283" text-anchor="middle">3 Guard</text>
+<text class="t s" x="452" y="258" text-anchor="middle">balance &lt; 0 -&gt;</text>
+<text class="t s" x="452" y="273" text-anchor="middle">insufficient stock</text>
+<text class="t s" x="452" y="288" text-anchor="middle">error</text>
+<rect class="n n-in"  x="544" y="215" width="156" height="128" rx="9"/>
+<text class="t b" x="622" y="283" text-anchor="middle">4 Cost</text>
+<text class="t s" x="622" y="258" text-anchor="middle">+ : line cost</text>
+<text class="t s" x="622" y="273" text-anchor="middle">(Receiving, Opening),</text>
+<text class="t s" x="622" y="288" text-anchor="middle">else avg cost or</text>
+<text class="t s" x="622" y="303" text-anchor="middle">price; - : avg cost</text>
+<rect class="n n-in"  x="714" y="215" width="156" height="128" rx="9"/>
+<text class="t b" x="792" y="283" text-anchor="middle">5 Average</text>
+<text class="t s" x="792" y="258" text-anchor="middle">(stock x avg + qty x</text>
+<text class="t s" x="792" y="273" text-anchor="middle">cost) / new balance</text>
+<path class="e" d="M450,151 L450,186" marker-end="url(#m-tg-stock-ledger)"/>
+<rect class="n n-purple"  x="20" y="430" width="420" height="62" rx="9"/>
+<text class="t b" x="230" y="457" text-anchor="middle">items</text>
+<text class="t s" x="230" y="473" text-anchor="middle">stock_qty and avg_cost updated (forceFill: not mass-assignable)</text>
+<rect class="n n-purple"  x="460" y="430" width="420" height="62" rx="9"/>
+<text class="t b" x="670" y="457" text-anchor="middle">stock_movements (insert)</text>
+<text class="t s" x="670" y="473" text-anchor="middle">qty, unit_cost, balance_qty, balance_avg_cost, user_id</text>
+<path class="e" d="M230,396 L230,430" marker-end="url(#m-tg-stock-ledger)"/>
+<path class="e" d="M670,396 L670,430" marker-end="url(#m-tg-stock-ledger)"/>
+<rect class="n n-bad"  x="20" y="525" width="860" height="50" rx="9"/>
+<text class="t b" x="450" y="546" text-anchor="middle">Cancel: StockLedger::reverse</text>
+<text class="t s" x="450" y="562" text-anchor="middle">assertReversible first; each original row gets a NEW row with reversal_of; originals are never edited or deleted</text>
+</svg>

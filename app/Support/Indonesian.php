@@ -76,6 +76,13 @@ final class Indonesian
         'Near expiry / expired' => 'Hampir kedaluwarsa / kedaluwarsa', 'Expiry Report' => 'Laporan Kedaluwarsa',
         'Expires within (days)' => 'Kedaluwarsa dalam (hari)', 'Days Left' => 'Sisa Hari', 'Items with stock that are expired or about to expire' => 'Barang yang masih ada stoknya dan sudah / hampir kedaluwarsa',
 
+        // Barang dua tingkat: produk + batch
+        'Batches' => 'Batch', 'Batch Code' => 'Kode Batch', 'Nearest Expiry' => 'Kedaluwarsa Terdekat', 'Available Stock' => 'Stok Tersedia',
+        'Item has an expiry date' => 'Barang berkedaluwarsa',
+        'Generated automatically: category prefix and running number. The expiry date is never part of the item code; each expiry batch has its own batch code.' => 'Dibuat otomatis: awalan kategori dan nomor urut. Tanggal kedaluwarsa tidak menjadi bagian kode barang; tiap batch kedaluwarsa punya kode batch sendiri.',
+        'Tick for items that expire. The expiry date is then entered on every Receiving / Opening Balance line and each date becomes its own batch. Cannot be changed after saving.' => 'Centang untuk barang yang kedaluwarsa. Tanggalnya diisi di setiap baris Penerimaan / Saldo Awal dan tiap tanggal menjadi satu batch. Tidak bisa diubah setelah disimpan.',
+        'Alert shows when the available stock (all batches that are not expired) is at or below this quantity. 0 = no alert.' => 'Peringatan muncul bila stok tersedia (semua batch yang belum kedaluwarsa) sama dengan atau di bawah jumlah ini. 0 = tanpa peringatan.',
+
         // Data Contoh
         'Sample Data' => 'Data Contoh',
 

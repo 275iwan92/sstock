@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Schema;
 final class SampleData
 {
     // Tabel yang dihitung di layar (nama tabel => label).
-    public const COUNTED = ['items' => 'Barang', 'stock_documents' => 'Dokumen stok', 'stock_movements' => 'Pergerakan stok', 'users' => 'Pengguna'];
+    public const COUNTED = ['products' => 'Barang', 'items' => 'Batch', 'stock_documents' => 'Dokumen stok', 'stock_movements' => 'Pergerakan stok', 'users' => 'Pengguna'];
 
     public static function enabled(): bool
     {
@@ -64,7 +64,7 @@ final class SampleData
         return [
             'Akun uji: admin, supervisor, entry (kata sandi bawaan seeder)',
             'Kategori, lokasi penyimpanan, satuan, departemen, penerima, dan 3 supplier',
-            (count(ItemSeeder::ITEMS) + count(ItemSeeder::EXPIRING)).' barang, termasuk '.count(ItemSeeder::EXPIRING).' barang berkedaluwarsa (sudah lewat, hampir, dan masih lama; tanggalnya dihitung dari hari ini)',
+            (count(ItemSeeder::ITEMS) + count(array_unique(array_column(ItemSeeder::EXPIRING, 0)))).' barang, termasuk '.count(array_unique(array_column(ItemSeeder::EXPIRING, 0))).' barang berkedaluwarsa dengan '.count(ItemSeeder::EXPIRING).' batch (sudah lewat, hampir, dan masih lama; tanggalnya dihitung dari hari ini)',
             'Riwayat transaksi: saldo awal bulan lalu, penerimaan, pengeluaran, dan opname, bertanggal relatif terhadap hari ini',
         ];
     }

@@ -63,11 +63,12 @@
             <li><b>Transaksi</b> mencatat setiap perubahan stok: Saldo Awal, Penerimaan Barang, Pengeluaran Barang, Penyesuaian Stok. Stok baru berubah setelah dokumen <b>Konfirmasi</b>.</li>
             <li><b>Laporan</b> dan <b>Beranda</b> membaca hasilnya: stok sekarang, riwayat, barang yang harus dipesan ulang, barang hampir kedaluwarsa.</li>
         </ol>
+        @include('help.diagram', ['name' => 'ug-alur-kerja', 'caption' => 'Alur kerja Stoku: dari Data Master sampai Laporan.'])
         <h3>Peran pengguna</h3>
         <table class="g-table">
             <thead><tr><th>Peran</th><th>Bisa mengerjakan</th></tr></thead>
             <tbody>
-                <tr><td>Data Entry</td><td>Penerimaan Barang dan Pengeluaran Barang; mengelola Supplier, Departemen, Penerima; melihat Barang dan kebanyakan laporan. Tidak melihat harga dan nilai stok.</td></tr>
+                <tr><td>Data Entry</td><td>Penerimaan Barang dan Pengeluaran Barang; mengelola Supplier, Departemen, Penerima; menambah Barang baru dan melihat Barang, serta kebanyakan laporan. Tidak melihat harga dan nilai stok.</td></tr>
                 <tr><td>Supervisor</td><td>Semua fungsi stok: mengubah Barang, Satuan, Kategori, Lokasi; Saldo Awal; Penyesuaian Stok; <b>Setujui</b> / <b>Tolak</b>; melihat harga, nilai, dan semua laporan.</td></tr>
                 <tr><td>Administrator</td><td>Semua yang bisa dikerjakan Supervisor, ditambah menu <b>Keamanan</b> (pengguna, grup, data contoh) dan Technical Guide.</td></tr>
             </tbody>
@@ -82,23 +83,25 @@
             <li>Isi <b>username atau e-mail</b> dan <b>password</b>, lalu tekan tombol masuk.</li>
             <li>Lupa password? Tekan <b>Lupa password?</b>, isi username atau e-mail, lalu tekan <b>Kirim tautan reset</b>. Tautan dikirim ke e-mail Anda, berlaku 60 menit, dan hanya bisa dipakai sekali. Pilih password baru (minimal 8 karakter), lalu <b>Simpan password baru</b>.</li>
         </ol>
+        @include('help.diagram', ['name' => 'ug-masuk', 'caption' => 'Masuk, lupa password, dan membuka menu.'])
         <p class="g-note">Akun yang dinonaktifkan tidak bisa masuk. Percobaan masuk yang salah berulang akan ditahan sementara.</p>
 
         <h3>Beranda</h3>
         <p>Setelah masuk Anda melihat <b>Beranda</b>: kata motivasi, deretan kotak ringkasan, dan peringatan.</p>
         <ul class="g-list">
             <li><b>Kotak ringkasan</b> (bisa diklik, membuka menu terkait): Barang aktif, Di / bawah titik pesan ulang, Hampir kedaluwarsa / kedaluwarsa, Penerimaan hari ini, Pengeluaran hari ini. <span class="g-role">hanya Supervisor</span> Nilai stok dan Dokumen menunggu persetujuan.</li>
-            <li><b>Peringatan titik pesan ulang:</b> daftar barang yang stoknya sama dengan atau di bawah <b>Titik Pesan Ulang</b>, dengan kolom <b>Status Pesanan</b>: merah <b>Belum dipesan</b>, hijau <b>Dipesan tanggal · nomor PO</b>.
+            <li><b>Peringatan titik pesan ulang:</b> daftar barang yang <b>stok tersedia</b>-nya (jumlah semua batch yang belum kedaluwarsa) sama dengan atau di bawah <b>Titik Pesan Ulang</b>, dengan kolom <b>Status Pesanan</b>: merah <b>Belum dipesan</b>, hijau <b>Dipesan tanggal · nomor PO</b>.
                 <ol class="g-steps">
                     <li>Setelah memesan ke supplier, tekan <b>Catat Pemesanan</b>.</li>
                     <li>Pilih barang, isi <b>Tanggal Pesan</b> dan <b>No. Referensi Pemesanan (PO)</b>, lalu <b>Simpan</b>.</li>
                     <li>Saat barangnya diterima dan Penerimaan Barang dikonfirmasi, catatan pesanan itu tertutup otomatis. Tombol <b>Buka Penerimaan</b> membuka layar Penerimaan Barang.</li>
                 </ol>
             </li>
-            <li><b>Peringatan kedaluwarsa:</b> barang yang masih ada stoknya dan sudah atau hampir kedaluwarsa.</li>
+            <li><b>Peringatan kedaluwarsa:</b> batch barang yang masih ada stoknya dan sudah atau hampir kedaluwarsa (kurang dari 30 hari), mulai yang paling dulu.</li>
             <li><span class="g-role">hanya Supervisor</span> <b>Nilai Stok:</b> grafik nilai stok per minggu dalam satu bulan; tombol <b>Bulan lalu</b> / <b>Bulan depan</b> berpindah bulan.</li>
         </ul>
 
+        @include('help.diagram', ['name' => 'ug-pesan-ulang', 'caption' => 'Dari peringatan titik pesan ulang sampai pesanan tertutup oleh Penerimaan Barang.'])
         <h3>Menu dan tab</h3>
         <ul class="g-list">
             <li>Menu ada di panel kiri, dikelompokkan: <b>Data Master</b>, <b>Transaksi</b>, <b>Laporan</b>, dan <b>Keamanan</b> (menempel di bawah). Hanya menu yang boleh Anda buka yang tampil.</li>
@@ -187,6 +190,7 @@
                 <tr><td><span class="g-btn">Setujui</span> / <span class="g-btn">Tolak</span> <span class="g-role">hanya Supervisor</span></td><td>Memutuskan Penyesuaian Stok yang diajukan, atau pengajuan pembatalan.</td></tr>
             </tbody>
         </table>
+        @include('help.diagram', ['name' => 'ug-siklus-dokumen', 'caption' => 'Siklus dokumen Saldo Awal, Penerimaan Barang, dan Pengeluaran Barang.'])
         <div class="g-tip">Salah ketik pada dokumen yang sudah dikonfirmasi? Dokumen terkunci. Batalkan lalu buat dokumen baru, atau koreksi selisih stoknya lewat <b>Penyesuaian Stok</b>.</div>
 
         @if ($anyMaster)
@@ -209,24 +213,24 @@
 
         @if ($can('ITM'))
         <h3 id="m-itm">Barang</h3>
-        <p><b>Tujuan:</b> daftar semua barang beserta stok sekarang. Grid menampilkan Kategori, Satuan, Lokasi, Kedaluwarsa, Stok, Titik Pesan Ulang, Lead Time (hari), Status stok (<b>AMAN</b> / <b>PESAN ULANG</b>); <span class="g-role">hanya Supervisor</span> juga Harga Satuan dan Nilai Stok. Saringan: Kategori, Satuan. Kotak hitung: Semua barang, Pesan ulang, Nonaktif.</p>
-        @if ($sup)
-            <h4>Menambah barang</h4>
-            <ol class="g-steps">
-                <li>Tekan <b>+ Data Baru</b>.</li>
-                <li>Isi <b>Nama Barang</b>, pilih <b>Kategori</b>, <b>Satuan</b>, dan (bila ada) <b>Lokasi Rak / Penyimpanan</b>.</li>
-                <li>Isi <b>Tanggal Kedaluwarsa</b> hanya untuk barang yang kedaluwarsa.</li>
-                <li>Isi <b>Titik Pesan Ulang</b> (peringatan muncul bila stok sama dengan atau di bawah angka ini; 0 = tanpa peringatan), <b>Jml Pesan Ulang</b> (jumlah yang disarankan dipesan), <b>Lead Time (hari)</b> (lama dari pesan sampai barang datang), dan <b>Harga Satuan (Rp)</b> (harga acuan).</li>
-                <li>Tekan <b>Simpan</b>.</li>
-            </ol>
-        @else
-            <p>Data Entry hanya dapat melihat data barang (form terkunci); harga dan nilai tidak ditampilkan. Penambahan dan perubahan barang dilakukan Supervisor.</p>
-        @endif
+        <p><b>Tujuan:</b> daftar semua barang beserta stok sekarang. Satu baris = satu barang (bukan satu batch). Grid menampilkan Kategori, Satuan, Lokasi, <b>Batch</b>, <b>Kedaluwarsa Terdekat</b>, <b>Stok</b>, <b>Stok Tersedia</b> (batch yang belum kedaluwarsa), Titik Pesan Ulang, Lead Time (hari), Status stok (<b>AMAN</b> / <b>PESAN ULANG</b>); <span class="g-role">hanya Supervisor</span> juga Harga Satuan dan Nilai Stok. Saringan: Kategori, Satuan. Kotak hitung: Semua barang, Pesan ulang, Nonaktif.</p>
+        <h4>Menambah barang</h4>
+        <ol class="g-steps">
+            <li>Tekan <b>+ Data Baru</b>. Data Entry maupun Supervisor boleh menambah barang baru.</li>
+            <li>Isi <b>Nama Barang</b>, pilih <b>Kategori</b>, <b>Satuan</b>, dan (bila ada) <b>Lokasi Rak / Penyimpanan</b>.</li>
+            <li>Centang <b>Barang berkedaluwarsa</b> bila barangnya punya tanggal kedaluwarsa (lem, oli, gemuk, dan sejenisnya). Tanggalnya <b>tidak diisi di sini</b>, melainkan di setiap baris Penerimaan Barang.</li>
+            <li><span class="g-role">hanya Supervisor</span> Isi <b>Titik Pesan Ulang</b> (peringatan muncul bila stok tersedia sama dengan atau di bawah angka ini; 0 = tanpa peringatan), <b>Jml Pesan Ulang</b> (jumlah yang disarankan dipesan), <b>Lead Time (hari)</b> (lama dari pesan sampai barang datang), dan <b>Harga Satuan (Rp)</b> (harga acuan). Bila Data Entry yang menambah barang, bagian ini kosong (0) dan dilengkapi Supervisor kemudian.</li>
+            <li>Tekan <b>Simpan</b>.</li>
+        </ol>
+        <p>Mengubah barang yang sudah ada, mengaktifkan, atau menonaktifkannya hanya untuk Supervisor; Data Entry melihat form terkunci.</p>
         <ul class="g-list">
-            <li><b>Kode Barang dibuat otomatis:</b> <code>AWALAN-URUTAN</code> (mis. <code>ATK-0001</code>), dan bila barang kedaluwarsa ditambah tahun dan bulannya (mis. <code>ATK-0008-2611</code>). Awalan diambil dari Kategori. Kode, Kategori, dan Tanggal Kedaluwarsa <b>terkunci</b> setelah disimpan.</li>
-            <li>Kotak di atas form (di barang yang sudah ada) menunjukkan <b>Stok saat ini</b>; <span class="g-role">hanya Supervisor</span> juga <b>Biaya rata-rata</b> dan <b>Nilai stok</b>. Stok <b>tidak bisa diketik di sini</b>: stok hanya berubah lewat dokumen transaksi.</li>
+            <li><b>Kode Barang dibuat otomatis:</b> <code>AWALAN-URUTAN</code> (mis. <code>ATK-0001</code>), tanpa tanggal. Awalan diambil dari Kategori. Kode, Kategori, dan tanda <b>berkedaluwarsa</b> <b>terkunci</b> setelah disimpan.</li>
+            <li><b>Barang berkedaluwarsa dipecah menjadi batch.</b> Satu tanggal kedaluwarsa = satu batch dengan kode <code>KODEBARANG-TTBBHH</code> (mis. <code>ATK-0008-261101</code> = kedaluwarsa 01 November 2026). Batch dibuat otomatis saat Penerimaan Barang atau Saldo Awal memakai tanggal yang belum ada; tanggal yang sama menambah stok batch yang sama. Daftar batch (kode, tanggal, stok, status) tampil di bagian <b>Batch</b> pada form barang.</li>
+            <li>Kotak di atas form (di barang yang sudah ada) menunjukkan <b>Stok saat ini</b> (semua batch) dan <b>Tersedia</b> (hanya yang belum kedaluwarsa); <span class="g-role">hanya Supervisor</span> juga <b>Nilai stok</b>. Stok <b>tidak bisa diketik di sini</b>: stok hanya berubah lewat dokumen transaksi.</li>
+            <li><b>Titik Pesan Ulang dihitung per barang</b> dari stok tersedia seluruh batch. Batch yang sudah kedaluwarsa tidak dihitung, jadi barang bisa berstatus <b>PESAN ULANG</b> walau di rak masih ada stok yang sudah kedaluwarsa.</li>
             <li><b>Harga Satuan</b> hanya acuan. Nilai stok memakai rata-rata bergerak dari harga beli di Penerimaan Barang.</li>
         </ul>
+        @include('help.diagram', ['name' => 'ug-barang-batch', 'caption' => 'Barang, batch per tanggal kedaluwarsa, urutan keluar, dan titik pesan ulang.'])
         @endif
 
         @if ($can('SUP'))
@@ -304,11 +308,11 @@
         <ol class="g-steps">
             <li>Buka <b>Penerimaan Barang</b>, tekan <b>+ Data Baru</b>.</li>
             <li>Pilih <b>Supplier</b> (wajib). Isi <b>No. Referensi (surat jalan / PO / faktur)</b> bila ada. <b>Penerima</b> dan <b>Departemen</b> opsional.</li>
-            <li>Tekan <b>+ Tambah Barang</b>, pilih barang, isi <b>Jml</b>, <b>Satuan</b>, dan <b>Harga Beli / Satuan</b>. Kolom <b>Subtotal</b> dan <b>= Dalam satuan stok</b> terisi otomatis. Satuan boleh berbeda dari satuan barang bila ada konversinya di master Satuan.</li>
+            <li>Tekan <b>+ Tambah Barang</b>, pilih barang, lalu isi <b>Tanggal Kedaluwarsa</b> (wajib untuk barang berkedaluwarsa; barang lain mengabaikannya), <b>Jml</b>, <b>Satuan</b>, dan <b>Harga Beli / Satuan</b>. Satu kedatangan biasanya satu tanggal, jadi cukup satu baris. Kolom <b>Subtotal</b> dan <b>= Dalam satuan stok</b> terisi otomatis. Satuan boleh berbeda dari satuan barang bila ada konversinya di master Satuan.</li>
             <li>Isi <b>Catatan</b> bila perlu, tekan <b>Simpan</b> (menjadi Draf), periksa, lalu <b>Konfirmasi</b>.</li>
         </ol>
         <ul class="g-list">
-            <li>Setelah Konfirmasi, stok barang bertambah dan <b>biaya rata-rata</b> barang dihitung ulang dari harga beli.</li>
+            <li>Setelah Konfirmasi, stok batch bertambah dan <b>biaya rata-rata</b> batch dihitung ulang dari harga beli. Tanggal kedaluwarsa yang belum pernah dipakai membuat <b>batch baru</b> otomatis; tanggal yang sama menambah batch yang ada.</li>
             <li>Penerimaan yang dikonfirmasi otomatis <b>menutup pesanan ulang</b> yang tercatat untuk barang-barang itu (lihat Beranda, <b>Catat Pemesanan</b>).</li>
             <li>Bila barang berada di bawah Titik Pesan Ulang setelah transaksi, Stoku menampilkan peringatan.</li>
         </ul>
@@ -319,7 +323,8 @@
         <ol class="g-steps">
             <li>Buka <b>Pengeluaran Barang</b>, tekan <b>+ Data Baru</b>.</li>
             <li>Pilih <b>Penerima</b> (wajib), <b>Departemen</b> (opsional; kosong = departemen bawaan penerima), dan isi <b>Keperluan (maintenance / ATK ...)</b>.</li>
-            <li>Tekan <b>+ Tambah Barang</b>, pilih barang. Kolom <b>Tersedia</b> menunjukkan stok sekarang. Isi <b>Jml</b>; jumlah tidak boleh melebihi stok.</li>
+            <li>Tekan <b>+ Tambah Barang</b>, pilih barang. Barang berkedaluwarsa muncul per batch, dengan yang <b>kedaluwarsanya paling cepat di atas</b> (FEFO); kolom <b>Tersedia</b> menunjukkan stok batch itu. Isi <b>Jml</b>; bila melebihi stok batch yang dipilih, sisanya otomatis diambil dari batch berikutnya (kedaluwarsa paling cepat dulu). Batch yang sudah kedaluwarsa tidak ditawarkan.</li>
+            <li>Bila Anda memilih batch yang kedaluwarsanya lebih jauh padahal ada batch lebih cepat yang masih punya stok, form menampilkan <b>peringatan kuning</b> (hanya peringatan, tidak memblokir).</li>
             <li><b>Simpan</b>, periksa, lalu <b>Konfirmasi</b>. Stok berkurang pada nilai biaya rata-rata.</li>
         </ol>
         @endif
@@ -334,6 +339,7 @@
             <li><b>Simpan</b>, lalu <b>Konfirmasi</b>: dokumen menjadi <b>Menunggu Persetujuan</b> (stok belum berubah).</li>
             <li>Supervisor menekan <b>Setujui</b> (stok diperbarui, status <b>Disetujui</b>) atau <b>Tolak</b> (stok tidak berubah, status <b>Ditolak</b>).</li>
         </ol>
+        @include('help.diagram', ['name' => 'ug-penyesuaian', 'caption' => 'Alur Penyesuaian Stok.'])
         <div class="g-warn"><b>Setujui ditolak bila stok barang berubah</b> sejak dihitung (ada penerimaan / pengeluaran baru). Tolak dokumennya lalu hitung ulang di dokumen baru.</div>
         <p class="g-note">Di grid tersedia kotak <b>Menunggu persetujuan</b> dan <b>Draf</b> untuk menyaring cepat.</p>
         @endif
@@ -346,6 +352,7 @@
             <li><b>Data Entry:</b> membuat <b>pengajuan pembatalan</b>. Status menjadi <b>Pembatalan Menunggu Persetujuan</b> dan stok belum berubah. Supervisor akan <b>Setujui</b> (dokumen Dibatalkan, stok dikembalikan) atau <b>Tolak</b> (dokumen kembali berlaku).</li>
             <li>Pengaju boleh <b>menarik</b> pengajuannya selama masih menunggu (tekan <b>Batalkan</b> lagi). Hanya pengaju atau Supervisor yang boleh.</li>
         </ol>
+        @include('help.diagram', ['name' => 'ug-pembatalan', 'caption' => 'Alur membatalkan dokumen yang sudah dikonfirmasi.'])
         <div class="g-warn"><b>Pembatalan bisa ditolak otomatis bila stok tidak cukup.</b> Contoh: Penerimaan sudah sebagian dikeluarkan, sehingga stok yang ditarik kembali akan menjadi minus. Peringatannya tampil di form sebelum Anda menekan tombol. Solusinya: buat <b>Penyesuaian Stok</b> untuk mengoreksi.</div>
         <ul class="g-list">
             <li>Riwayat stok <b>tidak dihapus</b>: pembatalan menambah baris pembalik. Di <b>Kartu Stok</b> baris itu ditandai <b>(BATAL)</b>.</li>
@@ -423,7 +430,7 @@
         <table class="g-table">
             <thead><tr><th>Masalah</th><th>Jawaban</th></tr></thead>
             <tbody>
-                <tr><td>Menu atau tombol tidak ada</td><td>Peran atau Grup Anda belum diberi akses. Contoh: tombol <b>+ Data Baru</b> di Barang hanya untuk Supervisor. Hubungi Administrator.</td></tr>
+                <tr><td>Menu atau tombol tidak ada</td><td>Peran atau Grup Anda belum diberi akses. Contoh: mengubah Barang hanya untuk Supervisor. Hubungi Administrator.</td></tr>
                 <tr><td>Muncul pesan &quot;akses hanya-baca (RO)&quot;</td><td>Grup Anda hanya boleh membuka modul itu tanpa mengubah. Minta Administrator memberi RW.</td></tr>
                 <tr><td>Stok tidak berkurang / bertambah setelah Simpan</td><td>Simpan hanya membuat Draf. Tekan <b>Konfirmasi</b> agar diproses ke stok (Penyesuaian: tunggu <b>Setujui</b> Supervisor).</td></tr>
                 <tr><td>Pengeluaran ditolak: stok tidak cukup</td><td>Jumlah melebihi stok. Periksa kolom <b>Tersedia</b>; bila stok fisik memang ada, lakukan Penerimaan atau Penyesuaian Stok lebih dulu.</td></tr>

@@ -1,0 +1,46 @@
+<svg class="g-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 300" role="img" aria-labelledby="tg-product-batch-t tg-product-batch-d">
+<title id="tg-product-batch-t">Product and batch model</title>
+<desc id="tg-product-batch-d">A product row holds the item code, parameters and the tracks_expiry flag. Each product has one batch row in items per expiry date (a single batch without a date when it does not expire). Documents and the stock ledger work on batches. Reorder is evaluated per product on the sum of non-expired batch stock; Issuance allocates across batches in FEFO order.</desc>
+<defs><marker id="m-tg-product-batch" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="n n-in" x="20" y="24" width="230" height="110" rx="9"/>
+<text class="t b" x="135" y="46" text-anchor="middle">products</text>
+<text class="t m" x="135" y="64" text-anchor="middle">code ATK-0008 (stable)</text>
+<text class="t s" x="135" y="82" text-anchor="middle">name, category, unit, location</text>
+<text class="t s" x="135" y="98" text-anchor="middle">unit_price, reorder_point/qty,</text>
+<text class="t s" x="135" y="114" text-anchor="middle">lead_time_days, tracks_expiry</text>
+<rect class="n n-teal" x="330" y="24" width="240" height="52" rx="9"/>
+<text class="t m" x="450" y="46" text-anchor="middle">items  ATK-0008-261101</text>
+<text class="t s" x="450" y="63" text-anchor="middle">expiry 2026-11-01 · stock_qty, avg_cost</text>
+<rect class="n n-teal" x="330" y="86" width="240" height="52" rx="9"/>
+<text class="t m" x="450" y="108" text-anchor="middle">items  ATK-0008-270508</text>
+<text class="t s" x="450" y="125" text-anchor="middle">expiry 2027-05-08 · stock_qty, avg_cost</text>
+<path class="e" d="M250,60 L330,50" marker-end="url(#m-tg-product-batch)"/>
+<path class="e" d="M250,98 L330,112" marker-end="url(#m-tg-product-batch)"/>
+<text class="t s" x="290" y="136" text-anchor="middle">1 : N</text>
+<rect class="n n-gray" x="650" y="24" width="230" height="114" rx="9"/>
+<text class="t b" x="765" y="46" text-anchor="middle">Documents + ledger</text>
+<text class="t s" x="765" y="66" text-anchor="middle">stock_document_lines.item_id</text>
+<text class="t s" x="765" y="82" text-anchor="middle">stock_movements.item_id</text>
+<text class="t s" x="765" y="98" text-anchor="middle">StockLedger changes items only</text>
+<text class="t s" x="765" y="114" text-anchor="middle">(batch level, unchanged)</text>
+<path class="e" d="M570,50 L650,60" marker-end="url(#m-tg-product-batch)"/>
+<path class="e" d="M570,112 L650,100" marker-end="url(#m-tg-product-batch)"/>
+<rect class="n n-gray" x="20" y="170" width="270" height="108" rx="9"/>
+<text class="t b" x="155" y="192" text-anchor="middle">Receiving / Opening line</text>
+<text class="t s" x="155" y="212" text-anchor="middle">product_id + expiry_date</text>
+<text class="t s" x="155" y="228" text-anchor="middle">Product::batchFor(expiry) finds or</text>
+<text class="t s" x="155" y="244" text-anchor="middle">creates the batch; unused batches of</text>
+<text class="t s" x="155" y="260" text-anchor="middle">a deleted / edited draft are purged</text>
+<rect class="n n-ok" x="315" y="170" width="270" height="108" rx="9"/>
+<text class="t b" x="450" y="192" text-anchor="middle">Issuance line</text>
+<text class="t s" x="450" y="212" text-anchor="middle">item_id (batch) + qty</text>
+<text class="t s" x="450" y="228" text-anchor="middle">more than the batch holds: spill to</text>
+<text class="t s" x="450" y="244" text-anchor="middle">other usable batches, earliest expiry</text>
+<text class="t s" x="450" y="260" text-anchor="middle">first; later pick = warning only</text>
+<rect class="n n-warn" x="610" y="170" width="270" height="108" rx="9"/>
+<text class="t b" x="745" y="192" text-anchor="middle">Reorder point (per product)</text>
+<text class="t s" x="745" y="212" text-anchor="middle">available = SUM(stock_qty) of batches</text>
+<text class="t s" x="745" y="228" text-anchor="middle">with no expiry or expiry &gt;= today</text>
+<text class="t s" x="745" y="244" text-anchor="middle">(+ sstock.reorder_exclude_days);</text>
+<text class="t s" x="745" y="260" text-anchor="middle">alert when available &lt;= reorder_point</text>
+</svg>

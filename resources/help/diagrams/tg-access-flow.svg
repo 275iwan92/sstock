@@ -1,0 +1,59 @@
+<svg class="g-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 640" role="img" aria-labelledby="tg-access-flow-t tg-access-flow-d">
+<title id="tg-access-flow-t">Login and request authorization flow</title>
+<desc id="tg-access-flow-d">A guest is sent to Login. After login every request passes the auth middleware, then EnsureModuleAccess maps the route to a module code and checks that the user role is high enough and the group grants the module, and that a read-only (RO) module refuses writes. Role middleware (supervisor, administrator) and per-document-type rights in the controller follow. Failures return 403.</desc>
+<defs><marker id="m-tg-access-flow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="n n-in"  x="20" y="20" width="190" height="56" rx="9"/>
+<text class="t b" x="115" y="44" text-anchor="middle">Login form</text>
+<text class="t s" x="115" y="60" text-anchor="middle">username or e-mail + password</text>
+<rect class="n n-gray"  x="250" y="20" width="210" height="56" rx="9"/>
+<text class="t b" x="355" y="44" text-anchor="middle">AuthController::login</text>
+<text class="t s" x="355" y="60" text-anchor="middle">throttled per login + IP; is_active = 1</text>
+<rect class="n n-ok"  x="500" y="20" width="170" height="56" rx="9"/>
+<text class="t b" x="585" y="44" text-anchor="middle">Session</text>
+<text class="t s" x="585" y="60" text-anchor="middle">redirect to home</text>
+<path class="e" d="M210,48 L250,48" marker-end="url(#m-tg-access-flow)"/>
+<path class="e" d="M460,48 L500,48" marker-end="url(#m-tg-access-flow)"/>
+<rect class="n n-in"  x="20" y="130" width="200" height="46" rx="9"/>
+<text class="t b" x="120" y="157" text-anchor="middle">Any request (URL)</text>
+<polygon class="n n-warn" points="380,118 490,153 380,188 270,153"/>
+<text class="t b" x="380" y="156.5" text-anchor="middle">auth: logged in?</text>
+<rect class="n n-bad"  x="600" y="128" width="200" height="50" rx="9"/>
+<text class="t b" x="700" y="157" text-anchor="middle">302 to Login</text>
+<path class="e" d="M220,153 L270,153" marker-end="url(#m-tg-access-flow)"/>
+<path class="e" d="M490,153 L600,153" marker-end="url(#m-tg-access-flow)"/>
+<text class="el" x="500" y="146" text-anchor="start">no</text>
+<polygon class="n n-warn" points="380,215 530,255 380,295 230,255"/>
+<text class="t b" x="380" y="251" text-anchor="middle">Modules::forRoute(route)</text>
+<text class="t b" x="380" y="266" text-anchor="middle">returns a module code?</text>
+<path class="e" d="M380,188 L380,215" marker-end="url(#m-tg-access-flow)"/>
+<text class="el" x="388" y="210" text-anchor="start">yes</text>
+<rect class="n n-gray"  x="600" y="232" width="270" height="46" rx="9"/>
+<text class="t b" x="735" y="259" text-anchor="middle">no: free route (home, logout, help)</text>
+<path class="e" d="M530,255 L600,255" marker-end="url(#m-tg-access-flow)"/>
+<polygon class="n n-warn" points="380,325 530,365 380,405 230,365"/>
+<text class="t b" x="380" y="361" text-anchor="middle">User::canAccess(code)?</text>
+<text class="t b" x="380" y="376" text-anchor="middle">role &gt;= min AND group grants</text>
+<path class="e" d="M380,295 L380,325" marker-end="url(#m-tg-access-flow)"/>
+<text class="el" x="388" y="318" text-anchor="start">yes</text>
+<rect class="n n-bad"  x="600" y="342" width="270" height="46" rx="9"/>
+<text class="t b" x="735" y="369" text-anchor="middle">403 no access to the module</text>
+<path class="e" d="M530,365 L600,365" marker-end="url(#m-tg-access-flow)"/>
+<text class="el" x="530" y="358" text-anchor="start">no</text>
+<polygon class="n n-warn" points="380,435 530,475 380,515 230,475"/>
+<text class="t b" x="380" y="471" text-anchor="middle">Write request (not GET)</text>
+<text class="t b" x="380" y="486" text-anchor="middle">and module is RO?</text>
+<path class="e" d="M380,405 L380,435" marker-end="url(#m-tg-access-flow)"/>
+<text class="el" x="388" y="428" text-anchor="start">yes</text>
+<rect class="n n-bad"  x="600" y="452" width="270" height="46" rx="9"/>
+<text class="t b" x="735" y="479" text-anchor="middle">403 read-only (RO)</text>
+<path class="e" d="M530,475 L600,475" marker-end="url(#m-tg-access-flow)"/>
+<text class="el" x="530" y="468" text-anchor="start">yes</text>
+<rect class="n n-purple"  x="180" y="560" width="400" height="56" rx="9"/>
+<text class="t b" x="380" y="584" text-anchor="middle">Role middleware + controller / FormRequest</text>
+<text class="t s" x="380" y="600" text-anchor="middle">supervisor, administrator; Opening and Adjustment: Supervisor only</text>
+<path class="e" d="M380,515 L380,560" marker-end="url(#m-tg-access-flow)"/>
+<text class="el" x="388" y="538" text-anchor="start">no</text>
+<rect class="n n-bad"  x="620" y="563" width="250" height="50" rx="9"/>
+<text class="t b" x="745" y="592" text-anchor="middle">403 not enough rights</text>
+<path class="e" d="M580,588 L620,588" marker-end="url(#m-tg-access-flow)"/>
+</svg>

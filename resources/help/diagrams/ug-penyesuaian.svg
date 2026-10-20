@@ -1,0 +1,29 @@
+<svg class="g-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 250" role="img" aria-labelledby="ug-penyesuaian-t ug-penyesuaian-d">
+<title id="ug-penyesuaian-t">Alur Penyesuaian Stok</title>
+<desc id="ug-penyesuaian-d">Penyesuaian disimpan sebagai Draf, di-Konfirmasi menjadi Menunggu Persetujuan, lalu Supervisor menekan Setujui (stok berubah) atau Tolak (stok tidak berubah).</desc>
+<defs><marker id="m-ug-penyesuaian" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="n n-gray"  x="20" y="40" width="140" height="54" rx="9"/>
+<text class="t b" x="90" y="63" text-anchor="middle">Draf</text>
+<text class="t s" x="90" y="79" text-anchor="middle">stok belum berubah</text>
+<rect class="n n-warn"  x="230" y="40" width="200" height="54" rx="9"/>
+<text class="t b" x="330" y="63" text-anchor="middle">Menunggu Persetujuan</text>
+<text class="t s" x="330" y="79" text-anchor="middle">stok belum berubah</text>
+<rect class="n n-ok"  x="550" y="40" width="150" height="54" rx="9"/>
+<text class="t b" x="625" y="63" text-anchor="middle">Disetujui</text>
+<text class="t s" x="625" y="79" text-anchor="middle">stok berubah</text>
+<rect class="n n-bad"  x="550" y="150" width="150" height="54" rx="9"/>
+<text class="t b" x="625" y="173" text-anchor="middle">Ditolak</text>
+<text class="t s" x="625" y="189" text-anchor="middle">stok tidak berubah</text>
+<rect class="n n-bad"  x="230" y="150" width="200" height="54" rx="9"/>
+<text class="t b" x="330" y="173" text-anchor="middle">Dibatalkan</text>
+<text class="t s" x="330" y="189" text-anchor="middle">ditarik sebelum disetujui</text>
+<path class="e" d="M160,67 L230,67" marker-end="url(#m-ug-penyesuaian)"/>
+<text class="el" x="165" y="60" text-anchor="start">Konfirmasi</text>
+<path class="e" d="M430,67 L550,67" marker-end="url(#m-ug-penyesuaian)"/>
+<text class="el" x="470" y="60" text-anchor="start">Setujui</text>
+<path class="e" d="M430,80 L490,80 L490,177 L550,177" marker-end="url(#m-ug-penyesuaian)"/>
+<text class="el" x="440" y="130" text-anchor="start">Tolak</text>
+<path class="e" d="M330,94 L330,150" marker-end="url(#m-ug-penyesuaian)"/>
+<text class="el" x="336" y="128" text-anchor="start">Batalkan (tarik)</text>
+<text class="t s" x="20" y="232" text-anchor="start">Setujui ditolak otomatis bila stok barang berubah sejak dihitung: Tolak dokumennya, lalu hitung ulang di dokumen baru.</text>
+</svg>

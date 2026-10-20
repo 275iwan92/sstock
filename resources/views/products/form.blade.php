@@ -1,0 +1,109 @@
+{{-- REMARK
+ Tujuan       : Form master Barang (Single Form kind=master): kotak stok baca-saja, nama besar, data umum, parameter pesan ulang + harga, dan daftar batch (tanggal kedaluwarsa, stok) barang itu.
+ Sumber hulu  : ProductController (product, batches, categories, units, locations, nextCodes). Biaya rata-rata, nilai stok, dan harga hanya untuk Supervisor.
+ Input        : product, batches, categories, units, locations, nextCodes.
+ Output       : POST products.store (baru, semua pengguna) / PUT products.update (ubah, Activate, Deactivate: Supervisor).
+ Dipakai oleh : routes products.create, products.show.
+ Status       : Aktif.
+--}}
+@extends('layout', ['title' => 'Item'])
+@section('body')
+    @php
+        use Devlib\Locale;
+        $sup = auth()->user()->isSupervisor();
+        $isNew = ! $product->exists;
+        $canInput = $sup || $isNew;
+        $total = (float) $batches->sum('stock_qty');
+        $available = $isNew ? 0 : $product->available();
+        $below = ! $isNew && $product->isBelowReorderPoint();
+        $v = fn (string $k) => old($k, $product->{$k});
+        $e = fn (string $k) => $errors->first($k) ?: null;
+    @endphp
+    @include('partials.flash')
+    <x-dl::form :title="$isNew ? 'Barang · Baru' : 'Barang · '.raw($product->code)" :subtitle="$isNew ? null : raw($product->name)" panel="top" kind="master"
+        :status="$isNew ? 'new' : ($product->is_active ? 'active' : 'inactive')" :can-input="$canInput" :hide="$sup ? [] : ['activate', 'deactivate']" :back="route('products.index')" :new-url="route('products.create')"
+        :action="$isNew ? route('products.store') : route('products.update', $product)" :hidden="$isNew ? [] : ['_method' => 'PUT']"
+        :created-at="$product->created_at?->format('Y-m-d H:i:s')" :updated-at="$product->updated_at?->format('Y-m-d H:i:s')">
+        @unless ($isNew)
+            <x-dl::kpi-row>
+                <x-dl::stat-box label="Stock on hand" :value="Locale::number($total, 2).' '.$product->unit" :tone="$below ? 'danger' : 'accent'" :sub="'Tersedia '.Locale::number($available, 2).' · titik pesan ulang '.Locale::number($product->reorder_point, 2).' · '.($below ? 'PESAN ULANG' : 'AMAN')" />
+                @if ($sup)
+                    <x-dl::stat-box label="Stock value" :value="Locale::money($batches->sum(fn ($b) => $b->stockValue()), 'IDR', 0)" tone="success" sub="Stok x biaya rata-rata per batch" />
+                @endif
+            </x-dl::kpi-row>
+        @endunless
+        <x-dl::divider label="Item" />
+        <x-dl::form.row :cols="1">
+            <x-dl::field.text class="sstock-name" name="name" label="Item Name" :value="$v('name')" required maxlength="150" :error="$e('name')" />
+        </x-dl::form.row>
+        <x-dl::form.row :cols="4">
+            <x-dl::field.text name="code" label="Item Code" :value="$product->code" code :case-toggle="false" readonly tooltip="Generated automatically: category prefix and running number. The expiry date is never part of the item code; each expiry batch has its own batch code." />
+            <x-dl::field.select name="category_id" label="Category" :options="$categories" :value="$v('category_id')" required :readonly="! $isNew" :error="$e('category_id')" />
+            <x-dl::field.select name="unit" label="Unit" :options="$units" :value="$v('unit')" required :error="$e('unit')" />
+            <x-dl::field.select name="location" label="Rack / Storage Location" :options="$locations" :value="$v('location')" :error="$e('location')" />
+        </x-dl::form.row>
+        <x-dl::form.row :cols="4">
+            @if ($isNew)
+                <x-dl::field.checkbox name="tracks_expiry" label="Expiry" text="Item has an expiry date" :value="old('tracks_expiry', false)" tooltip="Tick for items that expire. The expiry date is then entered on every Receiving / Opening Balance line and each date becomes its own batch. Cannot be changed after saving." />
+            @else
+                <x-dl::field.display label="Expiry" :value="$product->tracks_expiry ? 'Berkedaluwarsa (stok per batch)' : 'Tidak berkedaluwarsa'" />
+            @endif
+        </x-dl::form.row>
+        @if ($sup || ! $isNew)
+            <x-dl::divider :label="$sup ? 'Reorder and Price' : 'Reorder'" />
+            <x-dl::form.row :cols="4">
+                <x-dl::field.decimal name="reorder_point" label="Reorder Point" :decimals="2" :value="$v('reorder_point') ?? 0" required :error="$e('reorder_point')" tooltip="Alert shows when the available stock (all batches that are not expired) is at or below this quantity. 0 = no alert." />
+                <x-dl::field.decimal name="reorder_qty" label="Reorder Qty" :decimals="2" :value="$v('reorder_qty') ?? 0" required :error="$e('reorder_qty')" tooltip="Suggested quantity to order." />
+                <x-dl::field.number name="lead_time_days" label="Lead Time (days)" :min="0" :max="365" :value="$v('lead_time_days') ?? 0" required :error="$e('lead_time_days')" tooltip="Days from placing the order until the supplier delivers." />
+                @if ($sup)
+                    <x-dl::field.decimal name="unit_price" label="Unit Price (IDR)" :decimals="2" :value="$v('unit_price') ?? 0" required :error="$e('unit_price')" tooltip="Reference price. Stock valuation uses the moving average of purchase prices." />
+                @endif
+            </x-dl::form.row>
+            <p class="dl-note">Peringatan muncul bila stok tersedia (batch yang belum kedaluwarsa) sama dengan atau di bawah titik pesan ulang (0 = tanpa peringatan). Harga satuan hanya acuan; valuasi memakai rata-rata bergerak harga pembelian.</p>
+        @else
+            <p class="dl-note">Harga dan titik pesan ulang diisi Supervisor setelah barang disimpan.</p>
+        @endif
+        @unless ($isNew)
+            <x-dl::divider label="Batches" />
+            <div class="dl-table-wrap">
+                <table class="dl-table is-striped">
+                    <thead><tr>@foreach (['Batch Code', 'Expiry Date', 'Stock', 'Status'] as $c)<th>{{ \Devlib\Lang::text($c) }}</th>@endforeach</tr></thead>
+                    <tbody>
+                        @foreach ($batches as $b)
+                            @php($state = $b->expiryState())
+                            <tr>
+                                <td>{{ $b->code }}</td>
+                                <td>{{ $b->expiry_date ? Locale::d($b->expiry_date) : '—' }}</td>
+                                <td>{{ Locale::number($b->stock_qty, 2) }} {{ $b->unit }}</td>
+                                <td>
+                                    @if ($state === 'KEDALUWARSA')
+                                        <x-dl::badge tone="danger" icon="fa-triangle-exclamation" label="Kedaluwarsa" />
+                                    @elseif ($state === 'HAMPIR')
+                                        <x-dl::badge tone="warn" icon="fa-hourglass-half" label="Hampir kedaluwarsa" />
+                                    @else
+                                        <x-dl::badge tone="success" label="Baik" />
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            @if ($product->tracks_expiry)
+                <p class="dl-note">Batch baru dibuat otomatis saat Penerimaan atau Saldo Awal mencatat tanggal kedaluwarsa yang belum ada. Pengeluaran mengambil batch yang kedaluwarsanya paling cepat lebih dulu.</p>
+            @endif
+        @endunless
+    </x-dl::form>
+    @if ($isNew)
+        <script>
+            // Pratinjau kode barang: awalan kategori + urutan berikutnya (rumus yang sama dengan Product::nextCode).
+            (() => {
+                const next = @json($nextCodes);
+                const cat = document.querySelector('[name="category_id"]'), code = document.querySelector('[name="code"]');
+                const show = () => { code.value = next[cat.value] || ''; };
+                cat.addEventListener('change', show);
+                show();
+            })();
+        </script>
+    @endif
+@endsection

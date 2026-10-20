@@ -1,0 +1,39 @@
+<svg class="g-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 330" role="img" aria-labelledby="ug-siklus-dokumen-t ug-siklus-dokumen-d">
+<title id="ug-siklus-dokumen-t">Siklus dokumen Saldo Awal, Penerimaan, dan Pengeluaran</title>
+<desc id="ug-siklus-dokumen-d">Dokumen baru disimpan sebagai Draf; Draf bisa dihapus atau dikonfirmasi. Dokumen Terkonfirmasi bisa dibatalkan langsung oleh Supervisor, atau diajukan pembatalannya oleh Data Entry lalu disetujui atau ditolak Supervisor.</desc>
+<defs><marker id="m-ug-siklus-dokumen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="n n-gray"  x="20" y="130" width="130" height="54" rx="9"/>
+<text class="t b" x="85" y="161" text-anchor="middle">Dokumen baru</text>
+<rect class="n n-gray"  x="200" y="130" width="130" height="54" rx="9"/>
+<text class="t b" x="265" y="153" text-anchor="middle">Draf</text>
+<text class="t s" x="265" y="169" text-anchor="middle">stok belum berubah</text>
+<rect class="n n-ok"  x="400" y="130" width="150" height="54" rx="9"/>
+<text class="t b" x="475" y="153" text-anchor="middle">Terkonfirmasi</text>
+<text class="t s" x="475" y="169" text-anchor="middle">stok berubah, terkunci</text>
+<rect class="n n-bad"  x="730" y="30" width="150" height="54" rx="9"/>
+<text class="t b" x="805" y="53" text-anchor="middle">Dibatalkan</text>
+<text class="t s" x="805" y="69" text-anchor="middle">stok dikembalikan</text>
+<rect class="n n-warn"  x="590" y="240" width="200" height="60" rx="9"/>
+<text class="t b" x="690" y="258" text-anchor="middle">Pembatalan Menunggu</text>
+<text class="t b" x="690" y="274" text-anchor="middle">Persetujuan</text>
+<text class="t s" x="690" y="290" text-anchor="middle">stok belum berubah</text>
+<rect class="n n-gray" stroke-dasharray="5 4" x="200" y="250" width="130" height="54" rx="9"/>
+<text class="t b" x="265" y="273" text-anchor="middle">Dibuang</text>
+<text class="t s" x="265" y="289" text-anchor="middle">dihapus permanen</text>
+<path class="e" d="M150,157 L200,157" marker-end="url(#m-ug-siklus-dokumen)"/>
+<text class="el" x="155" y="150" text-anchor="start">Simpan</text>
+<path class="e" d="M330,157 L400,157" marker-end="url(#m-ug-siklus-dokumen)"/>
+<text class="el" x="340" y="150" text-anchor="start">Konfirmasi</text>
+<path class="e" d="M265,184 L265,250" marker-end="url(#m-ug-siklus-dokumen)"/>
+<text class="el" x="272" y="220" text-anchor="start">Hapus</text>
+<path class="e" d="M550,140 L640,140 L640,57 L730,57" marker-end="url(#m-ug-siklus-dokumen)"/>
+<text class="el" x="648" y="100" text-anchor="start">Batalkan</text>
+<text class="el" x="648" y="114" text-anchor="start">(Supervisor / Administrator)</text>
+<path class="e" d="M475,184 L475,270 L590,270" marker-end="url(#m-ug-siklus-dokumen)"/>
+<text class="el" x="482" y="226" text-anchor="start">Batalkan (Data Entry)</text>
+<text class="el" x="482" y="240" text-anchor="start">dengan alasan</text>
+<path class="e" d="M790,270 L805,270 L805,84" marker-end="url(#m-ug-siklus-dokumen)"/>
+<text class="el" x="798" y="190" text-anchor="end">Setujui (Supervisor)</text>
+<path class="e" d="M620,240 L620,175 L550,175" marker-end="url(#m-ug-siklus-dokumen)"/>
+<text class="el" x="628" y="215" text-anchor="start">Tolak, atau pengaju menarik</text>
+</svg>

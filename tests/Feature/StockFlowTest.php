@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\Department;
 use App\Models\Item;
+use App\Models\Product;
 use App\Models\Recipient;
 use App\Models\ReorderOrder;
 use App\Models\StockDocument;
@@ -48,7 +49,7 @@ class StockFlowTest extends TestCase
     {
         $category = Category::firstOrCreate(['code' => 'ATK'], ['name' => 'ATK']);
 
-        return Item::create(['code' => $code, 'name' => "Item {$code}", 'category_id' => $category->id, 'unit' => 'pcs', 'unit_price' => 100, 'reorder_point' => $rop, 'reorder_qty' => 50, 'lead_time_days' => 3]);
+        return $this->makeItem(['code' => $code, 'name' => "Item {$code}", 'category_id' => $category->id, 'unit' => 'pcs', 'unit_price' => 100, 'reorder_point' => $rop, 'reorder_qty' => 50, 'lead_time_days' => 3]);
     }
 
     // Simpan (draf) lalu Confirm: stok baru berubah sesudah Confirm. Mengembalikan respons langkah terakhir (galat validasi pada simpan menghentikan lebih awal).
@@ -134,7 +135,7 @@ class StockFlowTest extends TestCase
         $item = $this->item('I2', rop: 5);
         $this->receive($item, 10, 5);
         $this->issue($item, 5)->assertSessionHas('reorder');
-        $this->assertTrue($item->fresh()->isBelowReorderPoint());
+        $this->assertTrue($item->product->fresh()->isBelowReorderPoint());
         $this->actingAs($this->supervisor)->get(route('home'))->assertOk()->assertSee('di bawah titik pesan ulang');
     }
 
@@ -143,24 +144,25 @@ class StockFlowTest extends TestCase
         $this->actingAs($this->entry);
         $this->get(route('docs.index', 'adjustment'))->assertForbidden();
         $this->get(route('docs.create', 'opening'))->assertForbidden();
-        $this->get(route('items.create'))->assertForbidden();
         $this->get(route('reports.adjustment'))->assertForbidden();
         $this->post(route('docs.store', 'adjustment'), [])->assertForbidden();
     }
 
-    public function test_supervisor_manages_item_parameters(): void
+    public function test_supervisor_manages_item_parameters_and_they_reach_the_batches(): void
     {
         $category = Category::create(['code' => 'ATK', 'name' => 'ATK']);
         $payload = ['name' => 'Pen', 'category_id' => $category->id, 'unit' => 'box', 'unit_price' => 1500, 'reorder_point' => 5, 'reorder_qty' => 20, 'lead_time_days' => 4];
-        $this->actingAs($this->supervisor)->post(route('items.store'), $payload)->assertRedirect();
-        $item = Item::where('code', 'ATK-0001')->firstOrFail();  // kode otomatis dari awalan kategori
+        $this->actingAs($this->supervisor)->post(route('products.store'), $payload)->assertRedirect();
+        $product = Product::where('code', 'ATK-0001')->firstOrFail();  // kode otomatis dari awalan kategori
+        $item = $product->items()->firstOrFail();                         // barang biasa: satu batch, kodenya sama
 
-        $this->put(route('items.update', $item), ['_action' => 'save', ...$payload, 'reorder_point' => 9])->assertRedirect();
-        $this->assertSame(9.0, $item->fresh()->reorder_point);
-        $this->put(route('items.update', $item), ['_action' => 'deactivate'])->assertRedirect();
-        $this->assertFalse($item->fresh()->is_active);
+        $this->put(route('products.update', $product), ['_action' => 'save', ...$payload, 'reorder_point' => 9])->assertRedirect();
+        $this->assertSame([9.0, 'ATK-0001'], [$product->fresh()->reorder_point, $item->fresh()->code]);
+        $this->assertSame(9.0, $item->fresh()->reorder_point);          // parameter produk diteruskan ke batch
+        $this->put(route('products.update', $product), ['_action' => 'deactivate'])->assertRedirect();
+        $this->assertSame([false, false], [$product->fresh()->is_active, $item->fresh()->is_active]);
 
-        $this->actingAs($this->entry)->put(route('items.update', $item), ['_action' => 'save'] + $payload)->assertForbidden();
+        $this->actingAs($this->entry)->put(route('products.update', $product), ['_action' => 'save'] + $payload)->assertForbidden();
     }
 
     public function test_opening_balance_only_for_items_without_movements(): void
@@ -278,17 +280,17 @@ class StockFlowTest extends TestCase
 
         $this->actingAs($this->entry)->get(route('home'))->assertOk()->assertSee('Belum dipesan')->assertDontSee('Item R2');
 
-        $order = ['item_id' => $item->id, 'ordered_at' => today()->toDateString(), 'ref_no' => 'PO-77'];
+        $order = ['product_id' => $item->product_id, 'ordered_at' => today()->toDateString(), 'ref_no' => 'PO-77'];
         $this->post(route('reorder-orders.store'), $order)->assertRedirect(route('home'));
         $this->get(route('home'))->assertSee('Dipesan ')->assertSee('PO-77')->assertDontSee('Belum dipesan');
 
         $this->post(route('reorder-orders.store'), $order)->assertStatus(422);                                   // sudah terbuka
-        $this->post(route('reorder-orders.store'), ['item_id' => $fine->id] + $order)->assertStatus(422);        // stok masih cukup
+        $this->post(route('reorder-orders.store'), ['product_id' => $fine->product_id] + $order)->assertStatus(422);        // stok masih cukup
         $this->post(route('reorder-orders.store'), ['ref_no' => ''] + $order)->assertSessionHasErrors('ref_no');
 
         $this->receive($item, 20, 10);
-        $this->assertNotNull(ReorderOrder::where('item_id', $item->id)->first()->closed_at);
-        $this->assertNull($item->fresh()->openOrder);
+        $this->assertNotNull(ReorderOrder::where('product_id', $item->product_id)->first()->closed_at);
+        $this->assertNull($item->product->fresh()->openOrder);
     }
 
     public function test_issuance_uses_recipient_and_department_masters_and_copies_their_names(): void

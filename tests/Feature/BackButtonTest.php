@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\Department;
-use App\Models\Item;
+use App\Models\Product;
 use App\Models\Recipient;
 use App\Models\Supplier;
 use App\Models\Unit;
@@ -36,10 +36,10 @@ class BackButtonTest extends TestCase
         $admin = User::factory()->administrator()->create();
         $cat = Category::create(['code' => 'ATK', 'name' => 'ATK']);
         Unit::firstOrCreate(['code' => 'pcs'], ['name' => 'Pcs', 'kind' => 'count']);
-        $item = Item::create(['code' => 'X1', 'name' => 'Item X', 'category_id' => $cat->id, 'unit' => 'pcs', 'unit_price' => 1]);
+        $product = Product::register(['name' => 'Item X', 'category_id' => $cat->id, 'unit' => 'pcs', 'unit_price' => 1], 'X1');
         $forms = [
-            route('items.create') => route('items.index'),
-            route('items.show', $item) => route('items.index'),
+            route('products.create') => route('products.index'),
+            route('products.show', $product) => route('products.index'),
             route('suppliers.create') => route('suppliers.index'),
             route('suppliers.show', Supplier::create(['code' => 'S1', 'name' => 'S'])) => route('suppliers.index'),
             route('units.create') => route('units.index'),

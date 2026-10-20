@@ -1,0 +1,27 @@
+<svg class="g-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 190" role="img" aria-labelledby="ug-alur-kerja-t ug-alur-kerja-d">
+<title id="ug-alur-kerja-t">Alur kerja Stoku</title>
+<desc id="ug-alur-kerja-d">Data Master diisi sekali, lalu Transaksi dicatat sebagai dokumen Draf yang di-Konfirmasi, baru stok berubah, dan hasilnya dibaca di Laporan dan Beranda.</desc>
+<defs><marker id="m-ug-alur-kerja" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="n n-in"  x="20" y="30" width="180" height="84" rx="9"/>
+<text class="t b" x="110" y="52" text-anchor="middle">1. Data Master</text>
+<text class="t s" x="110" y="68" text-anchor="middle">barang, supplier, satuan,</text>
+<text class="t s" x="110" y="84" text-anchor="middle">kategori, lokasi, departemen,</text>
+<text class="t s" x="110" y="100" text-anchor="middle">penerima</text>
+<rect class="n n-teal"  x="250" y="30" width="180" height="84" rx="9"/>
+<text class="t b" x="340" y="60" text-anchor="middle">2. Transaksi</text>
+<text class="t s" x="340" y="76" text-anchor="middle">dokumen disimpan sebagai Draf,</text>
+<text class="t s" x="340" y="92" text-anchor="middle">lalu Konfirmasi</text>
+<rect class="n n-ok"  x="480" y="30" width="180" height="84" rx="9"/>
+<text class="t b" x="570" y="60" text-anchor="middle">3. Stok berubah</text>
+<text class="t s" x="570" y="76" text-anchor="middle">hanya setelah Konfirmasi</text>
+<text class="t s" x="570" y="92" text-anchor="middle">(Penyesuaian: setelah Setujui)</text>
+<rect class="n n-purple"  x="710" y="30" width="180" height="84" rx="9"/>
+<text class="t b" x="800" y="60" text-anchor="middle">4. Laporan dan Beranda</text>
+<text class="t s" x="800" y="76" text-anchor="middle">stok sekarang, riwayat,</text>
+<text class="t s" x="800" y="92" text-anchor="middle">peringatan pesan ulang</text>
+<path class="e" d="M200,72 L250,72" marker-end="url(#m-ug-alur-kerja)"/>
+<path class="e" d="M430,72 L480,72" marker-end="url(#m-ug-alur-kerja)"/>
+<path class="e" d="M660,72 L710,72" marker-end="url(#m-ug-alur-kerja)"/>
+<rect class="n n-warn"  x="250" y="140" width="410" height="36" rx="9"/>
+<text class="t b" x="455" y="162" text-anchor="middle">Salah catat? Batalkan dokumen, atau koreksi dengan Penyesuaian Stok</text>
+</svg>

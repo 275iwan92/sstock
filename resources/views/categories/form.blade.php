@@ -25,9 +25,9 @@
         </x-dl::form.row>
         @unless ($isNew)
             <x-dl::form.row :cols="3">
-                <x-dl::field.display label="Items using it" :value="(string) $category->items_count" />
+                <x-dl::field.display label="Items using it" :value="(string) $category->products_count" />
             </x-dl::form.row>
         @endunless
-        <p class="dl-note">Rumus kode barang: <b>{{ $p }}-0001</b> (urutan berjalan per kategori). Barang yang punya tanggal kedaluwarsa ditambah tahun dan bulannya, misalnya <b>{{ $p }}-0002-2703</b> (kedaluwarsa Maret 2027).</p>
+        <p class="dl-note">Rumus kode barang: <b>{{ $p }}-0001</b> (urutan berjalan per kategori, tanpa tanggal). Barang berkedaluwarsa punya satu batch per tanggal dengan kode <b>{{ $p }}-0001-260315</b> (kedaluwarsa 15 Maret 2026).</p>
     </x-dl::form>
 @endsection

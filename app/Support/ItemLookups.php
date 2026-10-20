@@ -3,12 +3,16 @@
 namespace App\Support;
 
 use App\Models\Item;
+use App\Models\Product;
+use Devlib\Locale;
 use Devlib\Lookup;
 
 /* REMARK
- * Tujuan       : Pilihan Item di baris dokumen (x-dl::lines) dicari ke server; memilih item mengisi kolom satuan, stok tersedia, selisih sistem, dan harga acuan di baris itu.
- * Sumber hulu  : items (hanya yang aktif). Harga acuan hanya untuk Supervisor.
- * Output       : Lookup item_in (Receiving), item_out (Issuance), item_opn (Opening Balance), item_adj (Stock Adjustment).
+ * Tujuan       : Pilihan barang di baris dokumen (x-dl::lines) dicari ke server; memilih mengisi kolom satuan, stok tersedia, selisih sistem, dan harga acuan di baris itu.
+ *                Penerimaan dan Saldo Awal memilih PRODUK (batch menurut tanggal kedaluwarsa dibuat otomatis). Pengeluaran dan Penyesuaian memilih BATCH (barang):
+ *                daftar Pengeluaran hanya batch ber-stok yang belum kedaluwarsa, dengan kedaluwarsa paling cepat di atas (FEFO).
+ * Sumber hulu  : products, items (hanya yang aktif). Harga acuan hanya untuk Supervisor.
+ * Output       : Lookup product_in (Receiving), product_opn (Opening Balance), item_out (Issuance), item_adj (Stock Adjustment).
  * Dipakai oleh : AppServiceProvider::boot; rute /_devlib-lookup/{name} milik DevLib.
  * Status       : Aktif.
  */
@@ -16,30 +20,44 @@ final class ItemLookups
 {
     public static function register(): void
     {
-        $fills = [
-            'item_in' => ['unit' => 'unit', 'unit_cost' => 'price'],
-            'item_out' => ['unit' => 'unit', 'available' => 'stock'],
-            'item_opn' => ['unit' => 'unit', 'unit_cost' => 'price'],
-            'item_adj' => ['unit' => 'unit', 'system_qty' => 'stock'],
-        ];
+        foreach (['product_in', 'product_opn'] as $name) {
+            Lookup::define($name, [
+                'key' => 'id', 'label' => 'label', 'source' => 'products (is_active = 1)', 'fill' => ['unit' => 'unit', 'unit_cost' => 'price'],
+                'columns' => ['name' => 'Item', 'code' => 'Code', 'unit' => 'Unit', 'expiry' => 'Expiry'],
+                'search' => fn (string $q) => Product::query()->where('is_active', true)
+                    ->where(fn ($w) => $w->where('name', 'like', "%{$q}%")->orWhere('code', 'like', "%{$q}%"))
+                    ->orderBy('name')->limit(50)->get()->map(self::productRow(...)),
+                'find' => fn ($id) => ($p = Product::query()->find($id)) ? self::productRow($p) : null,
+            ]);
+        }
 
-        foreach ($fills as $name => $fill) {
+        foreach (['item_out' => ['unit' => 'unit', 'available' => 'stock'], 'item_adj' => ['unit' => 'unit', 'system_qty' => 'stock']] as $name => $fill) {
+            $out = $name === 'item_out';
             Lookup::define($name, [
                 'key' => 'id', 'label' => 'label', 'source' => 'items (is_active = 1)', 'fill' => $fill,
-                'columns' => ['name' => 'Item', 'code' => 'Code', 'unit' => 'Unit', 'stock' => 'Stock'],
+                'columns' => ['name' => 'Item', 'code' => 'Code', 'expiry' => 'Expiry', 'stock' => 'Stock'],
                 'search' => fn (string $q) => Item::query()->where('is_active', true)
+                    ->when($out, fn ($w) => $w->where('stock_qty', '>', 0)->where(fn ($x) => $x->whereNull('expiry_date')->orWhere('expiry_date', '>=', today()->toDateString())))
                     ->where(fn ($w) => $w->where('name', 'like', "%{$q}%")->orWhere('code', 'like', "%{$q}%"))
-                    ->orderBy('name')->limit(50)->get()->map(self::row(...)),
-                'find' => fn ($id) => ($i = Item::query()->find($id)) ? self::row($i) : null,
+                    ->orderBy('name')->orderByRaw('expiry_date is null')->orderBy('expiry_date')->orderBy('id')->limit(50)->get()->map(self::itemRow(...)),
+                'find' => fn ($id) => ($i = Item::query()->find($id)) ? self::itemRow($i) : null,
             ]);
         }
     }
 
-    private static function row(Item $i): array
+    private static function productRow(Product $p): array
     {
         return [
-            'id' => $i->id, 'label' => "{$i->code} · {$i->name}", 'name' => $i->name, 'code' => $i->code, 'unit' => $i->unit,
-            'stock' => $i->stock_qty, 'price' => auth()->user()?->isSupervisor() ? $i->unit_price : null,
+            'id' => $p->id, 'label' => "{$p->code} · {$p->name}", 'name' => $p->name, 'code' => $p->code, 'unit' => $p->unit,
+            'expiry' => $p->tracks_expiry ? 'Wajib diisi' : '—', 'price' => auth()->user()?->isSupervisor() ? $p->unit_price : null,
+        ];
+    }
+
+    private static function itemRow(Item $i): array
+    {
+        return [
+            'id' => $i->id, 'label' => $i->label(), 'name' => $i->name, 'code' => $i->code, 'unit' => $i->unit,
+            'expiry' => $i->expiry_date ? Locale::d($i->expiry_date) : '—', 'stock' => $i->stock_qty,
         ];
     }
 }

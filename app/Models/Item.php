@@ -2,15 +2,14 @@
 
 namespace App\Models;
 
-use Carbon\Carbon;
+use Devlib\Locale;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
-#[Fillable(['code', 'name', 'category_id', 'unit', 'location', 'expiry_date', 'unit_price', 'reorder_point', 'reorder_qty', 'lead_time_days', 'is_active'])]
+#[Fillable(['product_id', 'code', 'name', 'category_id', 'unit', 'location', 'expiry_date', 'unit_price', 'reorder_point', 'reorder_qty', 'lead_time_days', 'is_active'])]
 class Item extends Model
 {
     // Peringatan "hampir kedaluwarsa" muncul bila tinggal sekian hari.
@@ -30,14 +29,9 @@ class Item extends Model
         ];
     }
 
-    // Rumus kode: {AWALAN KATEGORI}-{URUT 4 DIGIT}, ditambah -{YYMM KEDALUWARSA} bila barang punya tanggal kedaluwarsa. Urutan berjalan per kategori.
-    public static function nextCode(Category $category, $expiry = null): string
+    public function product(): BelongsTo
     {
-        $prefix = $category->code;
-        $last = static::query()->where('code', 'like', $prefix.'-%')->pluck('code')
-            ->map(fn ($c) => (int) (explode('-', $c)[1] ?? 0))->max() ?? 0;
-
-        return sprintf('%s-%04d', $prefix, $last + 1).($expiry ? '-'.Carbon::parse($expiry)->format('ym') : '');
+        return $this->belongsTo(Product::class);
     }
 
     public function category(): BelongsTo
@@ -50,21 +44,26 @@ class Item extends Model
         return $this->hasMany(StockDocumentLine::class);
     }
 
-    // Pemesanan ulang yang masih menunggu barang datang (ditutup saat Receiving).
-    public function openOrder(): HasOne
-    {
-        return $this->hasOne(ReorderOrder::class)->whereNull('closed_at')->latestOfMany();
-    }
-
     public function movements(): HasMany
     {
         return $this->hasMany(StockMovement::class);
     }
 
-    // Item aktif yang stoknya menyentuh atau di bawah Reorder Point (ROP 0 = parameter belum diisi, tidak dihitung).
-    public function scopeBelowReorderPoint(Builder $query): Builder
+    // Batch yang masih bisa dipakai: tanpa tanggal kedaluwarsa, atau belum kedaluwarsa (config sstock.reorder_exclude_days menambah jendela hampir-kedaluwarsa).
+    public function scopeUsable(Builder $query): Builder
     {
-        return $query->where('is_active', true)->where('reorder_point', '>', 0)->whereColumn('stock_qty', '<=', 'reorder_point');
+        return $query->where(fn ($w) => $w->whereNull('expiry_date')->orWhere('expiry_date', '>=', self::usableFrom()));
+    }
+
+    public static function usableFrom(): string
+    {
+        return today()->addDays((int) config('sstock.reorder_exclude_days', 0))->toDateString();
+    }
+
+    // Teks pilihan di dokumen: kode batch, nama, dan tanggal kedaluwarsanya.
+    public function label(): string
+    {
+        return "{$this->code} · {$this->name}".($this->expiry_date ? ' · exp '.Locale::d($this->expiry_date) : '');
     }
 
     // Barang aktif yang masih ada stoknya dan sudah kedaluwarsa atau akan kedaluwarsa dalam $days hari (stok 0 tidak perlu dibuang, jadi tidak diperingatkan).
@@ -82,11 +81,6 @@ class Item extends Model
             $this->expiry_date->lte(today()->addDays($days)) => 'HAMPIR',
             default => null,
         };
-    }
-
-    public function isBelowReorderPoint(): bool
-    {
-        return $this->is_active && $this->reorder_point > 0 && $this->stock_qty <= $this->reorder_point;
     }
 
     public function stockValue(): float

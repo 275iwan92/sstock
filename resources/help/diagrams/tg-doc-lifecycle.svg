@@ -1,0 +1,40 @@
+<svg class="g-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 400" role="img" aria-labelledby="tg-doc-lifecycle-t tg-doc-lifecycle-d">
+<title id="tg-doc-lifecycle-t">Document lifecycle: Opening Balance, Receiving, Issuance</title>
+<desc id="tg-doc-lifecycle-d">A new document is saved as draft. A draft can be deleted or confirmed; confirm posts to the ledger. A confirmed document is cancelled directly by a Supervisor or Administrator, or by a Data Entry request that a Supervisor approves or rejects. Cancel posts reversal rows.</desc>
+<defs><marker id="m-tg-doc-lifecycle" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="n n-gray"  x="20" y="150" width="140" height="54" rx="9"/>
+<text class="t b" x="90" y="173" text-anchor="middle">(new)</text>
+<text class="t s" x="90" y="189" text-anchor="middle">form opened</text>
+<rect class="n n-gray"  x="210" y="150" width="140" height="54" rx="9"/>
+<text class="t b" x="280" y="173" text-anchor="middle">draft</text>
+<text class="t s" x="280" y="189" text-anchor="middle">stock unchanged</text>
+<rect class="n n-ok"  x="410" y="150" width="150" height="54" rx="9"/>
+<text class="t b" x="485" y="173" text-anchor="middle">confirmed</text>
+<text class="t s" x="485" y="189" text-anchor="middle">posted to the ledger</text>
+<rect class="n n-bad"  x="730" y="30" width="150" height="54" rx="9"/>
+<text class="t b" x="805" y="53" text-anchor="middle">cancelled</text>
+<text class="t s" x="805" y="69" text-anchor="middle">reversal rows added</text>
+<rect class="n n-warn"  x="590" y="250" width="200" height="60" rx="9"/>
+<text class="t b" x="690" y="276" text-anchor="middle">cancel_pending</text>
+<text class="t s" x="690" y="292" text-anchor="middle">stock unchanged yet</text>
+<rect class="n n-gray" stroke-dasharray="5 4" x="210" y="290" width="140" height="54" rx="9"/>
+<text class="t b" x="280" y="313" text-anchor="middle">(deleted)</text>
+<text class="t s" x="280" y="329" text-anchor="middle">row removed</text>
+<path class="e" d="M160,177 L210,177" marker-end="url(#m-tg-doc-lifecycle)"/>
+<text class="el" x="166" y="170" text-anchor="start">Save</text>
+<path class="e" d="M350,177 L410,177" marker-end="url(#m-tg-doc-lifecycle)"/>
+<text class="el" x="352" y="170" text-anchor="start">Confirm</text>
+<path class="e" d="M280,204 L280,290" marker-end="url(#m-tg-doc-lifecycle)"/>
+<text class="el" x="282" y="250" text-anchor="start">Delete</text>
+<path class="e" d="M560,160 L645,160 L645,57 L730,57" marker-end="url(#m-tg-doc-lifecycle)"/>
+<text class="el" x="653" y="108" text-anchor="start">Cancel by Supervisor</text>
+<text class="el" x="653" y="122" text-anchor="start">or Administrator</text>
+<path class="e" d="M485,204 L485,280 L590,280" marker-end="url(#m-tg-doc-lifecycle)"/>
+<text class="el" x="492" y="240" text-anchor="start">Cancel by Data Entry</text>
+<text class="el" x="492" y="254" text-anchor="start">+ reason</text>
+<path class="e" d="M790,280 L805,280 L805,84" marker-end="url(#m-tg-doc-lifecycle)"/>
+<text class="el" x="798" y="190" text-anchor="end">Approve (Supervisor)</text>
+<path class="e" d="M620,250 L620,190 L560,190" marker-end="url(#m-tg-doc-lifecycle)"/>
+<text class="el" x="628" y="230" text-anchor="start">Reject, or requester withdraws</text>
+<text class="t s" x="20" y="378" text-anchor="start">Before accepting a cancel or a request, StockLedger::assertReversible checks that stock can still cover the reversal. If not, the cancel is refused and an Adjustment is needed.</text>
+</svg>

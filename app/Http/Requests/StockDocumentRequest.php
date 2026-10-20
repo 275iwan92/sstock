@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use App\Enums\StockDocumentType;
+use App\Models\Product;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -38,9 +40,17 @@ class StockDocumentRequest extends FormRequest
         $common = [
             'note' => ['nullable', 'string', 'max:1000'],
             'lines' => ['required', 'array', 'min:1'],
-            'lines.*.item_id' => ['required', 'distinct', Rule::exists('items', 'id')->where('is_active', true)],
             'lines.*.note' => ['nullable', 'string', 'max:255'],
         ];
+
+        // Penerimaan / Saldo Awal: produk + tanggal kedaluwarsa (batch dibuat otomatis); batch langsung (item_id) tetap diterima untuk pemakaian lewat kode.
+        $byProduct = [
+            'lines.*.product_id' => ['nullable', 'required_without:lines.*.item_id', Rule::exists('products', 'id')->where('is_active', true)],
+            'lines.*.item_id' => ['nullable', 'required_without:lines.*.product_id', Rule::exists('items', 'id')->where('is_active', true)],
+            'lines.*.expiry_date' => ['nullable', 'date'],
+        ];
+        // Pengeluaran / Penyesuaian: batch (barang) yang dipilih.
+        $byItem = ['lines.*.item_id' => ['required', 'distinct', Rule::exists('items', 'id')->where('is_active', true)]];
 
         return $common + match ($this->type()) {
             StockDocumentType::Receiving => [
@@ -51,25 +61,38 @@ class StockDocumentRequest extends FormRequest
                 'lines.*.qty' => $qty,
                 'lines.*.unit' => ['nullable', Rule::exists('units', 'code')->where('is_active', true)],
                 'lines.*.unit_cost' => ['required', 'numeric', 'min:0', 'max:999999999999'],
-            ],
+            ] + $byProduct,
             StockDocumentType::Issuance => [
                 'recipient_id' => ['required', Rule::exists('recipients', 'id')->where('is_active', true)],
                 'department_id' => $department,
                 'reason' => ['nullable', 'string', 'max:255'],
                 'lines.*.qty' => $qty,
-            ],
+            ] + $byItem,
             StockDocumentType::Opening => [
                 'doc_at' => ['required', 'date', 'before_or_equal:today'],
                 'lines.*.qty' => $qty,
                 'lines.*.unit_cost' => ['required', 'numeric', 'min:0', 'max:999999999999'],
-            ],
+            ] + $byProduct,
             StockDocumentType::Adjustment => [
                 'department_id' => $department,
                 'recipient_id' => $recipient,
                 'reason' => ['required', 'string', 'max:255'],
                 'lines.*.counted_qty' => ['required', 'numeric', 'min:0', 'max:999999999'],
-            ],
+            ] + $byItem,
         };
+    }
+
+    // Produk berkedaluwarsa wajib bertanggal di baris Penerimaan / Saldo Awal.
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $v) {
+            foreach ((array) $this->input('lines', []) as $i => $row) {
+                $product = ! empty($row['product_id']) ? Product::find($row['product_id']) : null;
+                if ($product?->tracks_expiry && empty($row['expiry_date'])) {
+                    $v->errors()->add("lines.{$i}.expiry_date", "Isi tanggal kedaluwarsa untuk {$product->name}.");
+                }
+            }
+        });
     }
 
     public function messages(): array
@@ -78,6 +101,9 @@ class StockDocumentRequest extends FormRequest
             'lines.required' => 'Tambahkan minimal satu baris barang.',
             'lines.min' => 'Tambahkan minimal satu baris barang.',
             'lines.*.item_id.required' => 'Pilih barang di setiap baris.',
+            'lines.*.product_id.required_without' => 'Pilih barang di setiap baris.',
+            'lines.*.item_id.required_without' => 'Pilih barang di setiap baris.',
+            'lines.*.product_id.exists' => 'Barang yang dipilih tidak ada atau nonaktif.',
             'lines.*.item_id.distinct' => 'Barang yang sama muncul di lebih dari satu baris.',
             'lines.*.item_id.exists' => 'Barang yang dipilih tidak ada atau nonaktif.',
             'lines.*.qty.gt' => 'Jumlah harus lebih dari 0.',

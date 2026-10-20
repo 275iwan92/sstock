@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['item_id', 'ordered_at', 'ref_no', 'created_by', 'closed_at', 'receiving_id'])]
+#[Fillable(['product_id', 'ordered_at', 'ref_no', 'created_by', 'closed_at', 'receiving_id'])]
 class ReorderOrder extends Model
 {
     protected function casts(): array
@@ -14,8 +14,8 @@ class ReorderOrder extends Model
         return ['ordered_at' => 'date', 'closed_at' => 'datetime'];
     }
 
-    public function item(): BelongsTo
+    public function product(): BelongsTo
     {
-        return $this->belongsTo(Item::class);
+        return $this->belongsTo(Product::class);
     }
 }

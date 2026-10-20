@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\StockDocumentType;
 use App\Models\Department;
 use App\Models\Item;
+use App\Models\Product;
 use App\Models\Recipient;
 use App\Models\ReorderOrder;
 use App\Models\StockDocument;
@@ -53,7 +54,7 @@ final class StockDocuments
     /**
      * Confirm = diproses ke stok (saldo awal, masuk, keluar). Tanggal / jam dokumen = saat Confirm (saldo awal: tanggal yang dipilih).
      *
-     * @return array<int, Item> item yang kini di/bawah Reorder Point
+     * @return array<int, Product> produk yang kini di/bawah Reorder Point
      */
     public function confirm(StockDocument $doc, User $user): array
     {
@@ -69,7 +70,7 @@ final class StockDocuments
             $doc->update(['status' => 'confirmed', 'confirmed_by' => $user->id, 'confirmed_at' => now()]);
             if ($doc->type === StockDocumentType::Receiving) {
                 // Barang datang menutup pemesanan ulang yang terbuka (juga bila baru sebagian; pesan lagi bila masih kurang).
-                ReorderOrder::query()->whereNull('closed_at')->whereIn('item_id', $doc->lines()->pluck('item_id'))->update(['closed_at' => now(), 'receiving_id' => $doc->id]);
+                ReorderOrder::query()->whereNull('closed_at')->whereIn('product_id', Item::query()->whereIn('id', $doc->lines()->pluck('item_id'))->pluck('product_id'))->update(['closed_at' => now(), 'receiving_id' => $doc->id]);
             }
 
             return $below;
@@ -176,9 +177,11 @@ final class StockDocuments
         $this->assertStatus($doc, ['draft']);
         $header = $this->withNames($doc->type, $header);
         DB::transaction(function () use ($doc, $header, $lines) {
+            $old = $doc->lines()->pluck('item_id')->all();
             $doc->update($header);
             $doc->lines()->delete();
             $this->writeLines($doc, $lines);
+            $this->purgeUnusedBatches($old);
         });
     }
 
@@ -212,7 +215,42 @@ final class StockDocuments
     public function delete(StockDocument $doc): void
     {
         $this->assertStatus($doc, ['draft']);
+        $old = $doc->lines()->pluck('item_id')->all();
         $doc->delete();
+        $this->purgeUnusedBatches($old);
+    }
+
+    // Batch berkedaluwarsa yang dibuat oleh draf lalu tidak jadi dipakai (tanpa stok, baris, atau pergerakan) dibuang supaya daftar batch tidak berisi sisa.
+    private function purgeUnusedBatches(array $itemIds): void
+    {
+        Item::query()->whereIn('id', $itemIds)->whereNotNull('expiry_date')->where('stock_qty', 0)
+            ->whereDoesntHave('lines')->whereDoesntHave('movements')->delete();
+    }
+
+    /**
+     * Peringatan urutan keluar (FEFO): baris Pengeluaran memakai batch yang kedaluwarsanya lebih jauh padahal batch yang lebih cepat kedaluwarsa masih punya stok. Hanya peringatan, tidak memblokir.
+     *
+     * @return array<int, string>
+     */
+    public function fefoWarnings(StockDocument $doc): array
+    {
+        if ($doc->type !== StockDocumentType::Issuance) {
+            return [];
+        }
+        $out = [];
+        foreach ($doc->lines()->with('item')->get() as $line) {
+            $item = $line->item;
+            if (! $item->expiry_date) {
+                continue;
+            }
+            $earlier = Item::query()->where('product_id', $item->product_id)->where('id', '!=', $item->id)->where('stock_qty', '>', 0)
+                ->whereNotNull('expiry_date')->where('expiry_date', '<', $item->expiry_date)->orderBy('expiry_date')->first();
+            if ($earlier) {
+                $out[] = "{$item->name}: batch {$item->code} (kedaluwarsa ".$item->expiry_date->format('d-m-Y').") dipilih, padahal batch {$earlier->code} (kedaluwarsa ".$earlier->expiry_date->format('d-m-Y').') masih ada stok '.rtrim(rtrim(number_format($earlier->stock_qty, 3, ',', '.'), '0'), ',').'. Keluarkan yang kedaluwarsa lebih dulu.';
+            }
+        }
+
+        return array_values(array_unique($out));
     }
 
     private function assertStatus(StockDocument $doc, array $allowed, ?StockDocumentType $only = null): void
@@ -220,12 +258,54 @@ final class StockDocuments
         abort_unless(($only === null || $doc->type === $only) && in_array($doc->status, $allowed, true), 422, 'Aksi ini tidak diizinkan pada status sekarang.');
     }
 
+    // Baris menyebut batch langsung (item_id) atau produk + tanggal kedaluwarsa (product_id, expiry_date: batch dibuat bila belum ada).
+    private function resolveItem(array $row): Item
+    {
+        if (! empty($row['item_id'])) {
+            return Item::query()->findOrFail($row['item_id']);
+        }
+        $product = Product::query()->findOrFail($row['product_id']);
+        if ($product->tracks_expiry && empty($row['expiry_date'])) {
+            throw ValidationException::withMessages(['lines' => "Isi tanggal kedaluwarsa untuk {$product->name}."]);
+        }
+
+        return $product->batchFor($row['expiry_date'] ?? null);
+    }
+
+    /**
+     * Pengeluaran: jumlah melebihi stok batch yang dipilih disambung ke batch lain produk yang sama menurut FEFO (kedaluwarsa paling cepat dulu, lalu yang paling lama masuk).
+     * Sisa yang tetap tidak tercukupi dibiarkan di batch pilihan sehingga Confirm menolaknya dengan pesan stok tidak cukup.
+     *
+     * @return array<int, array{0: Item, 1: float}>
+     */
+    private function allocate(Item $first, float $qty): array
+    {
+        $take = min($qty, max($first->stock_qty, 0));
+        $parts = $take > 0 ? [[$first, $take]] : [];
+        $left = round($qty - $take, 3);
+        if ($left > 0 && $first->product_id) {
+            $others = Item::query()->where('product_id', $first->product_id)->where('id', '!=', $first->id)->where('stock_qty', '>', 0)->usable()
+                ->orderByRaw('expiry_date is null')->orderBy('expiry_date')->orderBy('id')->get();
+            foreach ($others as $o) {
+                $t = min($left, $o->stock_qty);
+                $parts[] = [$o, $t];
+                $left = round($left - $t, 3);
+                if ($left <= 0) {
+                    break;
+                }
+            }
+        }
+        if ($left > 0) {
+            $parts[] = [$first, $left];
+        }
+
+        return $parts;
+    }
+
     private function writeLines(StockDocument $doc, array $lines): void
     {
-        $items = Item::query()->whereIn('id', array_column($lines, 'item_id'))->get()->keyBy('id');
-
         foreach ($lines as $row) {
-            $item = $items[$row['item_id']];
+            $item = $this->resolveItem($row);
             $isAdjustment = $doc->type === StockDocumentType::Adjustment;
             $qty = $isAdjustment ? round((float) $row['counted_qty'] - $item->stock_qty, 3) : $row['qty'];
             $cost = $row['unit_cost'] ?? null;
@@ -236,14 +316,17 @@ final class StockDocuments
                 [$qty, $cost, $entered] = $this->toStockUnit($item, $row);
             }
 
-            $doc->lines()->create([
-                'item_id' => $item->id,
-                'qty' => $qty,
-                'unit_cost' => $cost,
-                'system_qty' => $isAdjustment ? $item->stock_qty : null,
-                'counted_qty' => $isAdjustment ? $row['counted_qty'] : null,
-                'note' => $row['note'] ?? null,
-            ] + $entered);
+            $parts = $doc->type === StockDocumentType::Issuance ? $this->allocate($item, (float) $qty) : [[$item, $qty]];
+            foreach ($parts as [$target, $partQty]) {
+                $doc->lines()->create([
+                    'item_id' => $target->id,
+                    'qty' => $partQty,
+                    'unit_cost' => $cost,
+                    'system_qty' => $isAdjustment ? $target->stock_qty : null,
+                    'counted_qty' => $isAdjustment ? $row['counted_qty'] : null,
+                    'note' => $row['note'] ?? null,
+                ] + $entered);
+            }
         }
     }
 

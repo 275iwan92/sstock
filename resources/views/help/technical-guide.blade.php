@@ -44,46 +44,18 @@
         </table>
 
         <h2 id="big-flow">2. The big flow</h2>
-        <div class="g-flow">
-            <div class="g-row g-row-3">
-                <div class="g-box g-gray"><b>Login</b><small>AuthController</small></div>
-                <div class="g-box g-gray"><b>Module access check</b><small>role + group + RO/RW</small></div>
-                <div class="g-box g-gray"><b>Module menu</b><small>Modules + Menu</small></div>
-            </div>
-            <div class="g-arrow">&darr;</div>
-            <div class="g-group">
-                <div class="g-cap">User input: master data and stock documents</div>
-                <div class="g-row g-row-5">
-                    <div class="g-box g-teal"><b>Master data</b><small>items, suppliers, units</small></div>
-                    <div class="g-box g-teal"><b>Opening balance</b><small>Supervisor</small></div>
-                    <div class="g-box g-teal"><b>Receiving</b><small>from supplier</small></div>
-                    <div class="g-box g-teal"><b>Issuance</b><small>to recipient</small></div>
-                    <div class="g-box g-teal"><b>Adjustment</b><small>stock count, Approve</small></div>
-                </div>
-            </div>
-            <div class="g-arrow">&darr;</div>
-            <div class="g-box g-purple g-wide"><b>StockDocuments: document lifecycle</b><small>Draft, Confirm, Approve, Cancel. Stock does not change before Confirm.</small></div>
-            <div class="g-arrow">&darr;</div>
-            <div class="g-box g-purple g-wide"><b>StockLedger: the only code that changes stock</b><small>post, reverse, assertReversible; moving average cost</small></div>
-            <div class="g-arrow">&darr;</div>
-            <div class="g-row g-row-2">
-                <div class="g-box g-purple"><b>items</b><small>stock_qty and avg_cost (balance)</small></div>
-                <div class="g-box g-purple"><b>stock_movements</b><small>ledger, rows are never edited</small></div>
-            </div>
-            <div class="g-arrow">&darr;</div>
-            <div class="g-row g-row-2">
-                <div class="g-box g-gray"><b>Reports</b><small>stock card, summary, expiry</small></div>
-                <div class="g-box g-gray"><b>Home screen</b><small>KPIs, reorder alerts, re-order log</small></div>
-            </div>
-        </div>
-        <p class="g-note">A confirmed Receiving closes any open re-order record for the items it contains. Cancelling that Receiving reopens them.</p>
+        @include('help.diagram', ['name' => 'tg-system-flow', 'caption' => 'System flow: from login to reports. StockLedger is the only writer of stock.'])
+        <p class="g-note">A confirmed Receiving closes any open re-order record for the products it contains (any batch counts). Cancelling that Receiving reopens them.</p>
+
+        <h3>Product and batch model</h3>
+        @include('help.diagram', ['name' => 'tg-product-batch', 'caption' => 'Product and batch model: tables, document lines, FEFO allocation and the per-product reorder point.'])
 
         <h2 id="business">3. Business flow</h2>
         <ol class="g-steps">
-            <li><b>Set up master data.</b> Categories, locations, units with conversions, suppliers, departments, recipients, items. Item code is generated: <code>{CATEGORY PREFIX, 3 chars}-{4-digit sequence}[-{YYMM expiry}]</code> (<code>Item::nextCode</code>). Code, category and expiry are locked once saved. Departments and recipients can be added on the fly from inside a document form.</li>
+            <li><b>Set up master data.</b> Categories, locations, units with conversions, suppliers, departments, recipients, items. Items are two-level: a <b>product</b> (<code>products</code>, stable code <code>{CATEGORY PREFIX, 3 chars}-{4-digit sequence}</code> from <code>Product::nextCode</code>, never contains a date) and its <b>batches</b> (<code>items</code>, one per expiry date, batch code <code>{product code}-{YYMMDD}</code>; one undated batch with the product code when the product does not expire). Code, category and <code>tracks_expiry</code> are locked once saved; any user may add a product, only a Supervisor edits parameters (propagated to the batches by <code>Product::propagate</code>). Departments and recipients can be added on the fly from inside a document form.</li>
             <li><b>Opening balance.</b> Supervisor only. Rejected for an item that already has stock movements (use Adjustment instead).</li>
-            <li><b>Receiving.</b> A line may use another unit; it is converted to the item's stock unit by <code>UnitConverter</code>. A missing conversion is rejected.</li>
-            <li><b>Issuance.</b> A recipient is required. Stock may never go negative.</li>
+            <li><b>Receiving.</b> A line names a product and, for <code>tracks_expiry</code> products, an expiry date (required): <code>Product::batchFor()</code> finds or creates the batch (unused batches of a deleted or edited draft are purged). A line may use another unit; it is converted to the item's stock unit by <code>UnitConverter</code>. A missing conversion is rejected.</li>
+            <li><b>Issuance.</b> A recipient is required. Stock may never go negative. A line names a batch; a quantity above that batch's stock spills over to the other usable batches of the same product (earliest expiry first, FEFO; <code>StockDocuments::allocate</code>). Picking a later-expiring batch while an earlier one has stock only warns (<code>fefoWarnings</code>), it never blocks.</li>
             <li><b>Adjustment.</b> The line quantity is the difference <code>counted_qty - system_qty</code>. It needs Supervisor approval.</li>
             <li><b>Reports.</b> All have a from/to date filter. Prices and values are visible to Supervisors only.</li>
         </ol>
@@ -92,6 +64,7 @@
         <p>Four document types share one controller (<code>StockDocumentController</code>, routes <code>docs/{type}</code> with type <code>opening | receiving | issuance | adjustment</code>) and one service (<code>StockDocuments</code>). The controller reads <code>_action</code> from the form button: <code>save, confirm, delete, cancel, approve, reject</code>. Document numbers are <code>PREFIX-YYMM-NNNN</code> (OPN, RCV, ISS, ADJ), sequenced per type per month.</p>
 
         <h3>Opening balance, Receiving, Issuance</h3>
+        @include('help.diagram', ['name' => 'tg-doc-lifecycle', 'caption' => 'State diagram of Opening Balance, Receiving and Issuance documents.'])
         <table class="g-table">
             <thead><tr><th>From</th><th>Action</th><th>To</th><th>Stock effect</th></tr></thead>
             <tbody>
@@ -106,6 +79,7 @@
         </table>
 
         <h3>Adjustment</h3>
+        @include('help.diagram', ['name' => 'tg-adjustment-lifecycle', 'caption' => 'State diagram of an Adjustment document.'])
         <table class="g-table">
             <thead><tr><th>From</th><th>Action</th><th>To</th><th>Stock effect</th></tr></thead>
             <tbody>
@@ -131,13 +105,14 @@
 
         <h2 id="ledger">5. Stock ledger</h2>
         <p>Only <code>App\Services\StockLedger</code> may change <code>items.stock_qty</code> and <code>items.avg_cost</code>. The columns are deliberately not mass-assignable; the ledger writes them with <code>forceFill</code>.</p>
+        @include('help.diagram', ['name' => 'tg-stock-ledger', 'caption' => 'What StockLedger::post does for every document line, and how Cancel reverses it.'])
         <ol class="g-steps">
             <li><b>Lock</b> the item row (<code>lockForUpdate</code>) for each document line.</li>
             <li><b>Signed quantity:</b> Issuance is negative; Opening and Receiving positive; Adjustment carries its own sign. A zero difference is skipped.</li>
             <li><b>Guard:</b> a resulting balance below zero throws a validation error (insufficient stock).</li>
             <li><b>Cost:</b> additions from Receiving or Opening use the line cost; positive Adjustments use the current average cost (or the item price if there is none); removals use the average cost.</li>
             <li><b>Moving average:</b> <code>(stock x avg + qty x cost) / new balance</code> on additions.</li>
-            <li><b>Write:</b> update the item and insert a <code>stock_movements</code> row with the balance after the movement. Items at or below the Reorder Point are returned and shown as an alert on the form.</li>
+            <li><b>Write:</b> update the item and insert a <code>stock_movements</code> row with the balance after the movement. Products at or below the Reorder Point are returned and shown as an alert on the form. The reorder check is per <b>product</b> on the available stock (sum of batches with no expiry or expiry on/after today plus <code>sstock.reorder_exclude_days</code>), so expired batches never count as available.</li>
         </ol>
         <ul class="g-list">
             <li><code>stock_movements</code> rows are never edited or deleted. <code>reverse()</code> adds new rows with <code>reversal_of</code> pointing at the original; the Stock Card marks them "(CANCELLED)".</li>
@@ -145,22 +120,25 @@
         </ul>
 
         <h2 id="data">6. Data model</h2>
+        @include('help.diagram', ['name' => 'tg-erd', 'caption' => 'Entity relationship diagram: key columns and relations.'])
         <table class="g-table">
             <thead><tr><th>Table</th><th>Purpose</th><th>Key relations</th></tr></thead>
             <tbody>
                 <tr><td><code>categories</code>, <code>locations</code>, <code>units</code>, <code>unit_conversions</code></td><td>Item classification, storage places, units and conversion factors</td><td>items belong to a category; <code>items.location</code> stores the location <b>code</b></td></tr>
                 <tr><td><code>suppliers</code> (+ <code>geo_*</code>)</td><td>Vendors with contact and region (region tables copied from tmerp)</td><td>Receiving documents</td></tr>
                 <tr><td><code>departments</code>, <code>recipients</code></td><td>Who receives goods; a recipient has a default department</td><td>Documents copy the <b>names</b> so they stay readable if master data changes</td></tr>
-                <tr><td><code>items</code></td><td>Item master plus running balance <code>stock_qty</code> and <code>avg_cost</code> (cache of the ledger)</td><td>category; lines; movements; re-order records</td></tr>
+                <tr><td><code>products</code></td><td>Item master: stable code, parameters (price, reorder point/qty, lead time), <code>tracks_expiry</code>. The single source of the parameters</td><td>category; batches (<code>items</code>); re-order records</td></tr>
+                <tr><td><code>items</code></td><td>Batches: batch code, <code>expiry_date</code>, running balance <code>stock_qty</code> and <code>avg_cost</code> (cache of the ledger); name/unit/parameters are copies of the product for readers</td><td>product; lines; movements</td></tr>
                 <tr><td><code>stock_documents</code></td><td>Header: number, type, status, supplier/recipient, reason, created/confirmed/approved/cancelled by and at, cancel request</td><td>creator and approver users; lines; movements</td></tr>
                 <tr><td><code>stock_document_lines</code></td><td>Item, quantity, cost; Adjustment keeps <code>system_qty</code> and <code>counted_qty</code>; <code>entered_qty/unit/unit_cost</code> keep what was typed when the unit differs</td><td>document, item</td></tr>
                 <tr><td><code>stock_movements</code></td><td>The ledger: quantity, cost, balance after, user, <code>reversal_of</code></td><td>item, document, itself (reversal)</td></tr>
-                <tr><td><code>reorder_orders</code></td><td>Re-order log; closed by a confirmed Receiving (<code>receiving_id</code>)</td><td>item, receiving document</td></tr>
+                <tr><td><code>reorder_orders</code></td><td>Re-order log per product; closed by a confirmed Receiving of any of its batches (<code>receiving_id</code>)</td><td>product, receiving document</td></tr>
                 <tr><td><code>users</code>, <code>user_groups</code>, <code>user_group_modules</code></td><td>Accounts, groups, and per-module access (none / RO / RW)</td><td>user belongs to a group</td></tr>
             </tbody>
         </table>
 
         <h2 id="access">7. Access and security</h2>
+        @include('help.diagram', ['name' => 'tg-access-flow', 'caption' => 'Login and per-request authorization.'])
         <ol class="g-steps">
             <li>A request must be authenticated (<code>auth</code>), otherwise it goes to Login.</li>
             <li><code>EnsureModuleAccess</code> maps the route to a module code with <code>Modules::forRoute</code>. Access needs <b>both</b> a sufficient role and the module granted by the user's group.</li>
@@ -181,6 +159,8 @@
             <li><b>Re-order log:</b> "Record order" creates a <code>reorder_orders</code> row; a confirmed Receiving closes it automatically.</li>
             <li><b>Reports</b> (<code>ReportController</code>): Stock Card, Stock Summary, Receiving, Issuance (confirmed and cancel-pending documents only), Expiry, Opname &amp; Adjustment (Supervisor).</li>
         </ul>
+
+        @include('help.diagram', ['name' => 'tg-reorder-flow', 'caption' => 'Re-order flow: alert, Record Order, and closing by Receiving.'])
 
         <h2 id="conventions">9. Development conventions</h2>
         <table class="g-table">
