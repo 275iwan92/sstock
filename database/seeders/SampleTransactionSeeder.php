@@ -44,6 +44,9 @@ class SampleTransactionSeeder extends Seeder
         // Saldo awal: seluruh item pada awal periode (bulan lalu), nilai = harga acuan.
         Carbon::setTestNow($monthStart->copy()->setTime(8, 0));
         $opening = array_map(fn ($r) => ['item_id' => $item($r[0]), 'qty' => $r[9], 'unit_cost' => $r[5]], ItemSeeder::ITEMS);
+        foreach (ItemSeeder::EXPIRING as $r) {
+            $opening[] = ['item_id' => Item::where('name', $r[0])->firstOrFail()->id, 'qty' => $r[8], 'unit_cost' => $r[4]];
+        }
         $post(StockDocumentType::Opening, ['doc_at' => $monthStart->toDateString(), 'note' => 'Saldo awal periode'], $opening, $sup);
 
         // Penerimaan.

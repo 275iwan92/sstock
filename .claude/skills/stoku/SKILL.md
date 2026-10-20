@@ -55,6 +55,16 @@ Berlaku untuk SEMUA form dokumen stok (Saldo Awal, Penerimaan, Pengeluaran, Peny
 - **Grid master** (barang, kategori, lokasi, supplier, satuan, departemen, penerima, pengguna, dst.): kolom terdepan memakai KOTAK warna per baris berisi inisial, dengan nama tebal dan kode kecil di bawahnya: `['key' => 'name', 'label' => '<Nama>', 'type' => 'identity', 'code' => '<kolom kode>', 'box' => true]`. Tambahkan `'hue' => 'hue'` bila warnanya bermakna dan controller mengirim kolom `hue` dari `App\Support\Palette` (barang menurut kategori, satuan menurut jenis); tanpa `hue` warna dipilih otomatis. Contoh: `resources/views/items/index.blade.php`, `suppliers/index.blade.php`. Grid master BARU wajib mengikuti pola ini, bukan `avatar => false`.
 - Pengecualian yang ada: `groups/index` dan `modules/index` (menu Keamanan) memakai `avatar => false`, belum berkotak.
 
+## Data contoh (seeder)
+Data contoh hidup HANYA di `database/seeders` (dipanggil `DatabaseSeeder`), tidak pernah di migrasi atau di database lokal saja, supaya bisa dibuat ulang kapan pun.
+- **Setiap perubahan skema (kolom/field ditambah, dihapus, diganti nama, jadi wajib) memperbarui seeder DALAM perubahan yang sama**, bersama form, request, kamus, dan tes. Cari pemakai kolom itu: `grep -rn "<kolom>" database/seeders app tests resources`. Kolom baru wajib diisi nilai yang masuk akal; kolom yang dihapus dibuang dari seeder.
+- **Seeder master idempoten:** `updateOrCreate` / `firstOrCreate` berkunci kode alami (kode barang, kode supplier, username), jadi aman dijalankan ulang dan ikut memperbarui data lama.
+- **Transaksi contoh lewat jalur resmi** (`StockDocuments` -> `StockLedger`, seperti `SampleTransactionSeeder`), JANGAN `insert` langsung ke `stock_documents`/`stock_movements`/`items.stock_qty`, karena stok dan rata-rata biaya harus cocok dengan buku besar. Dilewati bila sudah ada dokumen (`exists()`).
+- **Cakupan:** setiap status penting punya contoh (Draf, Confirm, penyesuaian menunggu dan disetujui, barang di bawah Reorder Point), tiga akun uji tiap peran, dan data berwarna-warni agar grid/KPI/grafik terlihat hidup. Jumlah cukup kecil (puluhan barang), nama dan istilah Indonesia.
+- **Data wilayah** (`geo_*`) BUKAN seeder: disalin dari tmerp lewat `php artisan sstock:import-geo`; setelah `migrate:fresh` jalankan lagi.
+- **Memeriksa:** `tests/Feature/SeedersTest.php` menjalankan `DatabaseSeeder` dua kali (tidak boleh ganda, stok = jumlah buku besar). Wajib lulus setelah perubahan skema. Membuat ulang database lokal (`php artisan migrate:fresh --seed` lalu `sstock:import-geo`) MENGHAPUS semua isinya; lakukan hanya bila pemilik meminta atau datanya memang hanya contoh, dan sebut itu.
+- Password akun uji hanya untuk pengembangan; ganti sebelum produksi (`UserSeeder`).
+
 ## Tombol grid
 Toolbar grid (Cari, Filters, Columns, Export CSV, pilih kolom/kerapatan) datang otomatis dari `x-dl::grid`; jangan dibuat manual. Yang harus dideklarasikan layar:
 - **`actions`**: `master` = kolom Aksi berisi **Edit** dan **Aktif/Nonaktif** (wajib `:toggle-url="url('<modul>/{id}/toggle')"`, kalau tidak hanya pratinjau); `worklist` = **Buka** saja (transaksi); `none` = tanpa aksi (daftar baca saja, mis. Daftar Modul).

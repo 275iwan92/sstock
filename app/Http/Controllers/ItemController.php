@@ -11,6 +11,7 @@ use App\Support\Palette;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 /* REMARK
  * Tujuan       : Master Item/Barang. Semua user boleh melihat; hanya Supervisor menambah, mengubah parameter (harga, ROP, ROQ, lead time) dan mengaktifkan/menonaktifkan.
@@ -47,8 +48,12 @@ class ItemController extends Controller
     public function store(ItemRequest $request): RedirectResponse
     {
         $data = $request->validated();
-        $data['code'] = Item::nextCode(Category::findOrFail($data['category_id']), $data['expiry_date'] ?? null);
-        $item = Item::create($data);
+        // Baris kategori dikunci selama kode dihitung dan disimpan: dua penyimpan di kategori yang sama antre, tidak bisa mendapat nomor urut yang sama.
+        $item = DB::transaction(function () use ($data) {
+            $category = Category::lockForUpdate()->findOrFail($data['category_id']);
+
+            return Item::create($data + ['code' => Item::nextCode($category, $data['expiry_date'] ?? null)]);
+        });
 
         return redirect()->route('items.show', $item)->with('status', 'Barang disimpan.');
     }

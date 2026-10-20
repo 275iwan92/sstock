@@ -17,6 +17,7 @@ Tempel seluruh teks ini di awal sesi baru, lalu baca juga `CLAUDE.md` bila perlu
 - Folder `C:\Users\iwanp\Herd\sstock` (sejajar `tmerp` dan `devlib`), situs http://sstock.test (Herd), GitHub https://github.com/275iwan92/sstock (privat, `main`).
 - Laravel 13.37, PHP 8.4, Vite + Tailwind 4, MySQL 8 (db `sstock`, user `sstock_usr`, dibuat oleh `php artisan sstock:install`). Tes memakai SQLite in-memory.
 - Akun uji (hanya untuk pengembangan/UAT, ganti sebelum produksi; ada di `UserSeeder`): `admin` / `admin` (Administrator), `supervisor` / `1qa2ws3ed` (Supervisor), `entry` / `12345678` (Data Entry).
+- **Bangun ulang data contoh:** `composer sample` (= `php artisan migrate:fresh --seed --force`; MENGHAPUS seluruh isi database `sstock`, lalu mengisi ulang akun, kategori, lokasi, barang, supplier, departemen, dan riwayat transaksi contoh). Wajib dijalankan ulang bila seeder berubah. Seeder dijaga tes `ItemCodeTest`.
 - Perintah: `php artisan test` (61 tes lulus saat serah terima), `vendor\bin\pint --dirty`, `npm run build`, `php artisan sstock:wallpapers`, `php artisan sstock:import-geo`.
 
 ## 3. Yang sudah ada

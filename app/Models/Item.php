@@ -13,6 +13,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 #[Fillable(['code', 'name', 'category_id', 'unit', 'location', 'expiry_date', 'unit_price', 'reorder_point', 'reorder_qty', 'lead_time_days', 'is_active'])]
 class Item extends Model
 {
+    // Peringatan "hampir kedaluwarsa" muncul bila tinggal sekian hari.
+    public const EXPIRY_WARN_DAYS = 30;
+
     protected function casts(): array
     {
         return [
@@ -62,6 +65,23 @@ class Item extends Model
     public function scopeBelowReorderPoint(Builder $query): Builder
     {
         return $query->where('is_active', true)->where('reorder_point', '>', 0)->whereColumn('stock_qty', '<=', 'reorder_point');
+    }
+
+    // Barang aktif yang masih ada stoknya dan sudah kedaluwarsa atau akan kedaluwarsa dalam $days hari (stok 0 tidak perlu dibuang, jadi tidak diperingatkan).
+    public function scopeNearExpiry(Builder $query, int $days = self::EXPIRY_WARN_DAYS): Builder
+    {
+        return $query->where('is_active', true)->where('stock_qty', '>', 0)->whereNotNull('expiry_date')->whereDate('expiry_date', '<=', today()->addDays($days));
+    }
+
+    // KEDALUWARSA = tanggalnya sudah lewat, HAMPIR = tinggal $days hari atau kurang, null = aman / tanpa kedaluwarsa.
+    public function expiryState(int $days = self::EXPIRY_WARN_DAYS): ?string
+    {
+        return match (true) {
+            ! $this->expiry_date => null,
+            $this->expiry_date->lt(today()) => 'KEDALUWARSA',
+            $this->expiry_date->lte(today()->addDays($days)) => 'HAMPIR',
+            default => null,
+        };
     }
 
     public function isBelowReorderPoint(): bool

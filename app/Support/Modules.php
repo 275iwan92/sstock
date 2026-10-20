@@ -43,6 +43,7 @@ final class Modules
             'R-SUM' => ['RPT', 'Ringkasan Stok', 'fa-solid fa-table-list', 'report', 'reports.summary', 'entry', ['reports.summary']],
             'R-IN' => ['RPT', 'Laporan Penerimaan', 'fa-solid fa-file-arrow-down', 'report', 'reports.receiving', 'entry', ['reports.receiving']],
             'R-OUT' => ['RPT', 'Laporan Pengeluaran', 'fa-solid fa-file-arrow-up', 'report', 'reports.issuance', 'entry', ['reports.issuance']],
+            'R-EXP' => ['RPT', 'Laporan Kedaluwarsa', 'fa-solid fa-hourglass-end', 'report', 'reports.expiry', 'entry', ['reports.expiry']],
             'R-ADJ' => ['RPT', 'Laporan Opname & Penyesuaian', 'fa-solid fa-file-circle-check', 'report', 'reports.adjustment', 'supervisor', ['reports.adjustment']],
             'USR' => ['SEC', 'Pengguna', 'fa-solid fa-users-gear', 'grid', 'users.index', 'administrator', ['users.']],
             'GRP' => ['SEC', 'Grup', 'fa-solid fa-people-group', 'grid', 'groups.index', 'administrator', ['groups.']],

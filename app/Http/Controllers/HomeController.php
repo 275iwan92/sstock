@@ -29,6 +29,7 @@ class HomeController extends Controller
             'open' => $request->query('open'),
             'fresh' => (bool) session('fresh'),
             'below' => $below,
+            'expiring' => Item::query()->nearExpiry()->orderBy('expiry_date')->get(),
             'itemCount' => Item::query()->where('is_active', true)->count(),
             'stockValue' => $user->isSupervisor() ? round(Item::query()->selectRaw('SUM(stock_qty * avg_cost) v')->value('v') ?? 0, 2) : null,
             'receivingToday' => StockDocument::query()->where('type', StockDocumentType::Receiving)->whereIn('status', ['confirmed', 'cancel_pending'])->whereDate('doc_at', today())->count(),

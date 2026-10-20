@@ -44,6 +44,9 @@
             "npm install --ignore-scripts",
             "npm run build"
         ],
+        "sample": [
+            "@php artisan migrate:fresh --seed --force"
+        ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
             "@php artisan dev"

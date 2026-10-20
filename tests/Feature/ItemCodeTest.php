@@ -89,4 +89,35 @@ class ItemCodeTest extends TestCase
         $this->get(route('locations.index'))->assertOk();
         $this->get(route('categories.index'))->assertOk();
     }
+
+    public function test_expiry_state_and_alerts_only_count_active_items_that_still_have_stock(): void
+    {
+        $cat = Category::create(['code' => 'ATK', 'name' => 'ATK']);
+        $mk = fn (string $code, string $exp, float $stock, bool $active = true) => tap(Item::create(['code' => $code, 'name' => $code, 'category_id' => $cat->id, 'unit' => 'pcs', 'unit_price' => 1, 'expiry_date' => $exp, 'is_active' => $active])->forceFill(['stock_qty' => $stock]), fn ($i) => $i->save());
+        $expired = $mk('A-1', today()->subDays(3)->toDateString(), 5);
+        $soon = $mk('A-2', today()->addDays(10)->toDateString(), 5);
+        $mk('A-3', today()->addDays(90)->toDateString(), 5);       // masih lama
+        $mk('A-4', today()->subDays(3)->toDateString(), 0);        // stok habis: tidak ada yang dibuang
+        $mk('A-5', today()->subDays(3)->toDateString(), 5, false); // nonaktif
+
+        $this->assertSame(['KEDALUWARSA', 'HAMPIR'], [$expired->expiryState(), $soon->expiryState()]);
+        $this->assertSame(['A-1', 'A-2'], Item::nearExpiry()->orderBy('expiry_date')->pluck('code')->all());
+
+        $this->actingAs(User::factory()->supervisor()->create());
+        $this->get(route('home'))->assertOk()->assertSee('Pisahkan dari rak');
+        $report = $this->get(route('reports.expiry'))->assertOk()->assertSee('KEDALUWARSA')->assertSee('HAMPIR')->getContent();
+        $this->assertStringNotContainsString('A-3', $report);
+        $this->assertStringContainsString('A-3', $this->get(route('reports.expiry', ['days' => 120]))->getContent());
+    }
+
+    public function test_the_sample_data_builds_and_shows_the_expiry_alerts(): void
+    {
+        $this->seed();
+
+        $this->assertSame(0, Item::whereNull('location')->count());
+        $this->assertSame(Location::count(), Location::whereIn('code', Item::pluck('location'))->count());
+        $this->assertSame(2, Item::nearExpiry()->count());  // satu sudah lewat, satu hampir; yang ke-3 masih lama
+        $this->assertTrue(Item::where('code', 'like', 'ATK-%-%')->exists());
+        $this->actingAs(User::where('username', 'supervisor')->firstOrFail())->get(route('home'))->assertOk()->assertSee('Lem Kayu Fox 100 ml');
+    }
 }

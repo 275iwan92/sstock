@@ -115,6 +115,7 @@ Route::middleware(['auth', 'module'])->group(function () {
     Route::prefix('reports')->controller(ReportController::class)->group(function () {
         Route::get('stock-card', 'stockCard')->name('reports.stock-card');
         Route::get('summary', 'summary')->name('reports.summary');
+        Route::get('expiry', 'expiry')->name('reports.expiry');
         Route::get('receiving', 'receiving')->name('reports.receiving');
         Route::get('issuance', 'issuance')->name('reports.issuance');
         Route::get('adjustment', 'adjustment')->middleware('supervisor')->name('reports.adjustment');

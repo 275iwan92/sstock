@@ -72,6 +72,10 @@ final class Indonesian
         'Generated automatically: category prefix, running number, and the expiry year and month if the item expires.' => 'Dibuat otomatis: awalan kategori, nomor urut, dan tahun-bulan kedaluwarsa bila barang kedaluwarsa.',
         'Fill only for items that expire. The expiry year and month become part of the item code, so it cannot be changed after saving.' => 'Isi hanya untuk barang yang kedaluwarsa. Tahun dan bulannya menjadi bagian kode barang, jadi tidak bisa diubah setelah disimpan.',
 
+        // Kedaluwarsa
+        'Near expiry / expired' => 'Hampir kedaluwarsa / kedaluwarsa', 'Expiry Report' => 'Laporan Kedaluwarsa',
+        'Expires within (days)' => 'Kedaluwarsa dalam (hari)', 'Days Left' => 'Sisa Hari', 'Items with stock that are expired or about to expire' => 'Barang yang masih ada stoknya dan sudah / hampir kedaluwarsa',
+
         // Form Satuan
         'Unit Code' => 'Kode Satuan', 'Unit Name' => 'Nama Satuan', 'Short, lowercase (pcs, box, kg). Cannot be changed after saving.' => 'Singkat, huruf kecil (pcs, box, kg). Tidak bisa diubah setelah disimpan.',
         'Sets the colour of the unit in lists (for example weight units share one colour).' => 'Menentukan warna satuan di daftar (misalnya satuan berat satu warna).',

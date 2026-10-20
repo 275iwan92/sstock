@@ -1,6 +1,6 @@
 {{-- REMARK
  Tujuan       : Layar utama SStock: Layer Shell + dashboard (KPI, peringatan Reorder Point).
- Sumber hulu  : HomeController (modules menurut peran, KPI, daftar item di/bawah ROP), partial partials.reorder-alert.
+ Sumber hulu  : HomeController (modules menurut peran, KPI, daftar item di/bawah ROP dan yang hampir kedaluwarsa), partial partials.reorder-alert dan partials.expiry-alert.
  Input        : modules, user, open, below, itemCount, stockValue, receivingToday, issuanceToday, valuation, pending.
  Output       : x-dl::layer-shell; tiap menu terbuka sebagai tab (iframe) layar masing-masing.
  Dipakai oleh : route home.
@@ -15,6 +15,7 @@
             <x-dl::kpi-row>
                 <x-dl::kpi label="Active items" :value="$itemCount" icon="fa-boxes-stacked" data-open-tab="ITM" class="sstock-link" role="link" tabindex="0" />
                 <x-dl::kpi label="At / below reorder point" :value="$below->count()" icon="fa-triangle-exclamation" :tone="$below->isNotEmpty() ? 'danger' : 'success'" good-when="down" data-open-tab="ITM" class="sstock-link" role="link" tabindex="0" />
+                <x-dl::kpi label="Near expiry / expired" :value="$expiring->count()" icon="fa-hourglass-end" :tone="$expiring->isNotEmpty() ? ($expiring->contains(fn ($i) => $i->expiryState() === 'KEDALUWARSA') ? 'danger' : 'warn') : 'success'" good-when="down" data-open-tab="R-EXP" class="sstock-link" role="link" tabindex="0" />
                 <x-dl::kpi label="Receiving today" :value="$receivingToday" icon="fa-truck-ramp-box" data-open-tab="RCV" class="sstock-link" role="link" tabindex="0" />
                 <x-dl::kpi label="Issuance today" :value="$issuanceToday" icon="fa-dolly" data-open-tab="ISS" class="sstock-link" role="link" tabindex="0" />
                 @if ($stockValue !== null)
@@ -27,6 +28,9 @@
             <div class="sstock-split">
                 @if ($below->isNotEmpty())
                     <div>@include('partials.reorder-alert')</div>
+                @endif
+                @if ($expiring->isNotEmpty())
+                    <div>@include('partials.expiry-alert')</div>
                 @endif
                 @if ($valuation)
                     <div class="sstock-box">

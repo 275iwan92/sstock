@@ -14,7 +14,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 /* REMARK
- * Tujuan       : Laporan utama: Kartu Stok, Summary Stock, Penerimaan, Pengeluaran, Opname & Penyesuaian. Semua tampil sebagai x-dl::report (kop, kriteria, ringkasan, kelompok, cetak).
+ * Tujuan       : Laporan utama: Kartu Stok, Summary Stock, Kedaluwarsa, Penerimaan, Pengeluaran, Opname & Penyesuaian. Semua tampil sebagai x-dl::report (kop, kriteria, ringkasan, kelompok, cetak).
  * Sumber hulu  : stock_movements (kartu stok), items (summary), stock_document_lines + stock_documents (laporan dokumen). Kolom harga / nilai hanya untuk Supervisor.
  * Output       : view reports.* dengan filter GET (periode, item, dst) + x-dl::report.
  * Dipakai oleh : routes/web.php (reports.*).
@@ -94,6 +94,22 @@ class ReportController extends Controller
         $ids = StockMovement::query()->where('moved_at', $operator, $at)->selectRaw('max(id) as id')->groupBy('item_id')->pluck('id');
 
         return StockMovement::query()->whereIn('id', $ids)->get()->keyBy('item_id');
+    }
+
+    // Barang bersisa stok yang sudah kedaluwarsa atau akan kedaluwarsa dalam N hari (bawaan 30), dari yang paling dulu.
+    public function expiry(Request $request)
+    {
+        $sup = $request->user()->isSupervisor();
+        $days = min(max((int) $request->query('days', Item::EXPIRY_WARN_DAYS), 0), 365);
+        $rows = Item::query()->nearExpiry($days)->with('category')->orderBy('expiry_date')->orderBy('code')
+            ->when($request->filled('category_id'), fn ($q) => $q->where('category_id', $request->query('category_id')))->get()
+            ->map(fn (Item $i) => [
+                'code' => $i->code, 'name' => $i->name, 'loc' => $i->location, 'cat' => $i->category->name, 'unit' => $i->unit,
+                'expiry' => Locale::d($i->expiry_date), 'left' => today()->diffInDays($i->expiry_date, false), 'stock' => $i->stock_qty,
+                'value' => $sup ? $i->stockValue() : null, 'status' => $i->expiryState($days),
+            ])->all();
+
+        return view('reports.expiry', ['sup' => $sup, 'days' => $days, 'categories' => Category::orderBy('name')->pluck('name', 'id')->all(), 'rows' => $rows]);
     }
 
     public function receiving(Request $request)

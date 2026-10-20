@@ -8,7 +8,7 @@ use App\Models\Location;
 use Illuminate\Database\Seeder;
 
 /* REMARK
- * Tujuan       : Sampel barang ATK, sparepart maintenance (mur / baut berbagai ukuran) dan tools, lengkap dengan lokasi rak, harga, Reorder Point / Qty, Lead Time.
+ * Tujuan       : Sampel barang ATK, sparepart maintenance (mur / baut berbagai ukuran) dan tools (+ tiga barang berkedaluwarsa), lengkap dengan lokasi rak (master Lokasi), harga, Reorder Point / Qty, Lead Time.
  * Output       : tabel items (stok awal diisi lewat SampleTransactionSeeder, bukan di sini).
  * Dipakai oleh : DatabaseSeeder, SampleTransactionSeeder (daftar ITEMS).
  * Status       : Aktif (data contoh).
@@ -43,6 +43,14 @@ class ItemSeeder extends Seeder
         ['TLS-0006', 'Batu Gerinda 4"', 'TLS', 'pcs', 'C3-02', 12000, 15, 50, 7, 40],
     ];
 
+    // Barang berkedaluwarsa contoh: [nama, kategori, satuan, lokasi, harga, ROP, ROQ, lead time, stok awal, kedaluwarsa (hari dari sekarang)].
+    // Kode dibuat Item::nextCode; tanggal relatif supaya peringatan beranda dan Laporan Kedaluwarsa selalu punya contoh (sudah lewat, hampir, masih lama).
+    public const EXPIRING = [
+        ['Cairan Pembersih Mesin 5L', 'SPR', 'can', 'B5-03', 120000, 2, 6, 7, 6, -15],
+        ['Lem Kayu Fox 100 ml', 'ATK', 'pcs', 'A2-04', 12000, 6, 24, 3, 30, 12],
+        ['Cat Semprot Pelindung', 'SPR', 'can', 'B5-03', 45000, 4, 12, 7, 20, 150],
+    ];
+
     public function run(): void
     {
         $categories = Category::pluck('id', 'code');
@@ -53,6 +61,17 @@ class ItemSeeder extends Seeder
                 'name' => $name, 'category_id' => $categories[$cat], 'unit' => $unit, 'location' => $location,
                 'unit_price' => $price, 'reorder_point' => $rop, 'reorder_qty' => $roq, 'lead_time_days' => $lead,
             ]);
+        }
+
+        foreach (self::EXPIRING as [$name, $cat, $unit, $location, $price, $rop, $roq, $lead, , $days]) {
+            Location::firstOrCreate(['code' => $location], ['name' => 'Rak '.$location]);
+            $expiry = today()->addDays($days)->toDateString();
+            if (Item::where('name', $name)->doesntExist()) {
+                Item::create([
+                    'code' => Item::nextCode(Category::find($categories[$cat]), $expiry), 'name' => $name, 'category_id' => $categories[$cat], 'unit' => $unit, 'location' => $location,
+                    'expiry_date' => $expiry, 'unit_price' => $price, 'reorder_point' => $rop, 'reorder_qty' => $roq, 'lead_time_days' => $lead,
+                ]);
+            }
         }
     }
 }
