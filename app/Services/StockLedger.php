@@ -85,10 +85,13 @@ final class StockLedger
     /**
      * Membatalkan posting dokumen: tiap baris buku besar dibalik dengan baris baru (baris asal tidak diubah / dihapus).
      * Pembalikan masuk menurunkan saldo (ditolak bila stok tidak cukup); pembalikan keluar mengembalikan saldo pada biaya saat itu.
+     *
+     * @return array<int, StockMovement> baris pembalik yang baru dibuat
      */
-    public function reverse(StockDocument $doc, User $user): void
+    public function reverse(StockDocument $doc, User $user): array
     {
-        DB::transaction(function () use ($doc, $user) {
+        return DB::transaction(function () use ($doc, $user) {
+            $made = [];
             $moves = StockMovement::query()->where('stock_document_id', $doc->id)->whereNull('reversal_of')->orderByDesc('id')->get();
             foreach ($moves as $m) {
                 $item = Item::query()->lockForUpdate()->findOrFail($m->item_id);
@@ -104,11 +107,13 @@ final class StockLedger
                     default => max(0, round(($item->stock_qty * $item->avg_cost - abs($signed) * $cost) / $balance, 4)),
                 };
                 $item->forceFill(['stock_qty' => $balance, 'avg_cost' => $avg])->save();
-                StockMovement::create([
+                $made[] = StockMovement::create([
                     'item_id' => $item->id, 'stock_document_id' => $doc->id, 'type' => $m->type, 'moved_at' => now(), 'qty' => $signed, 'unit_cost' => $cost,
                     'balance_qty' => $balance, 'balance_avg_cost' => $avg, 'user_id' => $user->id, 'reversal_of' => $m->id,
                 ]);
             }
+
+            return $made;
         });
     }
 

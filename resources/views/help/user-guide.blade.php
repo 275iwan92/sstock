@@ -356,6 +356,7 @@
         @include('help.diagram', ['name' => 'ug-pembatalan', 'caption' => 'Alur membatalkan dokumen yang sudah dikonfirmasi.'])
         <div class="g-warn"><b>Pembatalan bisa ditolak otomatis bila stok tidak cukup.</b> Contoh: Penerimaan sudah sebagian dikeluarkan, sehingga stok yang ditarik kembali akan menjadi minus. Peringatannya tampil di form sebelum Anda menekan tombol. Solusinya: buat <b>Penyesuaian Stok</b> untuk mengoreksi.</div>
         <ul class="g-list">
+            <li>Setiap pembatalan dokumen yang sudah diproses otomatis membuat dokumen <b>Penyesuaian Stok pembalik</b> (langsung berstatus Disetujui, alasan &quot;Pembalik otomatis pembatalan ...&quot;); nomornya tampil di Riwayat dokumen asal. Dokumen pembalik tidak bisa dibatalkan lagi.</li>
             <li>Riwayat stok <b>tidak dihapus</b>: pembatalan menambah baris pembalik. Di <b>Kartu Stok</b> baris itu ditandai <b>(BATAL)</b>.</li>
             <li>Pembatalan Penerimaan membuka kembali pesanan ulang yang tadinya ditutupnya.</li>
             <li>Dokumen <b>Draf</b> tidak dibatalkan melainkan <b>Hapus</b>.</li>

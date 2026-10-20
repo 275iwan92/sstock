@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['doc_no', 'type', 'doc_at', 'status', 'supplier_id', 'ref_no', 'recipient', 'recipient_id', 'department', 'department_id', 'reason', 'note', 'created_by', 'approved_by', 'approved_at', 'confirmed_by', 'confirmed_at', 'cancelled_by', 'cancelled_at', 'cancel_reason', 'cancel_requested_by', 'cancel_requested_at'])]
+#[Fillable(['doc_no', 'type', 'doc_at', 'status', 'supplier_id', 'ref_no', 'recipient', 'recipient_id', 'department', 'department_id', 'reason', 'note', 'created_by', 'approved_by', 'approved_at', 'confirmed_by', 'confirmed_at', 'cancelled_by', 'cancelled_at', 'cancel_reason', 'cancel_requested_by', 'cancel_requested_at', 'reversal_of_document_id'])]
 class StockDocument extends Model
 {
     protected function casts(): array

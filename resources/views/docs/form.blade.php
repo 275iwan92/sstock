@@ -66,7 +66,7 @@
         :back="route('docs.index', $t->slug())" :new-url="route('docs.create', $t->slug())"
         :action="$isNew ? route('docs.store', $t->slug()) : route('docs.update', [$t->slug(), $doc])" :hidden="$isNew ? [] : ['_method' => 'PUT']"
         :pipeline="true" :approval-levels="$pendingCancel ? 1 : $approvalLevels" :approval-at="$approvalAt" :can-approve="$canApprove"
-        :hide="['hold', 'email', 'duplicate']" :print-url="$isNew ? null : route('docs.print', [$t->slug(), $doc])" :log="$log"
+        :hide="array_merge(['hold', 'email', 'duplicate'], $doc->reversal_of_document_id ? ['cancel'] : [])" :print-url="$isNew ? null : route('docs.print', [$t->slug(), $doc])" :log="$log"
         :created-by="$doc->creator?->name" :created-at="$doc->created_at?->format('Y-m-d H:i:s')"
         :updated-by="$doc->approver?->name ?? $doc->creator?->name" :updated-at="$doc->updated_at?->format('Y-m-d H:i:s')">
         <x-dl::form.row :cols="3">

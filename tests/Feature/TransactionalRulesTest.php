@@ -135,6 +135,24 @@ class TransactionalRulesTest extends TestCase
         $this->actingAs($this->sup)->get(route('docs.create', 'adjustment'))->assertOk()->assertSee('Opname stok', false);
     }
 
+    public function test_cancelling_a_processed_document_auto_creates_a_reversing_adjustment_record(): void
+    {
+        $in = $this->receive();
+        $payload = ['supplier_id' => $in->supplier_id, 'lines' => [['item_id' => $this->itemId, 'qty' => 10, 'unit_cost' => 10]]];
+        $this->act($in, 'confirm', $this->entry, $payload);
+        $this->act($in, 'cancel', $this->sup);
+
+        $adj = StockDocument::where('reversal_of_document_id', $in->id)->firstOrFail();
+        $this->assertSame(['approved', 'ADJ'], [$adj->status, $adj->type->value]);
+        $this->assertSame([-10.0, 10.0, 0.0], [$adj->lines()->first()->qty, $adj->lines()->first()->system_qty, $adj->lines()->first()->counted_qty]);
+        $this->assertSame(0.0, $this->item()->stock_qty);                                   // stok dibalik sekali saja
+        $this->get(route('docs.show', ['receiving', $in]))->assertOk()->assertSee($adj->doc_no);
+        $this->get(route('docs.print', ['adjustment', $adj]))->assertOk()->assertSee('APPROVED');
+
+        $this->act($adj, 'cancel', $this->sup)->assertStatus(422);                          // pembalik tidak dibatalkan lagi
+        $this->assertSame('approved', $adj->fresh()->status);
+    }
+
     public function test_a_group_is_deactivated_not_deleted_and_leaves_the_user_choices(): void
     {
         $admin = User::factory()->administrator()->create();

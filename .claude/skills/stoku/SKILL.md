@@ -16,6 +16,7 @@ Bahasa kerja dengan pemilik: Indonesia, ringkas. Daftar fitur, akun uji, dan hal
 6. **Stok** hanya diubah lewat `App\Services\StockLedger` (`post`, `reverse`, `assertReversible`); siklus dokumen di `App\Services\StockDocuments`. Pembalikan = baris baru `reversal_of`, baris asal tidak diubah.
 7. **Verifikasi** tampilan di http://sstock.test. Setelah mengubah `resources/css/app.css` jalankan `npm run build` dan muat ulang keras. Kembalikan viewport emulasi ke `desktop`. Jangan tinggalkan data uji di database lokal.
 8. Tanya pemilik hanya bila benar-benar buntu; selebihnya putuskan sendiri dan sebutkan asumsinya.
+9. **Selalu MANDIRI tanpa prompting (perintah tegas pemilik, 2026-10-20):** pemilik sering tidak di depan laptop. Kerjakan semua sampai tuntas (kode, tes, HELP UG+TG, commit + push) tanpa menunggu jawaban dan tanpa menutup dengan pertanyaan "mau lanjut / mulai dari mana?"; daftar "belum dikerjakan" yang Anda sebut sendiri juga langsung dikerjakan. **Pengecualian satu-satunya: keputusan tampilan LAYAR** (tata letak, bentuk, apa yang terlihat pengguna) adalah hak pemilik: usulkan dan tanyakan dulu, jangan putuskan sendiri. Keputusan lain (logika, data, tes) putuskan sendiri dan sebut asumsinya di ringkasan akhir.
 
 ## Aturan data transaksional vs data master (dari pemilik, berlaku untuk SEMUA proyek Iwan)
 **Data transaksional** (master-detail maupun single):
@@ -32,7 +33,8 @@ Bahasa kerja dengan pemilik: Indonesia, ringkas. Daftar fitur, akun uji, dan hal
 - **PRINT** ada di semua mode form dokumen stok (`docs.print`, kelas `App\Support\StockDocumentPrint` di atas `x-dl::print-doc`); cetakan memuat MODE (stempel + tanda air). Dokumen jenis baru wajib memakai pola ini.
 - **Authority bertingkat**: `config('sstock.approval.<jenis>')` = daftar peran minimal per tingkat (bawaan satu tingkat; `SSTOCK_APPROVAL_ADJUSTMENT=supervisor,administrator` = dua tingkat); tiap keputusan = baris `stock_document_approvals`; stok baru diposting setelah tingkat terakhir. Baru dipakai Penyesuaian Stok; pengajuan pembatalan tetap satu tingkat (Supervisor).
 - **Default data**: dokumen baru berisi baris pertama dengan jumlah 1 dan alasan penyesuaian bawaan; supplier / penerima sengaja dibiarkan dipilih pengguna.
-- Belum: pembalik berupa baris `stock_movements`, belum record dokumen ADJUSTMENT terpisah; Pemesanan Ulang (`reorder_orders`) belum memakai siklus DRAFT/CONFIRMED.
+- **Pembalik otomatis**: Cancel dokumen yang sudah diproses membuat dokumen ADJUSTMENT (approved, `reversal_of_document_id`) di `StockDocuments::recordReversal`; baris buku besar tetap `reversal_of` di dokumen asal.
+- Keputusan: Pemesanan Ulang (`reorder_orders`) adalah catatan satu klik, bukan dokumen transaksi, jadi tidak memakai siklus DRAFT/CONFIRMED; ditutup otomatis oleh Penerimaan yang dikonfirmasi.
 
 ## Siklus dokumen: Confirm, Delete, Cancel
 Berlaku untuk SEMUA form dokumen stok (Saldo Awal, Penerimaan, Pengeluaran, Penyesuaian) dan setiap jenis dokumen baru. Logika hanya di `App\Services\StockDocuments`; controller `StockDocumentController@update` membaca `_action` (save, confirm, delete, cancel, approve, reject). Form = `x-dl::form kind="document" :pipeline="true"` ([docs/form.blade.php](resources/views/docs/form.blade.php)); tombol Confirm/Delete/Cancel/Approve/Reject berasal dari status DevLib, jangan dibuat manual.

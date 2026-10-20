@@ -204,7 +204,8 @@ class StockDocumentController extends Controller
                 $log[] = ['at' => $doc->cancel_requested_at->format('Y-m-d H:i:s'), 'by' => $doc->cancelRequester->name, 'action' => 'Mengajukan pembatalan', 'note' => $doc->cancel_reason];
             }
             if ($doc->status === 'cancelled') {
-                $log[] = ['at' => $doc->cancelled_at->format('Y-m-d H:i:s'), 'by' => $doc->canceller->name, 'action' => 'Dibatalkan', 'note' => $doc->cancel_reason];
+                $reversal = StockDocument::query()->where('reversal_of_document_id', $doc->id)->value('doc_no');
+                $log[] = ['at' => $doc->cancelled_at->format('Y-m-d H:i:s'), 'by' => $doc->canceller->name, 'action' => 'Dibatalkan', 'note' => $doc->cancel_reason.($reversal ? " (dokumen pembalik otomatis: {$reversal})" : '')];
             }
             $decisions = $doc->approvals()->with('user')->get();
             foreach ($decisions as $d) {

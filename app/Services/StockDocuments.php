@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\Recipient;
 use App\Models\ReorderOrder;
 use App\Models\StockDocument;
+use App\Models\StockMovement;
 use App\Models\User;
 use App\Support\Modules;
 use App\Support\UnitConverter;
@@ -89,6 +90,7 @@ final class StockDocuments
     {
         $reason = mb_substr(trim($reason), 0, 255);
         $this->assertStatus($doc, ['confirmed', 'approved', 'approval', 'cancel_pending']);
+        abort_if($doc->reversal_of_document_id, 422, 'Dokumen pembalik otomatis tidak bisa dibatalkan.');
 
         if ($doc->status === 'cancel_pending') {
             $doc->update($this->backToProcessed($doc) + ['cancel_reason' => null, 'cancel_requested_by' => null, 'cancel_requested_at' => null]);
@@ -151,7 +153,7 @@ final class StockDocuments
     {
         DB::transaction(function () use ($doc, $by, $reason) {
             if (in_array($doc->status, ['confirmed', 'approved', 'cancel_pending'], true)) {
-                $this->ledger->reverse($doc, $by);
+                $this->recordReversal($doc, $by, $reason, $this->ledger->reverse($doc, $by));
             }
             $doc->update(['status' => 'cancelled', 'cancelled_by' => $by->id, 'cancelled_at' => now(), 'cancel_reason' => $reason]);
             if ($doc->type === StockDocumentType::Receiving) {
@@ -159,6 +161,27 @@ final class StockDocuments
                 ReorderOrder::query()->where('receiving_id', $doc->id)->update(['closed_at' => null, 'receiving_id' => null]);
             }
         });
+    }
+
+    /**
+     * Pembatalan dokumen yang sudah diproses: dokumen ADJUSTMENT pembalik dibuat otomatis (langsung disetujui, menunjuk dokumen asal) berisi selisih stok akibat pembalikan.
+     * Pergerakan stoknya tetap baris reversal_of di dokumen asal (Kartu Stok tidak berubah); dokumen ini catatan yang tersimpan dan bisa dicetak.
+     *
+     * @param  array<int, StockMovement>  $moves
+     */
+    private function recordReversal(StockDocument $original, User $by, string $reason, array $moves): void
+    {
+        if (! $moves) {
+            return;
+        }
+        $adj = StockDocument::create([
+            'doc_no' => $this->nextNumber(StockDocumentType::Adjustment), 'type' => StockDocumentType::Adjustment, 'doc_at' => now(), 'status' => 'approved',
+            'reason' => 'Pembalik otomatis pembatalan '.$original->doc_no, 'note' => $reason, 'created_by' => $by->id, 'confirmed_by' => $by->id, 'confirmed_at' => now(),
+            'approved_by' => $by->id, 'approved_at' => now(), 'reversal_of_document_id' => $original->id,
+        ]);
+        foreach ($moves as $m) {
+            $adj->lines()->create(['item_id' => $m->item_id, 'qty' => $m->qty, 'unit_cost' => $m->unit_cost, 'system_qty' => round($m->balance_qty - $m->qty, 3), 'counted_qty' => $m->balance_qty]);
+        }
     }
 
     // Semua jenis dokumen: departemen kosong -> departemen bawaan penerima. Nama master disalin ke kolom teks dokumen (tetap terbaca bila master diubah).
