@@ -17,6 +17,20 @@ Bahasa kerja dengan pemilik: Indonesia, ringkas. Daftar fitur, akun uji, dan hal
 7. **Verifikasi** tampilan di http://sstock.test. Setelah mengubah `resources/css/app.css` jalankan `npm run build` dan muat ulang keras. Kembalikan viewport emulasi ke `desktop`. Jangan tinggalkan data uji di database lokal.
 8. Tanya pemilik hanya bila benar-benar buntu; selebihnya putuskan sendiri dan sebutkan asumsinya.
 
+## Aturan data transaksional vs data master (dari pemilik, berlaku untuk SEMUA proyek Iwan)
+**Data transaksional** (master-detail maupun single):
+1. **DRAFT** = mode awal. Record yang baru dibuat SELALU `DRAFT`. Tombol wajib: **SAVE, DELETE, NEW, PRINT**. Semua isian diberi **nilai DEFAULT**, tidak dibiarkan kosong, kecuali field tertentu yang memang harus dipilih pengguna.
+2. **CONFIRMED**: dicapai lewat tombol **CONFIRM** (atau **SUBMIT**). Setelah CONFIRMED record menjadi **read-only**.
+3. **CANCELLED**: dari record read-only harus ada tombol **CANCEL**; setelah ditekan mode menjadi `CANCELLED`. Bila data tidak cocok (mis. stok sudah berubah), record **ADJUSTMENT pembalik dibuat OTOMATIS**. Record CANCELLED tetap tersimpan di tabel. Beda dengan **DELETE** (hanya draf): record benar-benar hilang dari sistem.
+4. **PRINT** mencetak tulisan **MODE** dokumen di hasil cetak: `DRAFT` / `CONFIRMED` / `CANCELLED`.
+5. **Authority**: permohonan persetujuan ke atasan, boleh **bertingkat** (lebih dari satu level).
+
+**Data master**: TIDAK ada mode DRAFT/CONFIRM. Hanya **ACTIVATED / DEACTIVATED** (nama lain **ENABLE / DISABLE**); master tidak dihapus, hanya dinonaktifkan.
+
+**Kondisi kode saat ini terhadap aturan di atas (2026-10-20), kerjakan bila menyentuh area itu:**
+- Sudah: DRAFT > CONFIRM > CANCEL (+ pengajuan batal), DELETE hanya draf, read-only setelah Confirm, pembalikan stok otomatis (baris `reversal_of`), master Activate/Deactivate.
+- Belum: tombol **PRINT** disembunyikan di form dokumen (`:hide` di `docs/form.blade.php`) dan belum ada cetakan dengan tulisan MODE; **authority bertingkat** (baru satu tingkat: Supervisor); **default data** di semua isian belum diperiksa menyeluruh; pembalik berupa baris `stock_movements`, belum record dokumen ADJUSTMENT terpisah.
+
 ## Siklus dokumen: Confirm, Delete, Cancel
 Berlaku untuk SEMUA form dokumen stok (Saldo Awal, Penerimaan, Pengeluaran, Penyesuaian) dan setiap jenis dokumen baru. Logika hanya di `App\Services\StockDocuments`; controller `StockDocumentController@update` membaca `_action` (save, confirm, delete, cancel, approve, reject). Form = `x-dl::form kind="document" :pipeline="true"` ([docs/form.blade.php](resources/views/docs/form.blade.php)); tombol Confirm/Delete/Cancel/Approve/Reject berasal dari status DevLib, jangan dibuat manual.
 
