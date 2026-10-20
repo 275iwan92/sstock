@@ -41,6 +41,8 @@ Route::middleware(['auth', 'module'])->group(function () {
     Route::get('/', HomeController::class)->name('home');
     Route::post('reorder-orders', [ReorderOrderController::class, 'store'])->name('reorder-orders.store');
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
+    // HELP: User's Guide (Indonesia) untuk semua yang login; Technical Guide (English) hanya Administrator (grup di bawah).
+    Route::view('help', 'help.user-guide')->name('help.user-guide');
 
     // Keamanan: kelola pengguna, hanya Administrator.
     Route::middleware('administrator')->prefix('users')->controller(UserController::class)->group(function () {

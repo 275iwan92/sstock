@@ -113,6 +113,10 @@ final class Indonesian
         'Lines counted' => 'Baris dihitung', 'Net value effect' => 'Dampak nilai bersih',
         'Prepared by' => 'Dibuat oleh', 'Warehouse' => 'Gudang', 'Checked by' => 'Diperiksa oleh', 'Received by' => 'Diterima oleh', 'Approved by' => 'Disetujui oleh', 'Supervisor' => 'Supervisor',
 
+        // Catatan form
+        "The department chosen in this form becomes the recipient's default department." => 'Departemen yang dipilih di form ini menjadi departemen bawaan penerima.',
+        'RO opens the screen but blocks saving or changing anything. A user also needs a high enough role: Supervisor-only and Administrator-only modules stay closed to lower roles even when granted. Administrators always have full access.' => 'RO membuka layar tetapi menolak menyimpan atau mengubah apa pun. Pengguna juga harus berperan cukup tinggi: modul khusus Supervisor atau Administrator tetap tertutup bagi peran di bawahnya walau diberikan. Administrator selalu punya akses penuh.',
+
         // Login / umum
         'Supervisor Gudang' => 'Supervisor Gudang',
     ];

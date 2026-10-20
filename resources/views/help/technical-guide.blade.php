@@ -8,6 +8,7 @@
 --}}
 @extends('layout', ['title' => 'Technical Guide', 'bodyClass' => 'sstock-bare'])
 @section('body')
+@include('help.tabs', ['active' => 'tg'])
 <div class="sstock-guide">
     <nav class="g-toc" aria-label="Contents">
         <strong>Technical Guide</strong>
