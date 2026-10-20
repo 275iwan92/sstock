@@ -74,6 +74,7 @@ class TransactionalRulesTest extends TestCase
 
         $this->act($doc, 'cancel', $this->sup);
         $this->get(route('docs.print', ['receiving', $doc]))->assertOk()->assertSee('CANCELLED');
+        $this->get(route('docs.show', ['receiving', $doc]))->assertOk()->assertSee(route('docs.print', ['receiving', $doc]), false);   // Print tetap ada setelah Cancelled
     }
 
     public function test_every_stock_document_type_can_be_printed(): void
