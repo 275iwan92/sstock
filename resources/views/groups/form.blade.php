@@ -15,7 +15,7 @@
     @endphp
     @include('partials.flash')
     <x-dl::form :title="$isNew ? 'Grup · Baru' : 'Grup · '.raw($group->code)" :subtitle="$isNew ? null : raw($group->name)" panel="top" kind="master"
-        :status="$isNew ? 'new' : 'active'" :back="route('groups.index')" :new-url="route('groups.create')" :hide="['deactivate', 'activate', 'duplicate', 'print', 'email']"
+        :status="$isNew ? 'new' : ($group->is_active ? 'active' : 'inactive')" :back="route('groups.index')" :new-url="route('groups.create')" :hide="['duplicate', 'print', 'email']"
         :action="$isNew ? route('groups.store') : route('groups.update', $group)" :hidden="$isNew ? [] : ['_method' => 'PUT']"
         :created-at="$group->created_at?->format('Y-m-d H:i:s')" :updated-at="$group->updated_at?->format('Y-m-d H:i:s')">
         <x-dl::form.row :cols="3">

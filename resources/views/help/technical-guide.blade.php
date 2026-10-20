@@ -57,7 +57,7 @@
             <li><b>Opening balance.</b> Supervisor only. Rejected for an item that already has stock movements (use Adjustment instead).</li>
             <li><b>Receiving.</b> A line names a product and, for <code>tracks_expiry</code> products, an expiry date (required): <code>Product::batchFor()</code> finds or creates the batch (unused batches of a deleted or edited draft are purged). A line may use another unit; it is converted to the item's stock unit by <code>UnitConverter</code>. Issuance lines carry a unit too (same conversion, no price; split FEFO parts get a proportional <code>entered_qty</code>). <code>StockDocuments::assertConversions()</code> collects every missing pair for Receiving / Issuance, flashes <code>missing_conversions</code> and rejects the save; the form opens the "missing conversion" modal (<code>docs/conversion-modal</code>) which posts each pair to <code>docs.conversion</code> (any user with write access to RCV / ISS; <code>updateOrCreate</code> on <code>unit_conversions</code>), then the user saves again.</li>
             <li><b>Issuance.</b> A recipient is required. Stock may never go negative. A line names a batch; a quantity above that batch's stock spills over to the other usable batches of the same product (earliest expiry first, FEFO; <code>StockDocuments::allocate</code>). Picking a later-expiring batch while an earlier one has stock only warns (<code>fefoWarnings</code>), it never blocks.</li>
-            <li><b>Adjustment.</b> The line quantity is the difference <code>counted_qty - system_qty</code>. It needs Supervisor approval.</li>
+            <li><b>Adjustment.</b> The line quantity is the difference <code>counted_qty - system_qty</code>. It needs approval, optionally multi-level: <code>config('sstock.approval.adjustment')</code> lists the minimum role per level (env <code>SSTOCK_APPROVAL_ADJUSTMENT=supervisor,administrator</code>, default one level). Each Approve/Reject is a row in <code>stock_document_approvals</code>; <code>StockDocuments::canApprove()</code> checks the role of the next level (403 otherwise) and stock is posted only after the last level approves. A Reject at any level stops the document.</li>
             <li><b>Reports.</b> All have a from/to date filter. Prices and values are visible to Supervisors only.</li>
         </ol>
 
@@ -132,9 +132,10 @@
                 <tr><td><code>items</code></td><td>Batches: batch code, <code>expiry_date</code>, running balance <code>stock_qty</code> and <code>avg_cost</code> (cache of the ledger); name/unit/parameters are copies of the product for readers</td><td>product; lines; movements</td></tr>
                 <tr><td><code>stock_documents</code></td><td>Header: number, type, status, supplier/recipient, reason, created/confirmed/approved/cancelled by and at, cancel request</td><td>creator and approver users; lines; movements</td></tr>
                 <tr><td><code>stock_document_lines</code></td><td>Item, quantity, cost; Adjustment keeps <code>system_qty</code> and <code>counted_qty</code>; <code>entered_qty/unit/unit_cost</code> keep what was typed when the unit differs</td><td>document, item</td></tr>
+                <tr><td><code>stock_document_approvals</code></td><td>One row per approval decision: level, user, approved / rejected, time (multi-level authority)</td><td>document, user</td></tr>
                 <tr><td><code>stock_movements</code></td><td>The ledger: quantity, cost, balance after, user, <code>reversal_of</code></td><td>item, document, itself (reversal)</td></tr>
                 <tr><td><code>reorder_orders</code></td><td>Re-order log per product; closed by a confirmed Receiving of any of its batches (<code>receiving_id</code>)</td><td>product, receiving document</td></tr>
-                <tr><td><code>users</code>, <code>user_groups</code>, <code>user_group_modules</code></td><td>Accounts, groups, and per-module access (none / RO / RW)</td><td>user belongs to a group</td></tr>
+                <tr><td><code>users</code>, <code>user_groups</code> (<code>is_active</code>: groups are deactivated, never deleted), <code>user_group_modules</code></td><td>Accounts, groups, and per-module access (none / RO / RW)</td><td>user belongs to a group</td></tr>
             </tbody>
         </table>
 
@@ -153,6 +154,7 @@
                 <tr><td><code>create_user_groups</code>, <code>add_access_to_user_group_modules</code></td><td>Groups and per-module access (none / RO / RW)</td></tr>
                 <tr><td><code>add_confirm_and_cancel_to_stock_documents</code>, <code>add_cancel_request_to_stock_documents</code></td><td><code>confirmed_by/at</code>, <code>cancelled_by/at</code>, <code>cancel_reason</code>, <code>stock_movements.reversal_of</code>, <code>cancel_requested_by/at</code></td></tr>
                 <tr><td><code>add_expiry_locations_and_category_active</code></td><td><code>locations</code> master, item expiry date, <code>categories.is_active</code></td></tr>
+                <tr><td><code>create_stock_document_approvals</code>, <code>add_is_active_to_user_groups</code></td><td>Multi-level approval trail; Activate / Deactivate for groups</td></tr>
                 <tr><td><code>give_expiry_report_to_groups</code>, <code>give_sample_data_to_administrator_groups</code></td><td>Data migrations: grant the new modules to existing administrator groups</td></tr>
                 <tr><td><code>create_products_and_batches</code></td><td>Two-level item model: <code>products</code>, <code>items.product_id</code> (batches), <code>reorder_orders.product_id</code>; old items are merged into products</td></tr>
             </tbody>
@@ -170,7 +172,7 @@
             <li>Roles: <code>data_entry</code> &lt; <code>supervisor</code> &lt; <code>administrator</code>. Administrators always have full access. A user without a group gets the role default (<code>Modules::defaults</code>).</li>
             <li><code>App\Support\Modules</code> is the single module list; it feeds the menu, the group settings, the module list screen and the route guard. A new module is one new row there.</li>
             <li>Extra middleware: <code>supervisor</code> (edit items, units, categories, locations, adjustment report) and <code>administrator</code> (users, groups, modules, this guide).</li>
-            <li>Approve and Reject are Supervisor only. Password reset uses an e-mail link (throttled to 5 per minute, valid 60 minutes, single use).</li>
+            <li>Print: <code>docs.print</code> (<code>StockDocumentPrint</code> on DevLib <code>x-dl::print-doc</code>) is available in every status and prints the MODE (stamp + watermark for non-valid modes). Approve and Reject are Supervisor only (higher levels per <code>sstock.approval</code>). Password reset uses an e-mail link (throttled to 5 per minute, valid 60 minutes, single use).</li>
             <li>Known gaps: no segregation of duties (the creator of an Adjustment may approve it); the Save button still shows on RO modules (the server rejects it).</li>
         </ul>
 

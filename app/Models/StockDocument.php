@@ -28,6 +28,11 @@ class StockDocument extends Model
         return $this->hasMany(StockDocumentLine::class);
     }
 
+    public function approvals(): HasMany
+    {
+        return $this->hasMany(StockDocumentApproval::class)->orderBy('level')->orderBy('id');
+    }
+
     public function movements(): HasMany
     {
         return $this->hasMany(StockMovement::class);

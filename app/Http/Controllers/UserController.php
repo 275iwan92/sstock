@@ -35,7 +35,7 @@ class UserController extends Controller
 
     public function show(User $user)
     {
-        return view('users.form', ['user' => $user, 'groups' => $this->groups()]);
+        return view('users.form', ['user' => $user, 'groups' => $this->groups($user->group_id)]);
     }
 
     public function store(UserRequest $request): RedirectResponse
@@ -69,9 +69,10 @@ class UserController extends Controller
         return redirect()->route('users.show', $user)->with('status', 'Pengguna disimpan.');
     }
 
-    private function groups(): array
+    // Grup nonaktif tidak ditawarkan, kecuali grup yang kini dipakai pengguna itu (supaya tidak terhapus diam-diam saat disimpan).
+    private function groups(?int $current = null): array
     {
-        return UserGroup::query()->orderBy('name')->pluck('name', 'id')->all();
+        return UserGroup::query()->where(fn ($q) => $q->where('is_active', true)->orWhere('id', $current))->orderBy('name')->pluck('name', 'id')->all();
     }
 
     public function toggle(Request $request, User $user): JsonResponse

@@ -8,9 +8,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 
 // Grup pengguna: modul (kode menu, lihat App\Support\Modules) yang boleh dibuka anggotanya, tiap modul rw (baca + tulis) atau ro (hanya baca).
-#[Fillable(['code', 'name'])]
+#[Fillable(['code', 'name', 'is_active'])]
 class UserGroup extends Model
 {
+    protected function casts(): array
+    {
+        return ['is_active' => 'boolean'];
+    }
+
     public function users(): HasMany
     {
         return $this->hasMany(User::class, 'group_id');

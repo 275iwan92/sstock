@@ -27,9 +27,12 @@ Bahasa kerja dengan pemilik: Indonesia, ringkas. Daftar fitur, akun uji, dan hal
 
 **Data master**: TIDAK ada mode DRAFT/CONFIRM. Hanya **ACTIVATED / DEACTIVATED** (nama lain **ENABLE / DISABLE**); master tidak dihapus, hanya dinonaktifkan.
 
-**Kondisi kode saat ini terhadap aturan di atas (2026-10-20), kerjakan bila menyentuh area itu:**
-- Sudah: DRAFT > CONFIRM > CANCEL (+ pengajuan batal), DELETE hanya draf, read-only setelah Confirm, pembalikan stok otomatis (baris `reversal_of`), master Activate/Deactivate.
-- Belum: tombol **PRINT** disembunyikan di form dokumen (`:hide` di `docs/form.blade.php`) dan belum ada cetakan dengan tulisan MODE; **authority bertingkat** (baru satu tingkat: Supervisor); **default data** di semua isian belum diperiksa menyeluruh; pembalik berupa baris `stock_movements`, belum record dokumen ADJUSTMENT terpisah.
+**Kondisi kode terhadap aturan di atas (2026-10-20):**
+- DRAFT > CONFIRM > CANCEL (+ pengajuan batal), DELETE hanya draf, read-only setelah Confirm, pembalikan stok otomatis (baris `reversal_of`), semua master Activate/Deactivate (termasuk Grup).
+- **PRINT** ada di semua mode form dokumen stok (`docs.print`, kelas `App\Support\StockDocumentPrint` di atas `x-dl::print-doc`); cetakan memuat MODE (stempel + tanda air). Dokumen jenis baru wajib memakai pola ini.
+- **Authority bertingkat**: `config('sstock.approval.<jenis>')` = daftar peran minimal per tingkat (bawaan satu tingkat; `SSTOCK_APPROVAL_ADJUSTMENT=supervisor,administrator` = dua tingkat); tiap keputusan = baris `stock_document_approvals`; stok baru diposting setelah tingkat terakhir. Baru dipakai Penyesuaian Stok; pengajuan pembatalan tetap satu tingkat (Supervisor).
+- **Default data**: dokumen baru berisi baris pertama dengan jumlah 1 dan alasan penyesuaian bawaan; supplier / penerima sengaja dibiarkan dipilih pengguna.
+- Belum: pembalik berupa baris `stock_movements`, belum record dokumen ADJUSTMENT terpisah; Pemesanan Ulang (`reorder_orders`) belum memakai siklus DRAFT/CONFIRMED.
 
 ## Siklus dokumen: Confirm, Delete, Cancel
 Berlaku untuk SEMUA form dokumen stok (Saldo Awal, Penerimaan, Pengeluaran, Penyesuaian) dan setiap jenis dokumen baru. Logika hanya di `App\Services\StockDocuments`; controller `StockDocumentController@update` membaca `_action` (save, confirm, delete, cancel, approve, reject). Form = `x-dl::form kind="document" :pipeline="true"` ([docs/form.blade.php](resources/views/docs/form.blade.php)); tombol Confirm/Delete/Cancel/Approve/Reject berasal dari status DevLib, jangan dibuat manual.

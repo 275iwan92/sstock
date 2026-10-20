@@ -9,12 +9,12 @@
 @extends('layout', ['title' => 'Groups'])
 @section('body')
     @include('partials.flash')
-    <x-dl::grid id="groups" :rows="$rows" actions="worklist" :new-url="route('groups.create')" :open-url="url('groups/{id}')"
+    <x-dl::grid id="groups" :rows="$rows" actions="master" :new-url="route('groups.create')" :open-url="url('groups/{id}')" :toggle-url="url('groups/{id}/toggle')"
         search="Search code, name..."
         :columns="[
-            ['key' => 'name', 'label' => 'Group', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
+            ['key' => 'name', 'label' => 'Group', 'type' => 'identity', 'code' => 'code', 'box' => true],
             ['key' => 'users', 'label' => 'Members', 'type' => 'number'],
             ['key' => 'modules', 'label' => 'Modules', 'type' => 'number'],
         ]"
-        :stats="[['label' => 'All groups']]" />
+        :stats="[['label' => 'All groups'], ['label' => 'Inactive', 'where' => ['active' => false], 'tone' => 'warn']]" />
 @endsection

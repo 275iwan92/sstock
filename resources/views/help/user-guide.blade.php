@@ -338,7 +338,7 @@
             <li>Isi <b>Alasan penyesuaian / opname</b> (wajib).</li>
             <li>Tekan <b>+ Tambah Barang</b>, pilih barang: <b>Jml Sistem</b> terisi otomatis. Isi <b>Jml Hitung (fisik)</b>; <b>Selisih</b> dihitung otomatis (plus = stok bertambah, minus = berkurang).</li>
             <li><b>Simpan</b>, lalu <b>Konfirmasi</b>: dokumen menjadi <b>Menunggu Persetujuan</b> (stok belum berubah).</li>
-            <li>Supervisor menekan <b>Setujui</b> (stok diperbarui, status <b>Disetujui</b>) atau <b>Tolak</b> (stok tidak berubah, status <b>Ditolak</b>).</li>
+            <li>Supervisor menekan <b>Setujui</b> (stok diperbarui, status <b>Disetujui</b>) atau <b>Tolak</b> (stok tidak berubah, status <b>Ditolak</b>). Bila perusahaan memakai <b>persetujuan bertingkat</b>, dokumen tetap <b>Menunggu Persetujuan</b> sampai semua tingkat menyetujui (mis. Supervisor lalu Administrator); stok baru berubah setelah tingkat terakhir. Tolak di tingkat mana pun menghentikan dokumen. Riwayat mencatat tiap tingkat.</li>
         </ol>
         @include('help.diagram', ['name' => 'ug-penyesuaian', 'caption' => 'Alur Penyesuaian Stok.'])
         <div class="g-warn"><b>Setujui ditolak bila stok barang berubah</b> sejak dihitung (ada penerimaan / pengeluaran baru). Tolak dokumennya lalu hitung ulang di dokumen baru.</div>
@@ -373,6 +373,7 @@
             <li>Tekan <b>Cetak</b> untuk mencetak (atau menyimpan PDF dari dialog cetak browser). <b>Hemat Tinta</b> mencetak tanpa warna latar.</li>
         </ol>
         <p class="g-note">Harga, biaya, dan nilai hanya tampil untuk Supervisor.</p>
+        <div class="g-tip"><b>Cetak dokumen:</b> tombol <b>Cetak</b> ada di form semua dokumen stok (Draf, Terkonfirmasi, Dibatalkan, dan seterusnya). Hasil cetak selalu memuat <b>mode</b> dokumen (DRAFT / CONFIRMED / CANCELLED, penyesuaian juga WAITING APPROVAL / APPROVED / REJECTED); dokumen yang belum atau tidak sah diberi tanda air.</div>
         <table class="g-table">
             <thead><tr><th>Laporan</th><th>Isi dan saringan</th></tr></thead>
             <tbody>
@@ -407,6 +408,7 @@
             <li>Buka <b>Grup</b>, tekan <b>+ Data Baru</b>, isi <b>Kode Grup</b> dan <b>Nama Grup</b>.</li>
             <li>Pada tabel <b>Akses per modul</b>, pilih <b>Hak akses</b> tiap modul (kolom <b>Peran Minimal</b> menunjukkan peran terendah yang masih bisa memakainya), lalu <b>Simpan</b>.</li>
             <li>Di form <b>Pengguna</b>, pilih Grup untuk orang yang bersangkutan. Pengguna tanpa Grup memakai modul bawaan perannya.</li>
+            <li>Grup tidak dihapus: gunakan <b>Nonaktifkan</b> / <b>Aktifkan</b> (tombol di form atau ikon di grid). Grup nonaktif tidak muncul di pilihan Grup untuk pengguna; anggota yang sudah ada tidak berubah.</li>
         </ol>
         <div class="g-tip">Akses nyata = modul diberikan Grup <b>dan</b> peran pengguna cukup tinggi. Modul khusus Supervisor tetap tertutup bagi Data Entry walau dicentang. Administrator selalu penuh.</div>
         @endif

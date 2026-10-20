@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Support\GeoLookup;
 use App\Support\Indonesian;
 use App\Support\ItemLookups;
+use Devlib\PrintDoc\Document;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\ServiceProvider;
@@ -21,6 +22,7 @@ class AppServiceProvider extends ServiceProvider
         ItemLookups::register();
         GeoLookup::register();
         Indonesian::register();
+        Document::companyUsing(fn () => ['name' => config('app.name'), 'initials' => 'ST', 'lines' => ['Stok sederhana']]);
 
         // E-mail reset password berbahasa Indonesia; tautan ke layar password baru, berlaku sesuai config auth.passwords.users.expire.
         ResetPassword::toMailUsing(function (object $user, string $token) {

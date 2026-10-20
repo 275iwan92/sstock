@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\UserGroup;
 use App\Support\Modules;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -21,7 +22,7 @@ class GroupController extends Controller
     public function index()
     {
         $rows = UserGroup::query()->withCount('users')->orderBy('name')->get()->map(fn (UserGroup $g) => [
-            'id' => $g->id, 'code' => $g->code, 'name' => $g->name, 'users' => $g->users_count, 'modules' => count($g->moduleCodes()), 'active' => true,
+            'id' => $g->id, 'code' => $g->code, 'name' => $g->name, 'users' => $g->users_count, 'modules' => count($g->moduleCodes()), 'active' => $g->is_active,
         ])->all();
 
         return view('groups.index', ['rows' => $rows]);
@@ -48,11 +49,25 @@ class GroupController extends Controller
 
     public function update(Request $request, UserGroup $group): RedirectResponse
     {
+        $action = $request->input('_action');
+        if (in_array($action, ['activate', 'deactivate'], true)) {
+            $group->update(['is_active' => $action === 'activate']);
+
+            return redirect()->route('groups.show', $group)->with('status', $action === 'activate' ? 'Grup diaktifkan.' : 'Grup dinonaktifkan.');
+        }
+
         $data = $this->validated($request, $group);
         $group->update(['name' => $data['name']]);
         $group->syncAccess($this->granted($data['modules'] ?? []));
 
         return redirect()->route('groups.show', $group)->with('status', 'Grup disimpan.');
+    }
+
+    public function toggle(UserGroup $group): JsonResponse
+    {
+        $group->update(['is_active' => ! $group->is_active]);
+
+        return response()->json(['active' => $group->is_active]);
     }
 
     private function validated(Request $request, ?UserGroup $group = null): array

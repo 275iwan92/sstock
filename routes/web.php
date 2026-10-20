@@ -60,6 +60,7 @@ Route::middleware(['auth', 'module'])->group(function () {
         Route::post('groups', [GroupController::class, 'store'])->name('groups.store');
         Route::get('groups/{group}', [GroupController::class, 'show'])->name('groups.show');
         Route::put('groups/{group}', [GroupController::class, 'update'])->name('groups.update');
+        Route::post('groups/{group}/toggle', [GroupController::class, 'toggle'])->name('groups.toggle');
         Route::get('modules', [ModuleController::class, 'index'])->name('modules.index');
         Route::get('sample', [SampleDataController::class, 'index'])->name('sample.index');
         Route::post('sample', [SampleDataController::class, 'refresh'])->name('sample.refresh');
@@ -115,6 +116,7 @@ Route::middleware(['auth', 'module'])->group(function () {
         Route::get('create', 'create')->name('docs.create');
         Route::post('/', 'store')->name('docs.store');
         Route::post('conversion', 'conversion')->name('docs.conversion');
+        Route::get('{document}/print', 'print')->name('docs.print');
         Route::get('{document}', 'show')->name('docs.show');
         Route::put('{document}', 'update')->name('docs.update');
     });

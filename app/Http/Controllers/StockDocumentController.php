@@ -13,6 +13,7 @@ use App\Models\Supplier;
 use App\Models\Unit;
 use App\Models\UnitConversion;
 use App\Services\StockDocuments;
+use App\Support\StockDocumentPrint;
 use Devlib\Locale;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -60,6 +61,15 @@ class StockDocumentController extends Controller
         abort_unless($document->type === $t, 404);
 
         return view('docs.form', $this->formData($t, $document->load(['lines.item', 'creator', 'approver', 'confirmer', 'canceller', 'cancelRequester'])));
+    }
+
+    // Cetakan dokumen (semua mode, termasuk draf): membawa tulisan MODE dan tanda air bila belum / tidak sah.
+    public function print(Request $request, string $type, StockDocument $document)
+    {
+        $t = $this->type($request, $type);
+        abort_unless($document->type === $t, 404);
+
+        return view('docs.print', ['doc' => StockDocumentPrint::load($document, $request->user()->name), 't' => $t, 'document' => $document]);
     }
 
     // Simpan = draf: belum diproses ke stok. Stok baru berubah saat Confirm (penyesuaian: saat Approve).
@@ -196,7 +206,11 @@ class StockDocumentController extends Controller
             if ($doc->status === 'cancelled') {
                 $log[] = ['at' => $doc->cancelled_at->format('Y-m-d H:i:s'), 'by' => $doc->canceller->name, 'action' => 'Dibatalkan', 'note' => $doc->cancel_reason];
             }
-            if (in_array($doc->status, ['approved', 'rejected'], true) || ($doc->status === 'cancelled' && $doc->approved_at)) {
+            $decisions = $doc->approvals()->with('user')->get();
+            foreach ($decisions as $d) {
+                $log[] = ['at' => $d->decided_at->format('Y-m-d H:i:s'), 'by' => $d->user->name, 'action' => ($d->decision === 'approved' ? 'Disetujui' : 'Ditolak').' (tingkat '.$d->level.')', 'note' => null];
+            }
+            if ($decisions->isEmpty() && (in_array($doc->status, ['approved', 'rejected'], true) || ($doc->status === 'cancelled' && $doc->approved_at))) {
                 $log[] = ['at' => $doc->approved_at->format('Y-m-d H:i:s'), 'by' => $doc->approver->name, 'action' => self::STATUS[$doc->status === 'cancelled' ? 'approved' : $doc->status], 'note' => null];
             }
             if ($doc->confirmed_at) {
@@ -205,7 +219,14 @@ class StockDocumentController extends Controller
             $log[] = ['at' => $doc->created_at->format('Y-m-d H:i:s'), 'by' => $doc->creator->name, 'action' => 'Dibuat', 'note' => null];
         }
 
+        // Authority: pengajuan pembatalan satu tingkat (Supervisor); persetujuan Penyesuaian bertingkat menurut config sstock.approval.
+        $multi = $t === StockDocumentType::Adjustment && $doc->exists && $doc->status !== 'cancel_pending';
+        $user = auth()->user();
+
         return [
+            'approvalLevels' => $t === StockDocumentType::Adjustment ? ($doc->exists ? count($this->documents->approvalRoles($doc)) : 1) : ($doc->status === 'cancel_pending' ? 1 : 0),
+            'approvalAt' => $multi ? $this->documents->nextLevel($doc) : 1,
+            'canApprove' => $multi ? $this->documents->canApprove($doc, $user) : $user->isSupervisor(),
             't' => $t, 'doc' => $doc, 'log' => $log, 'cancelProblem' => $doc->exists ? $this->documents->cancelProblem($doc) : null,
             'recipients' => Recipient::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id')->all(),
             'departments' => Department::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id')->all(),
@@ -226,6 +247,11 @@ class StockDocumentController extends Controller
             $products = Product::query()->whereIn('id', array_filter(array_column($old, 'product_id')))->get()->keyBy('id');
 
             return array_map(fn ($r) => $this->lineRow($r, $items[$r['item_id'] ?? 0] ?? null, $products[$r['product_id'] ?? 0] ?? null), array_values($old));
+        }
+
+        // Dokumen baru: baris pertama sudah berisi jumlah bawaan 1 (bukan kosong); penyesuaian mengisi jumlah hitung sendiri.
+        if (! $doc->exists) {
+            return $t === StockDocumentType::Adjustment ? [] : [$this->lineRow(['qty' => 1], null)];
         }
 
         return $doc->exists ? $doc->lines->map(fn ($l) => $this->lineRow([
