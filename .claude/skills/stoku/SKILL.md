@@ -55,6 +55,16 @@ Berlaku untuk SEMUA form dokumen stok (Saldo Awal, Penerimaan, Pengeluaran, Peny
 - **Grid master** (barang, kategori, lokasi, supplier, satuan, departemen, penerima, pengguna, dst.): kolom terdepan memakai KOTAK warna per baris berisi inisial, dengan nama tebal dan kode kecil di bawahnya: `['key' => 'name', 'label' => '<Nama>', 'type' => 'identity', 'code' => '<kolom kode>', 'box' => true]`. Tambahkan `'hue' => 'hue'` bila warnanya bermakna dan controller mengirim kolom `hue` dari `App\Support\Palette` (barang menurut kategori, satuan menurut jenis); tanpa `hue` warna dipilih otomatis. Contoh: `resources/views/items/index.blade.php`, `suppliers/index.blade.php`. Grid master BARU wajib mengikuti pola ini, bukan `avatar => false`.
 - Pengecualian yang ada: `groups/index` dan `modules/index` (menu Keamanan) memakai `avatar => false`, belum berkotak.
 
+## Tombol grid
+Toolbar grid (Cari, Filters, Columns, Export CSV, pilih kolom/kerapatan) datang otomatis dari `x-dl::grid`; jangan dibuat manual. Yang harus dideklarasikan layar:
+- **`actions`**: `master` = kolom Aksi berisi **Edit** dan **Aktif/Nonaktif** (wajib `:toggle-url="url('<modul>/{id}/toggle')"`, kalau tidak hanya pratinjau); `worklist` = **Buka** saja (transaksi); `none` = tanpa aksi (daftar baca saja, mis. Daftar Modul).
+- **`+ New Record`** lewat `:new-url="route('<modul>.create')"`. Sembunyikan (`:new-record="null"`) bagi yang tak berhak membuat (contoh barang: `$sup ? '+ New Record' : null`).
+- **`:open-url="url('<modul>/{id}')"`**: klik 2x baris / Buka / Edit membuka form.
+- **`search="..."`** placeholder yang menyebut kolom yang dicari; **`stats`** (kotak hitung = filter) bila ada status yang sering disaring (contoh Penyesuaian: Semua, Menunggu persetujuan, Draf).
+- **Confirm, Approve, Cancel, Delete TIDAK ada di grid**, hanya di form dokumen (aturan DevLib untuk `worklist`).
+- Aktif/Nonaktif hanya untuk master; transaksi tidak pernah dinonaktifkan.
+- Bulk (centang + aksi massal) tidak dipakai di sini kecuali diminta pemilik.
+
 ## Tombol Kembali
 Setiap form (dokumen maupun master) wajib punya tombol Kembali yang menuju GRID modulnya, bukan layar sebelumnya. Caranya: pada komponen toolbar form isi prop `:back="route('<modul>.index')"` (lihat `resources/views/items/form.blade.php`). `config/devlib.php` `back_history => false` (`DL_BACK_HISTORY=false`) membuat tombol memakai alamat itu, bukan `history.back()`. Jangan memakai `history.back()` atau `url()->previous()` di form baru.
 
