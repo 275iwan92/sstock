@@ -55,6 +55,15 @@ Berlaku untuk SEMUA form dokumen stok (Saldo Awal, Penerimaan, Pengeluaran, Peny
 - **Grid master** (barang, kategori, lokasi, supplier, satuan, departemen, penerima, pengguna, dst.): kolom terdepan memakai KOTAK warna per baris berisi inisial, dengan nama tebal dan kode kecil di bawahnya: `['key' => 'name', 'label' => '<Nama>', 'type' => 'identity', 'code' => '<kolom kode>', 'box' => true]`. Tambahkan `'hue' => 'hue'` bila warnanya bermakna dan controller mengirim kolom `hue` dari `App\Support\Palette` (barang menurut kategori, satuan menurut jenis); tanpa `hue` warna dipilih otomatis. Contoh: `resources/views/items/index.blade.php`, `suppliers/index.blade.php`. Grid master BARU wajib mengikuti pola ini, bukan `avatar => false`.
 - Pengecualian yang ada: `groups/index` dan `modules/index` (menu Keamanan) memakai `avatar => false`, belum berkotak.
 
+## HELP: User's Guide (UG) dan Technical Guide (TG)
+HELP (profil > "Help & support", alamat lewat prop `help-url` pada `x-dl::layer-shell` di `home.blade.php`) SELALU terbagi dua, keduanya HTML. Setiap perubahan fitur memperbarui UG dan TG di perubahan yang sama (satu sumber: komentar `REMARK` di kode).
+
+**UG, User's Guide: Bahasa Indonesia, untuk semua pengguna.** Tuntunan cara pakai, bukan teknis:
+- cara memakai **grid** (cari, Filters, Columns, Export, klik 2x membuka, tombol Aksi, Aktif/Nonaktif, warna Status);
+- cara memakai **form** (Simpan, Confirm, Delete, Cancel dan pengajuannya, Kembali ke grid, baris detail, kolom wajib);
+- **daftar isi modul** (kelompok menu dan isi tiap modul) dan **fitur tiap modul** (apa yang bisa dilakukan, siapa yang boleh);
+- bahasa sederhana, langkah bernomor, istilah sama persis dengan label di layar. Bagian yang butuh peran lain ditandai ("hanya Supervisor").
+
 **TG, Technical Guide: English, HANYA Administrator.** Semua hal teknis ada di sini:
 - data flow, system flow, workflow/state diagram (siklus dokumen, persetujuan, pembalikan stok);
 - tabel dan database (skema, kolom, relasi, indeks, migrasi), buku besar stok dan perhitungan moving average;
