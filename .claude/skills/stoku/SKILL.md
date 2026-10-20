@@ -55,6 +55,15 @@ Berlaku untuk SEMUA form dokumen stok (Saldo Awal, Penerimaan, Pengeluaran, Peny
 - **Grid master** (barang, kategori, lokasi, supplier, satuan, departemen, penerima, pengguna, dst.): kolom terdepan memakai KOTAK warna per baris berisi inisial, dengan nama tebal dan kode kecil di bawahnya: `['key' => 'name', 'label' => '<Nama>', 'type' => 'identity', 'code' => '<kolom kode>', 'box' => true]`. Tambahkan `'hue' => 'hue'` bila warnanya bermakna dan controller mengirim kolom `hue` dari `App\Support\Palette` (barang menurut kategori, satuan menurut jenis); tanpa `hue` warna dipilih otomatis. Contoh: `resources/views/items/index.blade.php`, `suppliers/index.blade.php`. Grid master BARU wajib mengikuti pola ini, bukan `avatar => false`.
 - Pengecualian yang ada: `groups/index` dan `modules/index` (menu Keamanan) memakai `avatar => false`, belum berkotak.
 
+## Technical Guide (TG)
+Dokumentasi teknis untuk developer/administrator, BUKAN panduan pengguna. Aturan (dari pemilik):
+- **Format HTML, bahasa English.** Ini satu-satunya pengecualian aturan "semua tampilan Indonesia": TG tidak lewat kamus `Indonesian`, dan tidak ada versi Indonesia.
+- **Letaknya di dalam menu HELP** (profil > "Help & support" milik Layer Shell; alamat diberikan lewat prop `help-url` pada `x-dl::layer-shell` di `home.blade.php`).
+- **Hanya tampil untuk Administrator:** (1) rute TG memakai middleware `administrator` (`EnsureAdministrator`) sehingga akses URL langsung oleh peran lain ditolak (403); (2) bagi non-Administrator item Help disembunyikan dengan menambah `'help'` ke `:without` (sekarang `['chat', 'ai', 'theme']`). Menyembunyikan menu saja TIDAK cukup.
+- **Jangan taruh berkas TG di `public/`** (terbuka tanpa login). Simpan di `resources/` dan sajikan lewat controller yang dijaga middleware di atas.
+- **Isi dan kapan ditulis:** arsitektur, alur data, skema, siklus dokumen, keputusan beserta alasannya. Ditulis setelah modulnya stabil, disusun dari komentar `REMARK` di kode (satu sumber), dan diperbarui di perubahan yang sama dengan kodenya. Panduan pengguna (Indonesia) adalah hal lain.
+- **Status:** BELUM ada di Stoku. Menu "Help & support" bawaan DevLib masih tampil tanpa tujuan; selesaikan saat TG pertama dibuat.
+
 ## Data contoh (seeder)
 Data contoh hidup HANYA di `database/seeders` (dipanggil `DatabaseSeeder`), tidak pernah di migrasi atau di database lokal saja, supaya bisa dibuat ulang kapan pun.
 - **Setiap perubahan skema (kolom/field ditambah, dihapus, diganti nama, jadi wajib) memperbarui seeder DALAM perubahan yang sama**, bersama form, request, kamus, dan tes. Cari pemakai kolom itu: `grep -rn "<kolom>" database/seeders app tests resources`. Kolom baru wajib diisi nilai yang masuk akal; kolom yang dihapus dibuang dari seeder.
