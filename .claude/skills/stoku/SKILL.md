@@ -75,6 +75,7 @@ Aturan umum mode DRAFT/CONFIRMED/CANCELLED, tombol, default data, print MODE, da
 - **CANCEL:** aturan: bila data tidak cocok, ADJUSTMENT pembalik dibuat OTOMATIS. sstock: pembalikan lewat baris pembalik buku besar (`reversal_of`), dan bila stok tidak cukup pembatalan DITOLAK sampai pengguna membuat Stock Adjustment sendiri (bukan otomatis).
 - **AUTHORITY:** aturan: bisa bertingkat. sstock: satu tingkat (`approval-levels` 1, Supervisor).
 - **Default data:** aturan: isian terisi bawaan, tidak kosong. Belum diaudit per form.
+- **Baris detail master-detail:** aturan: dua state per baris (baru: SAVE + UNDO; tersimpan: EDIT + DELETE; tombol hilang saat CONFIRMED, selalu ada di DRAFT). sstock: `x-dl::lines` hanya hapus baris, semua baris terbuka diedit sekaligus lalu satu Simpan; state per baris belum ada (butuh perubahan DevLib opt-in).
 - Sesuai: Draf hanya untuk transaksi, master hanya Aktif/Nonaktif, record batal tetap tersimpan, Confirm membuat readonly.
 
 ## Gaya grid
