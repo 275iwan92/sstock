@@ -22,7 +22,8 @@
         <a href="#screens">8. Dashboard and reports</a>
         <a href="#conventions">9. Development conventions</a>
         <a href="#operations">10. Operations</a>
-        <a href="#open">11. Open items</a>
+        <a href="#decisions">11. Key decisions and why</a>
+        <a href="#open">12. Open items</a>
     </nav>
 
     <main class="g-body">
@@ -137,6 +138,26 @@
             </tbody>
         </table>
 
+        <h3>Migrations</h3>
+        <p>Migrations are the source of truth for the schema (<code>database/sql/sstock_mysql_ddl.sql</code> is out of date). In order:</p>
+        <table class="g-table">
+            <thead><tr><th>Migration</th><th>What it does</th></tr></thead>
+            <tbody>
+                <tr><td><code>0001_01_01_00000x</code></td><td>Laravel base: <code>users</code>, password reset tokens, sessions, cache, jobs</td></tr>
+                <tr><td><code>create_stock_tables</code></td><td><code>categories</code>, <code>items</code>, <code>suppliers</code>, <code>stock_documents</code>, <code>stock_document_lines</code>, <code>stock_movements</code></td></tr>
+                <tr><td><code>create_geo_tables_and_supplier_contact</code></td><td><code>geo_country, geo_region, geo_city, geo_district, geo_village</code> (filled by <code>sstock:import-geo</code>) and supplier contact and region columns</td></tr>
+                <tr><td><code>create_units_table</code>, <code>create_unit_conversions_table</code>, <code>add_kind_to_units</code>, <code>localize_unit_names</code></td><td>Unit master, conversion factors, colour kind, Indonesian unit names</td></tr>
+                <tr><td><code>add_entered_unit_to_stock_document_lines</code></td><td><code>entered_qty / entered_unit / entered_unit_cost</code>: what was typed when the unit differs from the stock unit</td></tr>
+                <tr><td><code>create_reorder_orders_table</code></td><td>Re-order log</td></tr>
+                <tr><td><code>create_departments_and_recipients</code></td><td><code>departments</code>, <code>recipients</code> and the id and name columns on <code>stock_documents</code></td></tr>
+                <tr><td><code>create_user_groups</code>, <code>add_access_to_user_group_modules</code></td><td>Groups and per-module access (none / RO / RW)</td></tr>
+                <tr><td><code>add_confirm_and_cancel_to_stock_documents</code>, <code>add_cancel_request_to_stock_documents</code></td><td><code>confirmed_by/at</code>, <code>cancelled_by/at</code>, <code>cancel_reason</code>, <code>stock_movements.reversal_of</code>, <code>cancel_requested_by/at</code></td></tr>
+                <tr><td><code>add_expiry_locations_and_category_active</code></td><td><code>locations</code> master, item expiry date, <code>categories.is_active</code></td></tr>
+                <tr><td><code>give_expiry_report_to_groups</code>, <code>give_sample_data_to_administrator_groups</code></td><td>Data migrations: grant the new modules to existing administrator groups</td></tr>
+                <tr><td><code>create_products_and_batches</code></td><td>Two-level item model: <code>products</code>, <code>items.product_id</code> (batches), <code>reorder_orders.product_id</code>; old items are merged into products</td></tr>
+            </tbody>
+        </table>
+
         <h2 id="access">7. Access and security</h2>
         @include('help.diagram', ['name' => 'tg-access-flow', 'caption' => 'Login and per-request authorization.'])
         <ol class="g-steps">
@@ -152,6 +173,22 @@
             <li>Approve and Reject are Supervisor only. Password reset uses an e-mail link (throttled to 5 per minute, valid 60 minutes, single use).</li>
             <li>Known gaps: no segregation of duties (the creator of an Adjustment may approve it); the Save button still shows on RO modules (the server rejects it).</li>
         </ul>
+
+        <h3>Module list (<code>App\Support\Modules</code>)</h3>
+        <table class="g-table">
+            <thead><tr><th>Code</th><th>Menu</th><th>Group</th><th>Minimum role</th><th>Guarded route prefix</th></tr></thead>
+            <tbody>
+                <tr><td>ITM</td><td>Barang</td><td>Data Master</td><td>Data Entry</td><td><code>products.</code> (add: any role; edit and toggle: Supervisor)</td></tr>
+                <tr><td>SUP, DEP, RCP</td><td>Suppliers, Departemen, Penerima</td><td>Data Master</td><td>Data Entry</td><td><code>suppliers.</code>, <code>departments.</code>, <code>recipients.</code></td></tr>
+                <tr><td>UOM, CAT, LOC</td><td>Satuan, Kategori, Lokasi Penyimpanan</td><td>Data Master</td><td>Supervisor</td><td><code>units.</code>, <code>categories.</code>, <code>locations.</code></td></tr>
+                <tr><td>OPN, ADJ</td><td>Saldo Awal, Penyesuaian Stok</td><td>Transaksi</td><td>Supervisor</td><td><code>docs.*</code> with <code>{type}</code> = opening / adjustment</td></tr>
+                <tr><td>RCV, ISS</td><td>Penerimaan Barang, Pengeluaran Barang</td><td>Transaksi</td><td>Data Entry</td><td><code>docs.*</code> with <code>{type}</code> = receiving / issuance</td></tr>
+                <tr><td>R-CARD, R-SUM, R-IN, R-OUT, R-EXP</td><td>Kartu Stok, Ringkasan Stok, Laporan Penerimaan / Pengeluaran / Kedaluwarsa</td><td>Laporan</td><td>Data Entry</td><td><code>reports.*</code></td></tr>
+                <tr><td>R-ADJ</td><td>Laporan Opname &amp; Penyesuaian</td><td>Laporan</td><td>Supervisor</td><td><code>reports.adjustment</code></td></tr>
+                <tr><td>USR, GRP, SMP, MOD</td><td>Pengguna, Grup, Data Contoh, Daftar Modul</td><td>Keamanan</td><td>Administrator</td><td><code>users.</code>, <code>groups.</code>, <code>sample.</code>, <code>modules.</code></td></tr>
+            </tbody>
+        </table>
+        <p class="g-note">Routes that belong to no module (home, logout, re-order records, Help) are open to every logged-in user. The User's Guide lists only the modules the reader may open (<code>User::canAccess</code>); the Technical Guide route sits in the <code>administrator</code> middleware group and its tab link is rendered only for Administrators.</p>
 
         <h2 id="screens">8. Dashboard and reports</h2>
         <ul class="g-list">
@@ -184,7 +221,7 @@
 
         <h2 id="operations">10. Operations</h2>
         <pre class="g-code">composer setup     # install, .env, key, create DB and MySQL user, migrate, seed, build
-composer sample    # migrate:fresh --seed (ERASES the database), then run sstock:import-geo
+composer sample    # migrate:fresh --seed --force (ERASES the database including geo_*); then run sstock:import-geo
 php artisan test   # in-memory SQLite
 vendor/bin/pint --dirty
 npm run build      # required after editing resources/css/app.css</pre>
@@ -194,7 +231,71 @@ npm run build      # required after editing resources/css/app.css</pre>
             <li>Production: set SMTP (<code>MAIL_*</code>, currently <code>log</code>) and replace the test passwords. <code>database/sql/sstock_mysql_ddl.sql</code> is out of date; migrations are the source of truth.</li>
         </ul>
 
-        <h2 id="open">11. Open items</h2>
+        <h3>Artisan commands</h3>
+        <table class="g-table">
+            <thead><tr><th>Command</th><th>Purpose</th></tr></thead>
+            <tbody>
+                <tr><td><code>php artisan sstock:install</code></td><td>First deploy: creates the MySQL database and the <code>sstock_usr</code> user (needs a MySQL admin: <code>--admin-user / --admin-password</code>, or <code>DB_ADMIN_USERNAME / DB_ADMIN_PASSWORD</code>, or it asks), migrates, copies region data, seeds once. Safe to re-run (never overwrites data)</td></tr>
+                <tr><td><code>php artisan sstock:import-geo</code></td><td>Copies <code>geo_*</code> from the tmerp database (<code>--source</code>, default env <code>GEO_SOURCE_DB</code> or <code>tm2mst</code>). Skipped if the tables are filled, unless <code>--fresh</code>. Needs a MySQL admin account</td></tr>
+                <tr><td><code>php artisan sstock:wallpapers</code></td><td>Converts new images dropped into <code>public/media/bg/sstock</code> to JPG (max width 2560, odd ratios cropped to 16:9, originals moved to <code>storage/app/wallpaper-source</code>). Also runs by itself after a login page response (<code>defer()</code>)</td></tr>
+                <tr><td><code>php artisan migrate --force</code></td><td>Apply migrations on a server</td></tr>
+                <tr><td><code>composer dev</code></td><td>Local development runner (<code>php artisan dev</code>)</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Seeders and sample data</h3>
+        <ul class="g-list">
+            <li><code>DatabaseSeeder</code> runs, in order: <code>UserSeeder</code> (accounts admin, supervisor, entry), <code>CategorySeeder</code>, <code>SupplierSeeder</code>, <code>ItemSeeder</code> (products, batches, locations; units come from the migration), <code>OrganizationSeeder</code> (departments, recipients), <code>SampleTransactionSeeder</code>.</li>
+            <li>Master seeders are idempotent (<code>updateOrCreate</code> keyed by a natural code). <code>SampleTransactionSeeder</code> posts through <code>StockDocuments</code> then <code>StockLedger</code>, never by direct inserts, and is skipped when documents already exist. It covers every important status (draft, confirmed, adjustment waiting and approved, items below the Reorder Point).</li>
+            <li><b>Sample Data screen</b> (Keamanan &gt; Data Contoh, <code>SampleDataController</code>, <code>App\Services\SampleData</code>): the Administrator types <code>SEGARKAN</code>; the database is dropped and rebuilt from migrations plus <code>DatabaseSeeder</code>; <code>geo_*</code> is preserved; the user is logged out. The last refresh is logged in <code>storage/app/sample-refresh.json</code>. Disabled in production unless <code>SSTOCK_SAMPLE_REFRESH=true</code>.</li>
+            <li><code>composer sample</code> is the CLI twin (<code>migrate:fresh --seed --force</code>) but it also erases <code>geo_*</code>; run <code>sstock:import-geo</code> afterwards.</li>
+            <li>A schema change must update the seeders in the same change; <code>SeedersTest</code> runs the seeders twice and checks that stock equals the ledger.</li>
+        </ul>
+
+        <h3>Configuration</h3>
+        <table class="g-table">
+            <thead><tr><th>Key</th><th>Meaning</th></tr></thead>
+            <tbody>
+                <tr><td><code>APP_LOCALE=id</code></td><td>Indonesian screens (dictionary active only for <code>id</code>)</td></tr>
+                <tr><td><code>DB_*</code>, <code>DB_ADMIN_*</code></td><td>Application MySQL account; admin account used only by the installer and <code>sstock:import-geo</code></td></tr>
+                <tr><td><code>MAIL_*</code></td><td><code>MAIL_MAILER=log</code> in development (reset links only appear in <code>storage/logs/laravel.log</code>); production needs SMTP</td></tr>
+                <tr><td><code>SSTOCK_SAMPLE_REFRESH</code></td><td>Allow the Sample Data screen (default on outside production)</td></tr>
+                <tr><td><code>SSTOCK_REORDER_EXCLUDE_DAYS</code></td><td>Batches expiring within N days do not count as available stock for the Reorder Point (default 0)</td></tr>
+                <tr><td><code>config/devlib.php</code></td><td><code>back_history = false</code> (<code>DL_BACK_HISTORY</code>): the Back button goes to the module grid, not the previous screen; <code>translate_fixed = true</code></td></tr>
+            </tbody>
+        </table>
+
+        <h3>Deployment checklist</h3>
+        <ol class="g-steps">
+            <li>Clone the repository next to <code>../devlib</code> (<code>telasih/devlib</code> is a path repository without a remote) and run <code>composer setup</code>.</li>
+            <li>Set <code>APP_ENV=production</code>, <code>APP_DEBUG=false</code>, real SMTP, and a strong <code>DB_PASSWORD</code>.</li>
+            <li>Replace the seeded test passwords (or do not seed accounts); keep <code>SSTOCK_SAMPLE_REFRESH</code> off.</li>
+            <li>Run <code>npm run build</code> after any CSS or JS change and hard-reload the browser.</li>
+            <li>Help files live in <code>resources/</code> and are served through <code>auth</code> routes; never put them in <code>public/</code>.</li>
+        </ol>
+
+        <h2 id="decisions">11. Key decisions and why</h2>
+        <table class="g-table">
+            <thead><tr><th>Decision</th><th>Why</th></tr></thead>
+            <tbody>
+                <tr><td>Stock changes only in <code>StockLedger</code>; <code>stock_qty</code> and <code>avg_cost</code> are not mass-assignable</td><td>One auditable code path; a stray <code>update()</code> cannot desynchronise the balance from the ledger</td></tr>
+                <tr><td>Ledger rows are never edited; Cancel adds reversal rows (<code>reversal_of</code>)</td><td>Full history and an honest Stock Card; the original posting stays visible</td></tr>
+                <tr><td>Save creates a draft; stock moves on Confirm</td><td>Typing mistakes cost nothing until the user commits; a confirmed document is locked</td></tr>
+                <tr><td>Cancel needs a reason, a reversibility check, and a Supervisor for non-Supervisors</td><td>Control without blocking daily work; stock must never go negative, so an impossible cancel is refused and corrected with an Adjustment</td></tr>
+                <tr><td>Adjustment needs approval and a stale-count check</td><td>Opname differences move value; the approver must be sure the count still matches the system</td></tr>
+                <tr><td>Moving average cost</td><td>Simple, no cost layers; the weekly value chart reads <code>balance_qty x balance_avg_cost</code> from the ledger</td></tr>
+                <tr><td>Access = module list x role x group, with RO</td><td>One row in <code>Modules</code> adds a screen to menu, groups and route guard at once</td></tr>
+                <tr><td>Documents copy recipient and department names</td><td>Old documents stay readable after master data is renamed</td></tr>
+                <tr><td>Master data is deactivated, never deleted</td><td>History and foreign keys stay valid</td></tr>
+                <tr><td>Product / batch model, expiry not in the code, FEFO warning only, Reorder Point per product</td><td>Matches GS1 / SAP practice; a warning avoids blocking a legitimate pick (see the <code>stok-batch-expiry</code> skill)</td></tr>
+                <tr><td>Screens written in English, translated by <code>Indonesian</code></td><td>DevLib convention; the User's Guide is Indonesian plain HTML and this guide is English plain HTML, the only text outside the dictionary</td></tr>
+                <tr><td>Region data copied from tmerp</td><td>No second region data set to maintain</td></tr>
+                <tr><td>Sample data only in seeders, through the official path</td><td>Repeatable, and stock always equals the ledger</td></tr>
+                <tr><td>Help in <code>resources/</code>, diagrams as inline SVG, Technical Guide behind the <code>administrator</code> middleware</td><td>Not reachable without login, diagrams follow the theme, hiding a link alone is not security</td></tr>
+            </tbody>
+        </table>
+
+        <h2 id="open">12. Open items</h2>
         <ul class="g-list">
             <li>Print a single document (Receiving or Issuance note).</li>
             <li>Segregation of duties between creator and approver.</li>

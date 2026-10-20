@@ -31,7 +31,7 @@
                     ['key' => 'label', 'label' => 'Module', 'type' => 'display', 'width' => '260px'],
                     ['key' => 'menu', 'label' => 'Menu', 'type' => 'display', 'width' => '160px'],
                     ['key' => 'level', 'label' => 'Minimum Role', 'type' => 'display', 'width' => '160px'],
-                    ['key' => 'access', 'label' => 'Access', 'type' => 'select', 'options' => ['none' => 'None', 'ro' => 'Read only (RO)', 'rw' => 'Read & write (RW)'], 'width' => '220px'],
+                    ['key' => 'access', 'label' => 'Access', 'type' => 'select', 'options' => ['none' => 'Tidak ada', 'ro' => 'Hanya baca (RO)', 'rw' => 'Baca & tulis (RW)'], 'width' => '220px'],
                 ]" />
             <p class="dl-note">{{ \Devlib\Lang::text('RO opens the screen but blocks saving or changing anything. A user also needs a high enough role: Supervisor-only and Administrator-only modules stay closed to lower roles even when granted. Administrators always have full access.') }}</p>
         </x-slot:detail>

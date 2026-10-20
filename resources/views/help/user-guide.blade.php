@@ -2,7 +2,7 @@
  Tujuan       : User's Guide (UG) Stoku, Bahasa Indonesia, untuk SEMUA pengguna yang sudah login: cara memakai grid dan form, daftar isi modul, dan fitur tiap modul (apa yang bisa dilakukan, siapa yang boleh).
                 Halaman dokumentasi murni: HTML biasa (kelas sstock-guide di resources/css/app.css), tidak lewat kamus Indonesian; istilah ditulis sama persis dengan label di layar.
  Sumber hulu  : App\Support\Modules (daftar modul + peran minimal), User::canAccess (bagian modul hanya tampil bila pengguna boleh membukanya), REMARK di view/controller, HANDOVER.md.
- Output       : tab "Panduan Pengguna" di Help & support (menu profil).
+ Output       : tab "Panduan Pengguna" di Bantuan & dukungan (menu profil).
  Dipakai oleh : route help.user-guide (grup auth). Technical Guide (English, Administrator) ada di help/technical-guide.blade.php; ubah keduanya bersama bila perilaku berubah.
  Status       : Aktif.
 --}}
@@ -106,7 +106,7 @@
         <ul class="g-list">
             <li>Menu ada di panel kiri, dikelompokkan: <b>Data Master</b>, <b>Transaksi</b>, <b>Laporan</b>, dan <b>Keamanan</b> (menempel di bawah). Hanya menu yang boleh Anda buka yang tampil.</li>
             <li>Setiap menu yang Anda pilih terbuka sebagai <b>tab</b> kerja. Anda bisa membuka beberapa tab sekaligus dan berpindah di antaranya tanpa kehilangan isian.</li>
-            <li>Klik nama atau foto Anda untuk <b>menu profil</b>: <b>Help &amp; support</b> (panduan ini), <b>Ubah password</b>, <b>Bahasa</b>, dan <b>Keluar</b>.</li>
+            <li>Klik nama atau foto Anda untuk <b>menu profil</b>: <b>Notifikasi</b>, <b>Edit profil</b>, <b>Bantuan &amp; dukungan</b> (panduan ini), <b>Bahasa</b>, <b>Ubah password</b>, dan <b>Keluar aplikasi</b>.</li>
             <li>Tombol <b>F1</b> di layar mana pun membuka panduan ini.</li>
         </ul>
 
@@ -123,6 +123,7 @@
                 <tr><td><span class="g-btn">Ekspor</span></td><td>Mengunduh isi grid (sesuai pencarian, saringan, dan kolom yang tampil) sebagai berkas CSV untuk Excel.</td></tr>
                 <tr><td><span class="g-btn">+ Data Baru</span></td><td>Membuka form kosong untuk menambah data. Tombol ini tidak tampil bila Anda tidak berhak menambah.</td></tr>
                 <tr><td>Judul kolom</td><td>Klik untuk mengurutkan naik / turun. Baris jumlah (bila ada) ikut hasil saringan.</td></tr>
+                <tr><td>Bagian bawah</td><td>Baris <b>Total (semua hasil)</b> menjumlahkan kolom angka sesuai saringan. <b>Ke halaman</b>, <b>Tampil</b> 10 / 25 / 50 / 100 baris, dan tombol halaman mengatur halaman yang tampil; di kanan ada hitungan mis. [1 – 2 dari 2].</td></tr>
                 <tr><td>Klik 2x pada baris</td><td>Membuka datanya di form. Hasilnya sama dengan ikon pensil (<b>Edit</b>) atau <b>Buka</b>.</td></tr>
             </tbody>
         </table>
@@ -130,7 +131,7 @@
         <ul class="g-list">
             <li>Grid <b>master</b> punya ikon di awal baris: pensil = <b>Edit</b>; ikon lingkaran coret = <b>Nonaktifkan</b> (untuk data nonaktif berubah menjadi <b>Aktifkan</b>).</li>
             <li>Data <b>tidak pernah dihapus</b>. Data yang tidak dipakai lagi dinonaktifkan: hilang dari pilihan di form baru tetapi riwayatnya tetap utuh. Lihat yang nonaktif lewat kotak <b>Nonaktif</b> di atas grid.</li>
-            <li>Grid <b>transaksi</b> (dokumen stok) hanya punya <b>Buka</b>. Dokumen tidak dinonaktifkan; <b>Konfirmasi</b>, <b>Setujui</b>, <b>Batalkan</b>, <b>Hapus</b> hanya ada di form dokumen.</li>
+            <li>Grid <b>transaksi</b> (dokumen stok) hanya punya ikon <b>Buka</b> (kotak dengan panah) di awal baris. Dokumen tidak dinonaktifkan; <b>Konfirmasi</b>, <b>Setujui</b>, <b>Batalkan</b>, <b>Hapus</b> hanya ada di form dokumen.</li>
         </ul>
         <h3>Warna di grid</h3>
         <ul class="g-list">
@@ -146,7 +147,7 @@
                 </table>
             </li>
             <li>Di grid <b>Barang</b>, baris yang <b>merah muda</b> dan berstatus <b>PESAN ULANG</b> menandakan stok sudah di / bawah Titik Pesan Ulang; <b>AMAN</b> hijau berarti stok cukup.</li>
-            <li>Pada grid dokumen, tanda panah di awal baris (atau klik ringkasan) membuka daftar <b>Barang</b> di dokumen itu tanpa membuka form.</li>
+            <li>Pada grid dokumen, tanda panah <b>&gt;</b> di awal baris membuka daftar <b>Barang</b> di dokumen itu tanpa membuka form; di bawah nomor dokumen tertulis pihaknya (supplier, penerima, atau alasan).</li>
         </ul>
 
         {{-- 4 --}}
@@ -166,7 +167,7 @@
         </table>
         <h3>Mengisi form</h3>
         <ol class="g-steps">
-            <li>Isian bertanda <b>bintang (*)</b> wajib diisi. Bila ada yang kosong atau salah, Stoku menampilkan pesan merah di bawah isian tersebut dan tidak menyimpan.</li>
+            <li>Isian bertanda <b>bintang merah (*)</b> wajib diisi. Bila ada yang kosong atau salah, Stoku menampilkan pesan merah di bawah isian tersebut dan tidak menyimpan.</li>
             <li>Kolom berwarna abu-abu / terkunci (mis. <b>Kode Barang</b>, <b>No. Dokumen</b>) diisi otomatis atau tidak bisa diubah setelah disimpan.</li>
             <li>Tekan <b>Simpan</b>. Pesan hijau di atas layar menandakan berhasil.</li>
             <li>Tombol hanya bereaksi sekali: tidak perlu menekan dua kali, dan data tidak akan tersimpan ganda.</li>
@@ -176,10 +177,10 @@
             <li>Tekan <span class="g-btn">+ Tambah Barang</span> untuk menambah baris.</li>
             <li>Pada kolom <b>Barang</b>, ketik sebagian kode atau nama lalu pilih dari daftar. Satu barang hanya boleh muncul sekali dalam satu dokumen.</li>
             <li>Isi kolom lain pada baris itu. Kolom abu-abu (<b>Satuan</b>, <b>Tersedia</b>, <b>Jml Sistem</b>, <b>Subtotal</b>, <b>Selisih</b>) dihitung otomatis. Baris <b>Jumlah</b> di bawah tabel menjumlahkan kolom tertentu.</li>
-            <li>Ikon <b>x</b> di ujung baris menghapus baris itu dari dokumen. Dokumen wajib punya minimal satu baris.</li>
+            <li>Di ujung baris ada dua ikon: <b>salin</b> (menggandakan baris) dan <b>tong sampah</b> (menghapus baris itu dari dokumen). Formulir baru sudah berisi satu baris kosong; dokumen wajib punya minimal satu baris terisi.</li>
         </ol>
         <h3>Siklus dokumen: Simpan, Konfirmasi, Hapus, Batalkan</h3>
-        <p>Setiap dokumen stok melalui tahap yang sama. Di bagian atas form ada penunjuk tahap (mis. <b>Draf</b> > <b>Terkonfirmasi</b>).</p>
+        <p>Setiap dokumen stok melalui tahap yang sama. Di bagian atas form ada penunjuk tahap (<b>Draf</b> > <b>Terkonfirmasi</b> > <b>Ditutup</b>) yang menyala sesuai posisi dokumen.</p>
         <table class="g-table">
             <thead><tr><th>Tahap / tombol</th><th>Artinya</th></tr></thead>
             <tbody>
@@ -401,10 +402,10 @@
         @endif
         @if ($can('GRP'))
         <h3>Grup</h3>
-        <p>Grup menentukan modul mana yang boleh dibuka anggotanya, dengan tiga tingkat per modul: <b>Tidak ada</b>, <b>RO</b> (boleh membuka layar tetapi tidak boleh menyimpan atau mengubah), dan <b>RW</b> (baca dan tulis).</p>
+        <p>Grup menentukan modul mana yang boleh dibuka anggotanya, dengan tiga tingkat per modul: <b>Tidak ada</b>, <b>Hanya baca (RO)</b> (boleh membuka layar tetapi tidak boleh menyimpan atau mengubah), dan <b>Baca &amp; tulis (RW)</b>.</p>
         <ol class="g-steps">
             <li>Buka <b>Grup</b>, tekan <b>+ Data Baru</b>, isi <b>Kode Grup</b> dan <b>Nama Grup</b>.</li>
-            <li>Pada daftar modul, pilih tingkat akses tiap modul, lalu <b>Simpan</b>.</li>
+            <li>Pada tabel <b>Akses per modul</b>, pilih <b>Hak akses</b> tiap modul (kolom <b>Peran Minimal</b> menunjukkan peran terendah yang masih bisa memakainya), lalu <b>Simpan</b>.</li>
             <li>Di form <b>Pengguna</b>, pilih Grup untuk orang yang bersangkutan. Pengguna tanpa Grup memakai modul bawaan perannya.</li>
         </ol>
         <div class="g-tip">Akses nyata = modul diberikan Grup <b>dan</b> peran pengguna cukup tinggi. Modul khusus Supervisor tetap tertutup bagi Data Entry walau dicentang. Administrator selalu penuh.</div>

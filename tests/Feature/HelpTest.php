@@ -58,6 +58,21 @@ class HelpTest extends TestCase
         $this->actingAs(User::factory()->administrator()->create())->get($tg)->assertSee(route('help.user-guide'), false);
     }
 
+    public function test_flows_are_inline_svg_diagrams_kept_outside_public(): void
+    {
+        $ug = $this->actingAs(User::factory()->administrator()->create())->get(route('help.user-guide'))->assertOk();
+        $tg = $this->get(route('help.technical-guide'))->assertOk();
+
+        foreach (['ug-alur-kerja', 'ug-siklus-dokumen', 'ug-pembatalan'] as $name) {
+            $ug->assertSee('id="'.$name.'-t"', false);
+        }
+        foreach (['tg-system-flow', 'tg-doc-lifecycle', 'tg-adjustment-lifecycle', 'tg-stock-ledger', 'tg-erd', 'tg-access-flow'] as $name) {
+            $tg->assertSee('id="'.$name.'-t"', false);
+        }
+        $this->assertDirectoryDoesNotExist(public_path('help'));
+        $this->assertFileDoesNotExist(public_path('help/diagrams/tg-erd.svg'));
+    }
+
     public function test_help_item_is_in_the_menu_of_every_role_and_opens_the_user_guide(): void
     {
         $url = route('help.user-guide');

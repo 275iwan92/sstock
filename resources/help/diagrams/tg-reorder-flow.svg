@@ -10,8 +10,9 @@
 <text class="t b" x="355" y="64" text-anchor="middle">Home alert</text>
 <text class="t s" x="355" y="80" text-anchor="middle">Order Status: not ordered</text>
 <rect class="n n-in"  x="490" y="30" width="190" height="76" rx="9"/>
-<text class="t b" x="585" y="64" text-anchor="middle">Record Order</text>
-<text class="t s" x="585" y="80" text-anchor="middle">POST reorder-orders: product, ordered_at, ref_no</text>
+<text class="t b" x="585" y="56" text-anchor="middle">Record Order</text>
+<text class="t s" x="585" y="72" text-anchor="middle">POST reorder-orders:</text>
+<text class="t s" x="585" y="88" text-anchor="middle">product, ordered_at, ref_no</text>
 <rect class="n n-ok"  x="720" y="30" width="160" height="76" rx="9"/>
 <text class="t b" x="800" y="64" text-anchor="middle">Open order</text>
 <text class="t s" x="800" y="80" text-anchor="middle">closed_at = NULL</text>

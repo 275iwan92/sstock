@@ -112,7 +112,11 @@ body.dl-body:not(.sstock-bare) { padding: 0 16px 16px; }
 .sstock-guide .g-teal { background: color-mix(in srgb, #14b8a6 16%, transparent); border-color: #14b8a6; }
 .sstock-guide .g-purple { background: var(--dl-accent-soft); border-color: var(--dl-accent); }
 @media (max-width: 860px) {
-    .sstock-guide { grid-template-columns: 1fr; }
+    .sstock-guide { grid-template-columns: minmax(0, 1fr); }
+    .sstock-guide .g-table { display: block; overflow-x: auto; }
+    .sstock-guide .g-fig { overflow-x: auto; }
+    .g-svg { min-width: 720px; }
+    .g-tabs { padding: 10px 12px 0; }
     .sstock-guide .g-toc { position: static; }
     .sstock-guide .g-row-3, .sstock-guide .g-row-5 { grid-template-columns: 1fr 1fr; }
 }

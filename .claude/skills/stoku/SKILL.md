@@ -80,7 +80,10 @@ HELP (profil > "Help & support", alamat lewat prop `help-url` pada `x-dl::layer-
 
 **Akses:** item Help tampil untuk semua peran; UG terbuka untuk semua yang sudah login, tab/tautan TG hanya untuk Administrator. TG dijaga di server (middleware `administrator` / `EnsureAdministrator`, 403 untuk URL langsung); menyembunyikan tautan saja TIDAK cukup. UG hanya menampilkan modul yang dapat diakses pengguna itu (asumsi, ikut `Menu::modules`).
 **Penyimpanan:** jangan taruh berkas HELP di `public/` (terbuka tanpa login); simpan di `resources/` dan sajikan lewat controller dengan rute di dalam grup `auth`.
-**Status:** TG sudah ada (`resources/views/help/technical-guide.blade.php`, rute `help.technical-guide` di grup administrator, tes `TechnicalGuideTest`); saat ini Help & support disembunyikan bagi non-Administrator. UG BELUM ada: saat UG dibuat, tampilkan Help untuk semua peran dan pisahkan UG (semua) dari TG (Administrator saja).
+**Status (2026-10-20):** UG dan TG sudah lengkap dan terpisah. Menu profil "Bantuan & dukungan" (label kode "Help & support") tampil untuk SEMUA peran dan membuka UG (`resources/views/help/user-guide.blade.php`, rute `help.user-guide` di grup auth, bagian modul disaring `User::canAccess`); TG (`help/technical-guide.blade.php`, rute `help.technical-guide` di grup administrator) hanya lewat tab yang tautannya dirender untuk Administrator (`help/tabs.blade.php`). Tes: `tests/Feature/HelpTest.php`.
+- Diagram: berkas SVG di `resources/help/diagrams/{ug|tg}-*.svg`, disisipkan inline lewat `@include('help.diagram', ['name' => ..., 'caption' => ...])`; warna lewat kelas `.g-svg` di `app.css`. Diagram awalnya dibangkitkan skrip sekali pakai (tidak disimpan); mengubah alur = edit SVG-nya langsung (rect/path/text, koordinat berpola) dan keterangannya, lalu periksa tampilannya di browser dan terhadap kode.
+- Layar sempit: figur dan tabel HELP bergulir horizontal di dalam kotaknya (halaman tidak boleh melebar). Setelah mengubah `app.css` jalankan `npm run build`.
+- Setiap fitur baru memperbarui UG (Indonesia, label persis seperti di layar, mis. lewat tangkapan layar) DAN TG (English: tabel, alur, keputusan) pada perubahan yang sama.
 
 ## Data contoh (seeder)
 Data contoh hidup HANYA di `database/seeders` (dipanggil `DatabaseSeeder`), tidak pernah di migrasi atau di database lokal saja, supaya bisa dibuat ulang kapan pun.

@@ -12,30 +12,30 @@
 <rect class="g" x="20" y="186" width="860" height="210" rx="12"/>
 <text class="t s" x="32" y="203">StockLedger::post(document), per line</text>
 <rect class="n n-in"  x="34" y="215" width="156" height="128" rx="9"/>
-<text class="t b" x="112" y="283" text-anchor="middle">1 Lock</text>
-<text class="t s" x="112" y="258" text-anchor="middle">items row,</text>
-<text class="t s" x="112" y="273" text-anchor="middle">lockForUpdate</text>
+<text class="t b" x="112" y="267" text-anchor="middle">1 Lock</text>
+<text class="t s" x="112" y="283" text-anchor="middle">items row,</text>
+<text class="t s" x="112" y="299" text-anchor="middle">lockForUpdate</text>
 <rect class="n n-in"  x="204" y="215" width="156" height="128" rx="9"/>
-<text class="t b" x="282" y="283" text-anchor="middle">2 Signed qty</text>
-<text class="t s" x="282" y="258" text-anchor="middle">Issuance -,</text>
-<text class="t s" x="282" y="273" text-anchor="middle">Opening/Receiving +,</text>
-<text class="t s" x="282" y="288" text-anchor="middle">Adjustment own sign; 0</text>
-<text class="t s" x="282" y="303" text-anchor="middle">skipped</text>
+<text class="t b" x="282" y="251" text-anchor="middle">2 Signed qty</text>
+<text class="t s" x="282" y="267" text-anchor="middle">Issuance -,</text>
+<text class="t s" x="282" y="283" text-anchor="middle">Opening/Receiving +,</text>
+<text class="t s" x="282" y="299" text-anchor="middle">Adjustment own sign; 0</text>
+<text class="t s" x="282" y="315" text-anchor="middle">skipped</text>
 <rect class="n n-in"  x="374" y="215" width="156" height="128" rx="9"/>
-<text class="t b" x="452" y="283" text-anchor="middle">3 Guard</text>
-<text class="t s" x="452" y="258" text-anchor="middle">balance &lt; 0 -&gt;</text>
-<text class="t s" x="452" y="273" text-anchor="middle">insufficient stock</text>
-<text class="t s" x="452" y="288" text-anchor="middle">error</text>
+<text class="t b" x="452" y="259" text-anchor="middle">3 Guard</text>
+<text class="t s" x="452" y="275" text-anchor="middle">balance &lt; 0 -&gt;</text>
+<text class="t s" x="452" y="291" text-anchor="middle">insufficient stock</text>
+<text class="t s" x="452" y="307" text-anchor="middle">error</text>
 <rect class="n n-in"  x="544" y="215" width="156" height="128" rx="9"/>
-<text class="t b" x="622" y="283" text-anchor="middle">4 Cost</text>
-<text class="t s" x="622" y="258" text-anchor="middle">+ : line cost</text>
-<text class="t s" x="622" y="273" text-anchor="middle">(Receiving, Opening),</text>
-<text class="t s" x="622" y="288" text-anchor="middle">else avg cost or</text>
-<text class="t s" x="622" y="303" text-anchor="middle">price; - : avg cost</text>
+<text class="t b" x="622" y="251" text-anchor="middle">4 Cost</text>
+<text class="t s" x="622" y="267" text-anchor="middle">+ : line cost</text>
+<text class="t s" x="622" y="283" text-anchor="middle">(Receiving, Opening),</text>
+<text class="t s" x="622" y="299" text-anchor="middle">else avg cost or</text>
+<text class="t s" x="622" y="315" text-anchor="middle">price; - : avg cost</text>
 <rect class="n n-in"  x="714" y="215" width="156" height="128" rx="9"/>
-<text class="t b" x="792" y="283" text-anchor="middle">5 Average</text>
-<text class="t s" x="792" y="258" text-anchor="middle">(stock x avg + qty x</text>
-<text class="t s" x="792" y="273" text-anchor="middle">cost) / new balance</text>
+<text class="t b" x="792" y="267" text-anchor="middle">5 Average</text>
+<text class="t s" x="792" y="283" text-anchor="middle">(stock x avg + qty x</text>
+<text class="t s" x="792" y="299" text-anchor="middle">cost) / new balance</text>
 <path class="e" d="M450,151 L450,186" marker-end="url(#m-tg-stock-ledger)"/>
 <rect class="n n-purple"  x="20" y="430" width="420" height="62" rx="9"/>
 <text class="t b" x="230" y="457" text-anchor="middle">items</text>

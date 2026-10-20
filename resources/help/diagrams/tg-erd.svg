@@ -1,4 +1,4 @@
-<svg class="g-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 940" role="img" aria-labelledby="tg-erd-t tg-erd-d">
+<svg class="g-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 940" role="img" aria-labelledby="tg-erd-t tg-erd-d">
 <title id="tg-erd-t">Database relations (ERD)</title>
 <desc id="tg-erd-d">Master tables (categories, locations, units, suppliers, departments, recipients) feed products. A product has batches in items. stock_documents have stock_document_lines that point at items, and every posting writes stock_movements. reorder_orders belong to a product and are closed by a Receiving. users belong to user_groups, which grant modules in user_group_modules.</desc>
 <defs><marker id="m-tg-erd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker></defs>
@@ -9,163 +9,179 @@
 <text class="t m" x="28" y="73">code (3 chars, unique)</text>
 <text class="t m" x="28" y="88">name</text>
 <text class="t m" x="28" y="103">is_active</text>
-<rect class="n n-gray" x="20" y="130" width="190" height="92" rx="7"/>
-<line class="n-rule" x1="20" y1="154" x2="210" y2="154"/>
-<text class="t b" x="28" y="146">locations</text>
-<text class="t m" x="28" y="168">id PK</text>
-<text class="t m" x="28" y="183">code (unique)</text>
-<text class="t m" x="28" y="198">name</text>
-<text class="t m" x="28" y="213">is_active</text>
-<rect class="n n-gray" x="20" y="240" width="190" height="107" rx="7"/>
-<line class="n-rule" x1="20" y1="264" x2="210" y2="264"/>
-<text class="t b" x="28" y="256">units</text>
-<text class="t m" x="28" y="278">id PK</text>
-<text class="t m" x="28" y="293">code (unique)</text>
-<text class="t m" x="28" y="308">name</text>
-<text class="t m" x="28" y="323">kind</text>
-<text class="t m" x="28" y="338">is_active</text>
-<rect class="n n-gray" x="20" y="365" width="190" height="92" rx="7"/>
-<line class="n-rule" x1="20" y1="389" x2="210" y2="389"/>
-<text class="t b" x="28" y="381">unit_conversions</text>
-<text class="t m" x="28" y="403">id PK</text>
-<text class="t m" x="28" y="418">from_unit</text>
-<text class="t m" x="28" y="433">to_unit</text>
-<text class="t m" x="28" y="448">factor</text>
-<rect class="n n-in" x="290" y="20" width="250" height="197" rx="7"/>
-<line class="n-rule" x1="290" y1="44" x2="540" y2="44"/>
-<text class="t b" x="298" y="36">products</text>
-<text class="t m" x="298" y="58">id PK</text>
-<text class="t m" x="298" y="73">code (unique)</text>
-<text class="t m" x="298" y="88">name</text>
-<text class="t m" x="298" y="103">category_id FK</text>
-<text class="t m" x="298" y="118">unit (units.code)</text>
-<text class="t m" x="298" y="133">location (locations.code)</text>
-<text class="t m" x="298" y="148">unit_price</text>
-<text class="t m" x="298" y="163">reorder_point, reorder_qty</text>
-<text class="t m" x="298" y="178">lead_time_days</text>
-<text class="t m" x="298" y="193">tracks_expiry</text>
-<text class="t m" x="298" y="208">is_active</text>
-<rect class="n n-in" x="290" y="250" width="250" height="167" rx="7"/>
-<line class="n-rule" x1="290" y1="274" x2="540" y2="274"/>
-<text class="t b" x="298" y="266">items  (= batches)</text>
-<text class="t m" x="298" y="288">id PK</text>
-<text class="t m" x="298" y="303">product_id FK</text>
-<text class="t m" x="298" y="318">code (unique)</text>
-<text class="t m" x="298" y="333">expiry_date (null = none)</text>
-<text class="t m" x="298" y="348">stock_qty</text>
-<text class="t m" x="298" y="363">avg_cost</text>
-<text class="t m" x="298" y="378">name, category_id, unit,</text>
-<text class="t m" x="298" y="393">location, unit_price, ... (copy)</text>
-<text class="t m" x="298" y="408">is_active</text>
-<rect class="n n-gray" x="290" y="430" width="250" height="122" rx="7"/>
-<line class="n-rule" x1="290" y1="454" x2="540" y2="454"/>
-<text class="t b" x="298" y="446">reorder_orders</text>
-<text class="t m" x="298" y="468">id PK</text>
-<text class="t m" x="298" y="483">product_id FK</text>
-<text class="t m" x="298" y="498">ordered_at, ref_no</text>
-<text class="t m" x="298" y="513">created_by FK</text>
-<text class="t m" x="298" y="528">closed_at</text>
-<text class="t m" x="298" y="543">receiving_id FK</text>
-<rect class="n n-purple" x="620" y="20" width="250" height="212" rx="7"/>
-<line class="n-rule" x1="620" y1="44" x2="870" y2="44"/>
-<text class="t b" x="628" y="36">stock_documents</text>
-<text class="t m" x="628" y="58">id PK</text>
-<text class="t m" x="628" y="73">doc_no (unique)</text>
-<text class="t m" x="628" y="88">type OPENING|IN|OUT|ADJ</text>
-<text class="t m" x="628" y="103">doc_at, status</text>
-<text class="t m" x="628" y="118">supplier_id FK</text>
-<text class="t m" x="628" y="133">recipient_id, department_id FK</text>
-<text class="t m" x="628" y="148">recipient, department (names)</text>
-<text class="t m" x="628" y="163">ref_no, reason, note</text>
-<text class="t m" x="628" y="178">created_by FK</text>
-<text class="t m" x="628" y="193">confirmed_by/at, approved_by/at</text>
-<text class="t m" x="628" y="208">cancel_requested_by/at</text>
-<text class="t m" x="628" y="223">cancelled_by/at, cancel_reason</text>
-<rect class="n n-gray" x="620" y="320" width="250" height="137" rx="7"/>
-<line class="n-rule" x1="620" y1="344" x2="870" y2="344"/>
-<text class="t b" x="628" y="336">stock_document_lines</text>
-<text class="t m" x="628" y="358">id PK</text>
-<text class="t m" x="628" y="373">stock_document_id FK</text>
-<text class="t m" x="628" y="388">item_id FK</text>
-<text class="t m" x="628" y="403">qty, unit_cost</text>
-<text class="t m" x="628" y="418">system_qty, counted_qty</text>
-<text class="t m" x="628" y="433">entered_qty/unit/unit_cost</text>
-<text class="t m" x="628" y="448">note</text>
-<rect class="n n-purple" x="620" y="470" width="250" height="167" rx="7"/>
-<line class="n-rule" x1="620" y1="494" x2="870" y2="494"/>
-<text class="t b" x="628" y="486">stock_movements</text>
-<text class="t m" x="628" y="508">id PK</text>
-<text class="t m" x="628" y="523">item_id FK</text>
-<text class="t m" x="628" y="538">stock_document_id FK</text>
-<text class="t m" x="628" y="553">type, moved_at</text>
-<text class="t m" x="628" y="568">qty, unit_cost</text>
-<text class="t m" x="628" y="583">balance_qty</text>
-<text class="t m" x="628" y="598">balance_avg_cost</text>
-<text class="t m" x="628" y="613">user_id FK</text>
-<text class="t m" x="628" y="628">reversal_of FK (self)</text>
-<rect class="n n-gray" x="20" y="500" width="190" height="122" rx="7"/>
-<line class="n-rule" x1="20" y1="524" x2="210" y2="524"/>
-<text class="t b" x="28" y="516">suppliers</text>
-<text class="t m" x="28" y="538">id PK</text>
-<text class="t m" x="28" y="553">code (unique)</text>
-<text class="t m" x="28" y="568">name</text>
-<text class="t m" x="28" y="583">phone, contact_*</text>
-<text class="t m" x="28" y="598">address, postal_code</text>
-<text class="t m" x="28" y="613">area_level, area_id (geo_*)</text>
-<rect class="n n-gray" x="20" y="650" width="190" height="92" rx="7"/>
-<line class="n-rule" x1="20" y1="674" x2="210" y2="674"/>
-<text class="t b" x="28" y="666">departments</text>
-<text class="t m" x="28" y="688">id PK</text>
-<text class="t m" x="28" y="703">code (unique)</text>
-<text class="t m" x="28" y="718">name</text>
-<text class="t m" x="28" y="733">is_active</text>
-<rect class="n n-gray" x="20" y="760" width="190" height="92" rx="7"/>
-<line class="n-rule" x1="20" y1="784" x2="210" y2="784"/>
-<text class="t b" x="28" y="776">recipients</text>
-<text class="t m" x="28" y="798">id PK</text>
-<text class="t m" x="28" y="813">name</text>
-<text class="t m" x="28" y="828">department_id FK</text>
-<text class="t m" x="28" y="843">is_active</text>
-<rect class="n n-gray" x="620" y="650" width="250" height="107" rx="7"/>
-<line class="n-rule" x1="620" y1="674" x2="870" y2="674"/>
-<text class="t b" x="628" y="666">users</text>
-<text class="t m" x="628" y="688">id PK</text>
-<text class="t m" x="628" y="703">name, username, email</text>
-<text class="t m" x="628" y="718">role data_entry|supervisor|administrator</text>
-<text class="t m" x="628" y="733">group_id FK</text>
-<text class="t m" x="628" y="748">password, is_active</text>
-<rect class="n n-gray" x="900" y="650" width="90" height="77" rx="7"/>
-<line class="n-rule" x1="900" y1="674" x2="990" y2="674"/>
-<text class="t b" x="908" y="666">user_groups</text>
-<text class="t m" x="908" y="688">id PK</text>
-<text class="t m" x="908" y="703">code</text>
-<text class="t m" x="908" y="718">name</text>
-<rect class="n n-gray" x="900" y="780" width="90" height="77" rx="7"/>
-<line class="n-rule" x1="900" y1="804" x2="990" y2="804"/>
-<text class="t b" x="908" y="796">user_group_modules</text>
-<text class="t m" x="908" y="818">group_id FK</text>
-<text class="t m" x="908" y="833">module</text>
-<text class="t m" x="908" y="848">access</text>
-<path class="e noarrow" d="M210,66 L250,55 L250,70 L290,118.5"/>
-<text class="t m" x="215" y="60" text-anchor="start">1</text>
-<path class="e noarrow" d="M415,217 L415,250"/>
-<text class="t m" x="300" y="245" text-anchor="start">1  N</text>
-<path class="e noarrow" d="M415,230 L415,250"/>
-<path class="e noarrow" d="M415,430 L415,424"/>
-<path class="e noarrow" d="M290,118.5 L250,120 L250,480 L290,480"/>
-<path class="e noarrow" d="M540,333.5 L580,300 L580,380 L620,388.5"/>
-<text class="t m" x="545" y="295" text-anchor="start">1</text>
-<text class="t m" x="585" y="375" text-anchor="start">N</text>
-<path class="e noarrow" d="M745,232 L745,320"/>
-<text class="t m" x="625" y="316" text-anchor="start">N</text>
-<path class="e noarrow" d="M540,333.5 L600,330 L600,520 L620,553.5"/>
-<path class="e noarrow" d="M745,305 L745,320"/>
-<path class="e noarrow" d="M870,126 L885,200 L885,510 L870,553.5"/>
-<path class="e noarrow" d="M210,561 L250,540 L250,600 L590,600 L590,190 L620,126"/>
-<path class="e noarrow dash" d="M210,806 L250,830 L250,770 L600,770 L600,700 L620,703.5"/>
-<path class="e noarrow" d="M870,703.5 L900,688.5"/>
-<path class="e noarrow" d="M945,727 L945,780"/>
-<path class="e noarrow" d="M115,650 L115,635 L115,625"/>
-<path class="e noarrow" d="M115,760 L115,742"/>
-<text class="t s" x="20" y="920" text-anchor="start">FK = foreign key. Solid lines are relations (1:N). Region data (geo_country, geo_region, geo_city, geo_district, geo_village) is copied from tmerp and referenced by suppliers.area_id.</text>
+<rect class="n n-gray" x="20" y="140" width="190" height="92" rx="7"/>
+<line class="n-rule" x1="20" y1="164" x2="210" y2="164"/>
+<text class="t b" x="28" y="156">locations</text>
+<text class="t m" x="28" y="178">id PK</text>
+<text class="t m" x="28" y="193">code (unique)</text>
+<text class="t m" x="28" y="208">name</text>
+<text class="t m" x="28" y="223">is_active</text>
+<rect class="n n-gray" x="20" y="260" width="190" height="107" rx="7"/>
+<line class="n-rule" x1="20" y1="284" x2="210" y2="284"/>
+<text class="t b" x="28" y="276">units</text>
+<text class="t m" x="28" y="298">id PK</text>
+<text class="t m" x="28" y="313">code (unique)</text>
+<text class="t m" x="28" y="328">name</text>
+<text class="t m" x="28" y="343">kind</text>
+<text class="t m" x="28" y="358">is_active</text>
+<rect class="n n-gray" x="20" y="390" width="190" height="92" rx="7"/>
+<line class="n-rule" x1="20" y1="414" x2="210" y2="414"/>
+<text class="t b" x="28" y="406">unit_conversions</text>
+<text class="t m" x="28" y="428">id PK</text>
+<text class="t m" x="28" y="443">from_unit</text>
+<text class="t m" x="28" y="458">to_unit</text>
+<text class="t m" x="28" y="473">factor</text>
+<path class="e noarrow dash" d="M115,367 L115,390"/>
+<text class="t s" x="20" y="500" text-anchor="start">units and locations are referenced by CODE</text>
+<text class="t s" x="20" y="515" text-anchor="start">(products.unit, products.location,</text>
+<text class="t s" x="20" y="530" text-anchor="start">unit_conversions.*_unit): soft links, no FK.</text>
+<rect class="n n-in" x="270" y="20" width="250" height="197" rx="7"/>
+<line class="n-rule" x1="270" y1="44" x2="520" y2="44"/>
+<text class="t b" x="278" y="36">products</text>
+<text class="t m" x="278" y="58">id PK</text>
+<text class="t m" x="278" y="73">code (unique)</text>
+<text class="t m" x="278" y="88">name</text>
+<text class="t m" x="278" y="103">category_id FK</text>
+<text class="t m" x="278" y="118">unit (units.code)</text>
+<text class="t m" x="278" y="133">location (locations.code)</text>
+<text class="t m" x="278" y="148">unit_price</text>
+<text class="t m" x="278" y="163">reorder_point, reorder_qty</text>
+<text class="t m" x="278" y="178">lead_time_days</text>
+<text class="t m" x="278" y="193">tracks_expiry</text>
+<text class="t m" x="278" y="208">is_active</text>
+<rect class="n n-gray" x="270" y="260" width="250" height="122" rx="7"/>
+<line class="n-rule" x1="270" y1="284" x2="520" y2="284"/>
+<text class="t b" x="278" y="276">reorder_orders</text>
+<text class="t m" x="278" y="298">id PK</text>
+<text class="t m" x="278" y="313">product_id FK</text>
+<text class="t m" x="278" y="328">ordered_at, ref_no</text>
+<text class="t m" x="278" y="343">created_by FK</text>
+<text class="t m" x="278" y="358">closed_at</text>
+<text class="t m" x="278" y="373">receiving_id FK</text>
+<rect class="n n-in" x="270" y="430" width="250" height="167" rx="7"/>
+<line class="n-rule" x1="270" y1="454" x2="520" y2="454"/>
+<text class="t b" x="278" y="446">items  (= batches)</text>
+<text class="t m" x="278" y="468">id PK</text>
+<text class="t m" x="278" y="483">product_id FK</text>
+<text class="t m" x="278" y="498">code (unique)</text>
+<text class="t m" x="278" y="513">expiry_date (null = none)</text>
+<text class="t m" x="278" y="528">stock_qty</text>
+<text class="t m" x="278" y="543">avg_cost</text>
+<text class="t m" x="278" y="558">name, category_id, unit,</text>
+<text class="t m" x="278" y="573">location, unit_price ... (copy)</text>
+<text class="t m" x="278" y="588">is_active</text>
+<rect class="n n-purple" x="590" y="20" width="250" height="212" rx="7"/>
+<line class="n-rule" x1="590" y1="44" x2="840" y2="44"/>
+<text class="t b" x="598" y="36">stock_documents</text>
+<text class="t m" x="598" y="58">id PK</text>
+<text class="t m" x="598" y="73">doc_no (unique)</text>
+<text class="t m" x="598" y="88">type OPENING|IN|OUT|ADJ</text>
+<text class="t m" x="598" y="103">doc_at, status</text>
+<text class="t m" x="598" y="118">supplier_id FK</text>
+<text class="t m" x="598" y="133">recipient_id, department_id FK</text>
+<text class="t m" x="598" y="148">recipient, department (names)</text>
+<text class="t m" x="598" y="163">ref_no, reason, note</text>
+<text class="t m" x="598" y="178">created_by FK</text>
+<text class="t m" x="598" y="193">confirmed_by/at, approved_by/at</text>
+<text class="t m" x="598" y="208">cancel_requested_by/at</text>
+<text class="t m" x="598" y="223">cancelled_by/at, cancel_reason</text>
+<rect class="n n-gray" x="590" y="300" width="250" height="137" rx="7"/>
+<line class="n-rule" x1="590" y1="324" x2="840" y2="324"/>
+<text class="t b" x="598" y="316">stock_document_lines</text>
+<text class="t m" x="598" y="338">id PK</text>
+<text class="t m" x="598" y="353">stock_document_id FK</text>
+<text class="t m" x="598" y="368">item_id FK</text>
+<text class="t m" x="598" y="383">qty, unit_cost</text>
+<text class="t m" x="598" y="398">system_qty, counted_qty</text>
+<text class="t m" x="598" y="413">entered_qty/unit/unit_cost</text>
+<text class="t m" x="598" y="428">note</text>
+<rect class="n n-purple" x="590" y="490" width="250" height="167" rx="7"/>
+<line class="n-rule" x1="590" y1="514" x2="840" y2="514"/>
+<text class="t b" x="598" y="506">stock_movements</text>
+<text class="t m" x="598" y="528">id PK</text>
+<text class="t m" x="598" y="543">item_id FK</text>
+<text class="t m" x="598" y="558">stock_document_id FK</text>
+<text class="t m" x="598" y="573">type, moved_at</text>
+<text class="t m" x="598" y="588">qty, unit_cost</text>
+<text class="t m" x="598" y="603">balance_qty</text>
+<text class="t m" x="598" y="618">balance_avg_cost</text>
+<text class="t m" x="598" y="633">user_id FK</text>
+<text class="t m" x="598" y="648">reversal_of FK (self)</text>
+<rect class="g" x="900" y="10" width="190" height="410" rx="12"/>
+<text class="t s" x="912" y="27">Parties (ids + copied names)</text>
+<rect class="n n-gray" x="910" y="40" width="170" height="122" rx="7"/>
+<line class="n-rule" x1="910" y1="64" x2="1080" y2="64"/>
+<text class="t b" x="918" y="56">suppliers</text>
+<text class="t m" x="918" y="78">id PK</text>
+<text class="t m" x="918" y="93">code (unique)</text>
+<text class="t m" x="918" y="108">name</text>
+<text class="t m" x="918" y="123">phone, contact_*</text>
+<text class="t m" x="918" y="138">address, postal_code</text>
+<text class="t m" x="918" y="153">area_level, area_id</text>
+<rect class="n n-gray" x="910" y="190" width="170" height="92" rx="7"/>
+<line class="n-rule" x1="910" y1="214" x2="1080" y2="214"/>
+<text class="t b" x="918" y="206">departments</text>
+<text class="t m" x="918" y="228">id PK</text>
+<text class="t m" x="918" y="243">code (unique)</text>
+<text class="t m" x="918" y="258">name</text>
+<text class="t m" x="918" y="273">is_active</text>
+<rect class="n n-gray" x="910" y="310" width="170" height="92" rx="7"/>
+<line class="n-rule" x1="910" y1="334" x2="1080" y2="334"/>
+<text class="t b" x="918" y="326">recipients</text>
+<text class="t m" x="918" y="348">id PK</text>
+<text class="t m" x="918" y="363">name</text>
+<text class="t m" x="918" y="378">department_id FK</text>
+<text class="t m" x="918" y="393">is_active</text>
+<path class="e noarrow" d="M1000,282 L1000,310"/>
+<path class="e noarrow" d="M210,60 L270,60"/>
+<text class="t m" x="214" y="52" text-anchor="start">1</text>
+<text class="t m" x="254" y="52" text-anchor="start">N</text>
+<path class="e noarrow" d="M395,217 L395,260"/>
+<text class="t m" x="402" y="233" text-anchor="start">1</text>
+<text class="t m" x="402" y="256" text-anchor="start">N</text>
+<path class="e noarrow" d="M270,140 L250,140 L250,500 L270,500"/>
+<text class="t m" x="250" y="132" text-anchor="end">1</text>
+<text class="t m" x="250" y="492" text-anchor="end">N</text>
+<path class="e noarrow dash" d="M520,300 L560,300 L560,110 L590,110"/>
+<path class="e noarrow" d="M520,470 L555,470 L555,370 L590,370"/>
+<text class="t m" x="525" y="464" text-anchor="start">1</text>
+<text class="t m" x="560" y="364" text-anchor="start">N</text>
+<path class="e noarrow" d="M520,560 L590,560"/>
+<text class="t m" x="525" y="554" text-anchor="start">1</text>
+<text class="t m" x="570" y="554" text-anchor="start">N</text>
+<path class="e noarrow" d="M715,232 L715,300"/>
+<text class="t m" x="722" y="248" text-anchor="start">1</text>
+<text class="t m" x="722" y="296" text-anchor="start">N</text>
+<path class="e noarrow" d="M840,222 L875,222 L875,570 L840,570"/>
+<text class="t m" x="845" y="216" text-anchor="start">1</text>
+<text class="t m" x="845" y="564" text-anchor="start">N</text>
+<path class="e noarrow" d="M840,130 L900,130"/>
+<rect class="g" x="20" y="700" width="1060" height="150" rx="12"/>
+<text class="t s" x="32" y="717">Security</text>
+<rect class="n n-gray" x="40" y="735" width="250" height="92" rx="7"/>
+<line class="n-rule" x1="40" y1="759" x2="290" y2="759"/>
+<text class="t b" x="48" y="751">users</text>
+<text class="t m" x="48" y="773">id PK</text>
+<text class="t m" x="48" y="788">name, username, email</text>
+<text class="t m" x="48" y="803">role, group_id FK</text>
+<text class="t m" x="48" y="818">password, is_active</text>
+<rect class="n n-gray" x="380" y="735" width="210" height="77" rx="7"/>
+<line class="n-rule" x1="380" y1="759" x2="590" y2="759"/>
+<text class="t b" x="388" y="751">user_groups</text>
+<text class="t m" x="388" y="773">id PK</text>
+<text class="t m" x="388" y="788">code (unique)</text>
+<text class="t m" x="388" y="803">name</text>
+<rect class="n n-gray" x="680" y="735" width="250" height="77" rx="7"/>
+<line class="n-rule" x1="680" y1="759" x2="930" y2="759"/>
+<text class="t b" x="688" y="751">user_group_modules</text>
+<text class="t m" x="688" y="773">group_id FK</text>
+<text class="t m" x="688" y="788">module (Modules code)</text>
+<text class="t m" x="688" y="803">access  RO | RW</text>
+<path class="e noarrow" d="M290,781 L380,773.5"/>
+<path class="e noarrow" d="M590,773.5 L680,773.5"/>
+<text class="t m" x="300" y="765" text-anchor="start">1  N</text>
+<text class="t m" x="600" y="765" text-anchor="start">1  N</text>
+<text class="t s" x="20" y="880" text-anchor="start">FK = foreign key. Solid lines are 1:N relations; dashed lines are soft links (receiving_id on reorder_orders, codes of units/locations).</text>
+<text class="t s" x="20" y="895" text-anchor="start">users.id is also referenced by created_by, confirmed_by, approved_by, cancelled_by (stock_documents), user_id (stock_movements) and created_by (reorder_orders); those lines are not drawn.</text>
+<text class="t s" x="20" y="910" text-anchor="start">Region tables geo_country, geo_region, geo_city, geo_district, geo_village are copied from tmerp and referenced by suppliers.area_id.</text>
 </svg>

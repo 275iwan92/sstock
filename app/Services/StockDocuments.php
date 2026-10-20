@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /* REMARK
- * Tujuan       : Siklus hidup dokumen stok. Saldo awal / masuk / keluar langsung diposting saat disimpan (status confirmed, tidak bisa diubah; koreksi lewat penyesuaian).
+ * Tujuan       : Siklus hidup dokumen stok: draf (stok belum berubah) > Confirm (diposting ke stok, terkunci) > Cancel (pengajuan + persetujuan Supervisor, stok dibalik) ; koreksi lewat penyesuaian.
  *                Penyesuaian: draft -> approval -> approved (diposting) | rejected, hanya supervisor.
  * Sumber hulu  : data form yang sudah divalidasi (header + lines), StockLedger.
  * Output       : StockDocument beserta baris; untuk keluar: item yang kini di/bawah Reorder Point.
