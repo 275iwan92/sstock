@@ -55,6 +55,26 @@ Berlaku untuk SEMUA form dokumen stok (Saldo Awal, Penerimaan, Pengeluaran, Peny
 - **Grid master** (barang, kategori, lokasi, supplier, satuan, departemen, penerima, pengguna, dst.): kolom terdepan memakai KOTAK warna per baris berisi inisial, dengan nama tebal dan kode kecil di bawahnya: `['key' => 'name', 'label' => '<Nama>', 'type' => 'identity', 'code' => '<kolom kode>', 'box' => true]`. Tambahkan `'hue' => 'hue'` bila warnanya bermakna dan controller mengirim kolom `hue` dari `App\Support\Palette` (barang menurut kategori, satuan menurut jenis); tanpa `hue` warna dipilih otomatis. Contoh: `resources/views/items/index.blade.php`, `suppliers/index.blade.php`. Grid master BARU wajib mengikuti pola ini, bukan `avatar => false`.
 - Pengecualian yang ada: `groups/index` dan `modules/index` (menu Keamanan) memakai `avatar => false`, belum berkotak.
 
+## HELP: User's Guide (UG) dan Technical Guide (TG)
+HELP (profil > "Help & support", alamat lewat prop `help-url` pada `x-dl::layer-shell` di `home.blade.php`) SELALU terbagi dua, keduanya HTML. Setiap perubahan fitur memperbarui UG dan TG di perubahan yang sama (satu sumber: komentar `REMARK` di kode).
+
+**UG, User's Guide: Bahasa Indonesia, untuk semua pengguna.** Tuntunan cara pakai, bukan teknis:
+- cara memakai **grid** (cari, Filters, Columns, Export, klik 2x membuka, tombol Aksi, Aktif/Nonaktif, warna Status);
+- cara memakai **form** (Simpan, Confirm, Delete, Cancel dan pengajuannya, Kembali ke grid, baris detail, kolom wajib);
+- **daftar isi modul** (kelompok menu dan isi tiap modul) dan **fitur tiap modul** (apa yang bisa dilakukan, siapa yang boleh);
+- bahasa sederhana, langkah bernomor, istilah sama persis dengan label di layar. Bagian yang butuh peran lain ditandai ("hanya Supervisor").
+
+**TG, Technical Guide: English, HANYA Administrator.** Semua hal teknis ada di sini:
+- data flow, system flow, workflow/state diagram (siklus dokumen, persetujuan, pembalikan stok);
+- tabel dan database (skema, kolom, relasi, indeks, migrasi), buku besar stok dan perhitungan moving average;
+- arsitektur (controller, service, middleware, Modules/akses), konfigurasi, perintah artisan, seeder, deployment;
+- keputusan beserta alasannya. Ditulis setelah modulnya stabil.
+- Ini satu-satunya pengecualian aturan "semua tampilan Indonesia": TG tidak lewat kamus `Indonesian` dan tidak punya versi Indonesia.
+
+**Akses:** item Help tampil untuk semua peran; UG terbuka untuk semua yang sudah login, tab/tautan TG hanya untuk Administrator. TG dijaga di server (middleware `administrator` / `EnsureAdministrator`, 403 untuk URL langsung); menyembunyikan tautan saja TIDAK cukup. UG hanya menampilkan modul yang dapat diakses pengguna itu (asumsi, ikut `Menu::modules`).
+**Penyimpanan:** jangan taruh berkas HELP di `public/` (terbuka tanpa login); simpan di `resources/` dan sajikan lewat controller dengan rute di dalam grup `auth`.
+**Status:** TG sudah ada (`resources/views/help/technical-guide.blade.php`, rute `help.technical-guide` di grup administrator, tes `TechnicalGuideTest`); saat ini Help & support disembunyikan bagi non-Administrator. UG BELUM ada: saat UG dibuat, tampilkan Help untuk semua peran dan pisahkan UG (semua) dari TG (Administrator saja).
+
 ## Data contoh (seeder)
 Data contoh hidup HANYA di `database/seeders` (dipanggil `DatabaseSeeder`), tidak pernah di migrasi atau di database lokal saja, supaya bisa dibuat ulang kapan pun.
 - **Setiap perubahan skema (kolom/field ditambah, dihapus, diganti nama, jadi wajib) memperbarui seeder DALAM perubahan yang sama**, bersama form, request, kamus, dan tes. Cari pemakai kolom itu: `grep -rn "<kolom>" database/seeders app tests resources`. Kolom baru wajib diisi nilai yang masuk akal; kolom yang dihapus dibuang dari seeder.
