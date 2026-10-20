@@ -177,7 +177,8 @@
             <li>Tekan <span class="g-btn">+ Tambah Barang</span> untuk menambah baris.</li>
             <li>Pada kolom <b>Barang</b>, ketik sebagian kode atau nama lalu pilih dari daftar. Satu barang hanya boleh muncul sekali dalam satu dokumen.</li>
             <li>Isi kolom lain pada baris itu. Kolom abu-abu (<b>Satuan</b>, <b>Tersedia</b>, <b>Jml Sistem</b>, <b>Subtotal</b>, <b>Selisih</b>) dihitung otomatis. Baris <b>Jumlah</b> di bawah tabel menjumlahkan kolom tertentu.</li>
-            <li>Di ujung baris ada dua ikon: <b>salin</b> (menggandakan baris) dan <b>tong sampah</b> (menghapus baris itu dari dokumen). Formulir baru sudah berisi satu baris kosong; dokumen wajib punya minimal satu baris terisi.</li>
+            <li>Setiap baris punya dua keadaan. <b>Baru diisi</b>: di ujung baris ada ikon <b>Simpan baris</b> (disket) dan <b>Batalkan isian baris</b> (panah putar). Simpan menuntaskan baris (baris terkunci); Batalkan membuang baris baru. <b>Sudah ditulis</b>: ikon <b>Ubah baris</b> (pensil) dan <b>Hapus baris</b> (tong sampah). Ubah membuka baris lagi (Batalkan mengembalikan isi sebelumnya). Setelah dokumen <b>Terkonfirmasi</b> ikon-ikon ini hilang karena baris tidak bisa diubah; selama <b>Draf</b> ikon selalu ada.</li>
+            <li>Formulir baru sudah berisi satu baris (jumlah 1); dokumen wajib punya minimal satu baris terisi. Menekan <b>Simpan</b> / <b>Konfirmasi</b> di atas form juga ikut menyimpan baris yang sedang terbuka dan sudah lengkap.</li>
         </ol>
         <h3>Siklus dokumen: Simpan, Konfirmasi, Hapus, Batalkan</h3>
         <p>Setiap dokumen stok melalui tahap yang sama. Di bagian atas form ada penunjuk tahap (<b>Draf</b> > <b>Terkonfirmasi</b> > <b>Ditutup</b>) yang menyala sesuai posisi dokumen.</p>

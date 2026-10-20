@@ -101,6 +101,7 @@
             <li><b>Approving an Adjustment</b> is refused if the item's stock changed since it was counted (<code>system_qty</code> differs). Reject it and count again.</li>
             <li><b>Cancel</b> needs a reason (3 to 255 characters). Before accepting a cancel or a request, <code>StockLedger::assertReversible</code> computes whether stock is still enough to pull the document back. If not, the cancel is refused and an Adjustment is needed. The result is also shown as a warning on the form before the button is pressed.</li>
             <li><b>Cancel authority:</b> a Supervisor or Administrator cancels directly. Others request. Only the requester or a Supervisor may withdraw a pending request (403 for anyone else).</li>
+            <li>Detail rows use <code>x-dl::lines :row-state="true"</code> (DevLib, opt-in): each row is in state <i>edit</i> (Save + Undo) or <i>saved</i> (Edit + Delete); saved rows are locked, Undo drops a new row or restores the pre-Edit values, and the readonly (Confirmed) table shows no row buttons. Row data is posted in both states, so the form Save also commits an open, complete row.</li>
             <li>The Confirm, Delete, Cancel, Approve and Reject buttons come from the DevLib form status (<code>x-dl::form kind="document" :pipeline="true"</code>). They are not built by hand. Every stage is written to the form log.</li>
         </ul>
 

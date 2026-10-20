@@ -70,13 +70,11 @@ Berlaku untuk SEMUA form dokumen stok (Saldo Awal, Penerimaan, Pengeluaran, Peny
 **Tes wajib** di `tests/Feature/DocumentLifecycleTest.php` (dan `StockFlowTest.php`) untuk setiap jenis dokumen (Confirm tidak mengubah stok sebelum waktunya, Cancel ditolak saat stok kurang, pengajuan lalu persetujuan).
 
 ## Selisih dengan aturan transaksional pemilik
-Aturan umum mode DRAFT/CONFIRMED/CANCELLED, tombol, default data, print MODE, dan authority bertingkat ada di skill `devlib` (bagian "Data transaksional: mode dan tombol"). Di sstock tampilannya Indonesia (Draf, Terkonfirmasi, Dibatalkan). Selisih yang diketahui per 2026-10-20 (dicek dari kode, belum diselesaikan; jangan ditutup diam-diam, putuskan bersama pemilik):
-- **PRINT:** aturan: ada di DRAFT dan mencetak tulisan MODE. sstock: tombol print DISEMBUNYIKAN di `docs/form.blade.php` (`:hide`), cetak dokumen tunggal belum ada.
-- **CANCEL:** aturan: bila data tidak cocok, ADJUSTMENT pembalik dibuat OTOMATIS. sstock: pembalikan lewat baris pembalik buku besar (`reversal_of`), dan bila stok tidak cukup pembatalan DITOLAK sampai pengguna membuat Stock Adjustment sendiri (bukan otomatis).
-- **AUTHORITY:** aturan: bisa bertingkat. sstock: satu tingkat (`approval-levels` 1, Supervisor).
-- **Default data:** aturan: isian terisi bawaan, tidak kosong. Belum diaudit per form.
-- **Baris detail master-detail:** aturan: dua state per baris (baru: SAVE + UNDO; tersimpan: EDIT + DELETE; tombol hilang saat CONFIRMED, selalu ada di DRAFT). sstock: `x-dl::lines` hanya hapus baris, semua baris terbuka diedit sekaligus lalu satu Simpan; state per baris belum ada (butuh perubahan DevLib opt-in).
-- Sesuai: Draf hanya untuk transaksi, master hanya Aktif/Nonaktif, record batal tetap tersimpan, Confirm membuat readonly.
+Aturan umum mode DRAFT/CONFIRMED/CANCELLED, tombol, default data, print MODE, authority bertingkat, dan state baris detail ada di skill `devlib` (bagian "Data transaksional: mode dan tombol"). Di sstock tampilannya Indonesia (Draf, Terkonfirmasi, Dibatalkan). Status per 2026-10-20 (sudah dicek dari kode dan tes):
+- **Sesuai:** Draf hanya untuk transaksi, master hanya Aktif/Nonaktif (termasuk Grup), record batal tetap tersimpan, Confirm membuat readonly, PRINT ada di semua mode dengan tulisan MODE (`docs.print`, `StockDocumentPrint`), pembalik ADJUSTMENT otomatis saat Cancel (`StockDocuments::recordReversal`), nilai bawaan di dokumen baru, state baris detail (`:row-state="true"` di form dokumen dan konversi Satuan).
+- **Authority bertingkat TIDAK dipakai di stok** (keputusan pemilik: bertingkat hanya di pembelian dan penjualan; stok satu tingkat, Supervisor, `approval-levels` 1). Jangan menambahkannya tanpa diminta.
+- **Pemesanan Ulang** (`reorder_orders`) adalah catatan satu klik, bukan dokumen transaksi: tanpa siklus DRAFT/CONFIRMED.
+- Form dokumen yang belum pernah disimpan hanya punya Undo + Save (bawaan DevLib); Delete dan Print muncul setelah draf pertama tersimpan.
 
 ## Gaya grid
 - **Grid transaksi** (dokumen stok, dan grid transaksi baru lainnya): POLOS. Kolom terdepan = nomor dokumen, hanya tebal, TANPA kotak/avatar warna (`'type' => 'identity', 'avatar' => false`, tanpa `box`/`hue`). WAJIB ada kolom Status bertipe `badge` dengan `tones` (hijau Terkonfirmasi/Disetujui, abu Draf, kuning menunggu, merah Dibatalkan/Ditolak); itu satu-satunya warna di baris. Contoh: `resources/views/docs/index.blade.php`.

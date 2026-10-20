@@ -109,7 +109,7 @@
             <x-dl::field.text name="note" label="Notes" :value="$v('note')" multiline maxlength="1000" :error="$e('note')" />
         </x-dl::form.row>
         <x-slot:detail>
-            <x-dl::lines name="lines" title="Items" add-label="+ Add Item" :rows="$rows" :min-rows="$locked ? 0 : 1" :readonly="$locked" :columns="$columns" />
+            <x-dl::lines name="lines" title="Items" add-label="+ Add Item" :rows="$rows" :min-rows="$locked ? 0 : 1" :readonly="$locked" :row-state="true" :columns="$columns" />
         </x-slot:detail>
     </x-dl::form>
 @endsection

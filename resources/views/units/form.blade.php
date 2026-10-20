@@ -30,7 +30,7 @@
             </x-dl::form.row>
         @endunless
         <x-slot:detail>
-            <x-dl::lines name="conversions" :title="'Konversi · 1 '.$code.' ='" add-label="+ Add Conversion" :rows="$conversions" :min-rows="0"
+            <x-dl::lines name="conversions" :title="'Konversi · 1 '.$code.' ='" add-label="+ Add Conversion" :rows="$conversions" :min-rows="0" :row-state="true"
                 :columns="[
                     ['key' => 'factor', 'label' => 'Factor', 'type' => 'number', 'required' => true, 'width' => '160px'],
                     ['key' => 'to_unit', 'label' => 'Unit', 'type' => 'select', 'options' => $targets, 'required' => true, 'width' => '280px'],

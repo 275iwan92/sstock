@@ -122,6 +122,15 @@ class TransactionalRulesTest extends TestCase
         $this->assertSame('approved', $adj->fresh()->status);
     }
 
+    public function test_detail_rows_use_the_two_state_buttons_and_stay_readonly_once_confirmed(): void
+    {
+        $doc = $this->receive();
+        $this->get(route('docs.show', ['receiving', $doc]))->assertOk()->assertSee('rowState&quot;:true', false)->assertSee('readonly&quot;:false', false);
+
+        $this->act($doc, 'confirm', $this->entry, ['supplier_id' => $doc->supplier_id, 'lines' => [['item_id' => $this->itemId, 'qty' => 10, 'unit_cost' => 10]]]);
+        $this->get(route('docs.show', ['receiving', $doc]))->assertOk()->assertSee('readonly&quot;:true', false);   // Confirmed: tabel terkunci, tanpa tombol baris
+    }
+
     public function test_a_group_is_deactivated_not_deleted_and_leaves_the_user_choices(): void
     {
         $admin = User::factory()->administrator()->create();
