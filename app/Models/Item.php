@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -9,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-#[Fillable(['code', 'name', 'category_id', 'unit', 'location', 'unit_price', 'reorder_point', 'reorder_qty', 'lead_time_days', 'is_active'])]
+#[Fillable(['code', 'name', 'category_id', 'unit', 'location', 'expiry_date', 'unit_price', 'reorder_point', 'reorder_qty', 'lead_time_days', 'is_active'])]
 class Item extends Model
 {
     protected function casts(): array
@@ -21,8 +22,19 @@ class Item extends Model
             'stock_qty' => 'float',
             'avg_cost' => 'float',
             'lead_time_days' => 'integer',
+            'expiry_date' => 'date',
             'is_active' => 'boolean',
         ];
+    }
+
+    // Rumus kode: {AWALAN KATEGORI}-{URUT 4 DIGIT}, ditambah -{YYMM KEDALUWARSA} bila barang punya tanggal kedaluwarsa. Urutan berjalan per kategori.
+    public static function nextCode(Category $category, $expiry = null): string
+    {
+        $prefix = $category->code;
+        $last = static::query()->where('code', 'like', $prefix.'-%')->pluck('code')
+            ->map(fn ($c) => (int) (explode('-', $c)[1] ?? 0))->max() ?? 0;
+
+        return sprintf('%s-%04d', $prefix, $last + 1).($expiry ? '-'.Carbon::parse($expiry)->format('ym') : '');
     }
 
     public function category(): BelongsTo

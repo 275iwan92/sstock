@@ -24,22 +24,22 @@ class ItemRequest extends FormRequest
             return [];
         }
 
+        $new = ! $this->route('item');
+
         return [
-            'code' => ['required', 'string', 'max:40', Rule::unique('items', 'code')->ignore($this->route('item'))],
             'name' => ['required', 'string', 'max:150'],
-            'category_id' => ['required', 'exists:categories,id'],
+            // Kode dibuat otomatis; kategori dan tanggal kedaluwarsa (bagian dari kode) hanya diisi saat barang baru.
+            ...($new ? [
+                'category_id' => ['required', Rule::exists('categories', 'id')->where('is_active', true)],
+                'expiry_date' => ['nullable', 'date'],
+            ] : []),
             // Satuan dari master Units yang aktif (satuan lama item yang sudah nonaktif tetap boleh dipertahankan).
             'unit' => ['required', Rule::exists('units', 'code')->where(fn ($q) => $q->where('is_active', true)->orWhere('code', $this->route('item')?->unit))],
-            'location' => ['nullable', 'string', 'max:50'],
+            'location' => ['nullable', Rule::exists('locations', 'code')->where(fn ($q) => $q->where('is_active', true)->orWhere('code', $this->route('item')?->location))],
             'unit_price' => ['required', 'numeric', 'min:0', 'max:999999999999'],
             'reorder_point' => ['required', 'numeric', 'min:0', 'max:999999999'],
             'reorder_qty' => ['required', 'numeric', 'min:0', 'max:999999999'],
             'lead_time_days' => ['required', 'integer', 'min:0', 'max:365'],
         ];
-    }
-
-    protected function prepareForValidation(): void
-    {
-        $this->merge(['code' => strtoupper(trim((string) $this->input('code')))]);
     }
 }

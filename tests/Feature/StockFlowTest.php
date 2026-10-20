@@ -151,9 +151,9 @@ class StockFlowTest extends TestCase
     public function test_supervisor_manages_item_parameters(): void
     {
         $category = Category::create(['code' => 'ATK', 'name' => 'ATK']);
-        $payload = ['code' => 'x-1', 'name' => 'Pen', 'category_id' => $category->id, 'unit' => 'box', 'unit_price' => 1500, 'reorder_point' => 5, 'reorder_qty' => 20, 'lead_time_days' => 4];
+        $payload = ['name' => 'Pen', 'category_id' => $category->id, 'unit' => 'box', 'unit_price' => 1500, 'reorder_point' => 5, 'reorder_qty' => 20, 'lead_time_days' => 4];
         $this->actingAs($this->supervisor)->post(route('items.store'), $payload)->assertRedirect();
-        $item = Item::where('code', 'X-1')->firstOrFail();
+        $item = Item::where('code', 'ATK-0001')->firstOrFail();  // kode otomatis dari awalan kategori
 
         $this->put(route('items.update', $item), ['_action' => 'save', ...$payload, 'reorder_point' => 9])->assertRedirect();
         $this->assertSame(9.0, $item->fresh()->reorder_point);

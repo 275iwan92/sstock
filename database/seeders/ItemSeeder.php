@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Category;
 use App\Models\Item;
+use App\Models\Location;
 use Illuminate\Database\Seeder;
 
 /* REMARK
@@ -47,6 +48,7 @@ class ItemSeeder extends Seeder
         $categories = Category::pluck('id', 'code');
 
         foreach (self::ITEMS as [$code, $name, $cat, $unit, $location, $price, $rop, $roq, $lead]) {
+            Location::firstOrCreate(['code' => $location], ['name' => 'Rak '.$location]);
             Item::updateOrCreate(['code' => $code], [
                 'name' => $name, 'category_id' => $categories[$cat], 'unit' => $unit, 'location' => $location,
                 'unit_price' => $price, 'reorder_point' => $rop, 'reorder_qty' => $roq, 'lead_time_days' => $lead,

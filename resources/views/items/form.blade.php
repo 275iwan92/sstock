@@ -35,10 +35,13 @@
             <x-dl::field.text class="sstock-name" name="name" label="Item Name" :value="$v('name')" required maxlength="150" :error="$e('name')" />
         </x-dl::form.row>
         <x-dl::form.row :cols="4">
-            <x-dl::field.text name="code" label="Item Code" :value="$v('code')" code :case-toggle="false" required :readonly="! $isNew" maxlength="40" :error="$e('code')" tooltip="Unique. Cannot be changed after saving." />
-            <x-dl::field.select name="category_id" label="Category" :options="$categories" :value="$v('category_id')" required :error="$e('category_id')" />
+            <x-dl::field.text name="code" label="Item Code" :value="$item->code" code :case-toggle="false" readonly :error="$e('code')" tooltip="Generated automatically: category prefix, running number, and the expiry year and month if the item expires." />
+            <x-dl::field.select name="category_id" label="Category" :options="$categories" :value="$v('category_id')" required :readonly="! $isNew" :error="$e('category_id')" />
             <x-dl::field.select name="unit" label="Unit" :options="$units" :value="$v('unit')" required :error="$e('unit')" />
-            <x-dl::field.text name="location" label="Rack / Storage Location" :value="$v('location')" maxlength="50" :error="$e('location')" />
+            <x-dl::field.select name="location" label="Rack / Storage Location" :options="$locations" :value="$v('location')" :error="$e('location')" />
+        </x-dl::form.row>
+        <x-dl::form.row :cols="4">
+            <x-dl::field.date name="expiry_date" label="Expiry Date" :value="old('expiry_date', $item->expiry_date?->format('Y-m-d'))" :readonly="! $isNew" :error="$e('expiry_date')" tooltip="Fill only for items that expire. The expiry year and month become part of the item code, so it cannot be changed after saving." />
         </x-dl::form.row>
         <x-dl::divider :label="$sup ? 'Reorder and Price' : 'Reorder'" />
         <x-dl::form.row :cols="4">
@@ -51,4 +54,19 @@
         </x-dl::form.row>
         <p class="dl-note">Peringatan muncul bila stok sama dengan atau di bawah titik pesan ulang (0 = tanpa peringatan). Harga satuan hanya acuan; valuasi memakai rata-rata bergerak harga pembelian.</p>
     </x-dl::form>
+    @if ($isNew)
+        <script>
+            // Pratinjau kode barang: awalan kategori + urutan berikutnya, plus -YYMM bila ada tanggal kedaluwarsa (rumus yang sama dengan Item::nextCode).
+            (() => {
+                const next = @json($nextCodes);
+                const val = name => document.querySelector(`[name="${name}"]`);
+                const show = () => {
+                    const base = next[val('category_id').value] || '', exp = val('expiry_date').value;
+                    val('code').value = base && exp ? `${base}-${exp.slice(2, 4)}${exp.slice(5, 7)}` : base;
+                };
+                ['category_id', 'expiry_date'].forEach(n => val(n).addEventListener('change', show));
+                show();
+            })();
+        </script>
+    @endif
 @endsection

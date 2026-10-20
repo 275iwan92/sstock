@@ -36,7 +36,7 @@ return [
 
     'attributes' => [
         'login' => 'username / e-mail', 'password' => 'password',
-        'code' => 'kode', 'name' => 'nama', 'category_id' => 'kategori', 'unit' => 'satuan', 'location' => 'lokasi',
+        'code' => 'kode', 'name' => 'nama', 'category_id' => 'kategori', 'unit' => 'satuan', 'location' => 'lokasi', 'expiry_date' => 'tanggal kedaluwarsa',
         'unit_price' => 'harga satuan', 'reorder_point' => 'titik pesan ulang', 'reorder_qty' => 'jumlah pesan ulang', 'lead_time_days' => 'lead time',
         'phone' => 'telepon kantor', 'contact_name' => 'nama kontak', 'contact_mobile' => 'HP kontak', 'address' => 'alamat jalan', 'area' => 'wilayah',
         'supplier_id' => 'supplier', 'recipient_id' => 'penerima', 'department_id' => 'departemen', 'group_id' => 'grup', 'role' => 'peran', 'username' => 'username', 'email' => 'e-mail', 'ref_no' => 'no. referensi', 'recipient' => 'penerima', 'department' => 'departemen', 'reason' => 'alasan', 'note' => 'catatan',

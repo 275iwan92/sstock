@@ -64,6 +64,14 @@ final class Indonesian
         'One choice gives district, city / regency, province, country, and the postal code.' => 'Satu pilihan mengisi kecamatan, kota / kabupaten, provinsi, negara, dan kode pos.',
         'Region' => 'Wilayah', 'Postcode' => 'Kode Pos',
 
+        // Master Kategori dan Lokasi Penyimpanan, kedaluwarsa
+        'Categories' => 'Kategori', 'Storage Locations' => 'Lokasi Penyimpanan', 'Storage Location' => 'Lokasi Penyimpanan', 'Category · ' => 'Kategori · ',
+        'Code Prefix' => 'Awalan Kode', 'Category Name' => 'Nama Kategori', 'Exactly 3 letters or digits. Cannot be changed after saving.' => 'Tepat 3 huruf atau angka. Tidak bisa diubah setelah disimpan.',
+        'Location Code' => 'Kode Lokasi', 'Location Name' => 'Nama Lokasi', 'Unique, for example A1-01. Cannot be changed after saving.' => 'Unik, misalnya A1-01. Tidak bisa diubah setelah disimpan.',
+        'All locations' => 'Semua lokasi', 'All categories' => 'Semua kategori', 'Expiry Date' => 'Tanggal Kedaluwarsa', 'Expiry' => 'Kedaluwarsa',
+        'Generated automatically: category prefix, running number, and the expiry year and month if the item expires.' => 'Dibuat otomatis: awalan kategori, nomor urut, dan tahun-bulan kedaluwarsa bila barang kedaluwarsa.',
+        'Fill only for items that expire. The expiry year and month become part of the item code, so it cannot be changed after saving.' => 'Isi hanya untuk barang yang kedaluwarsa. Tahun dan bulannya menjadi bagian kode barang, jadi tidak bisa diubah setelah disimpan.',
+
         // Form Satuan
         'Unit Code' => 'Kode Satuan', 'Unit Name' => 'Nama Satuan', 'Short, lowercase (pcs, box, kg). Cannot be changed after saving.' => 'Singkat, huruf kecil (pcs, box, kg). Tidak bisa diubah setelah disimpan.',
         'Sets the colour of the unit in lists (for example weight units share one colour).' => 'Menentukan warna satuan di daftar (misalnya satuan berat satu warna).',

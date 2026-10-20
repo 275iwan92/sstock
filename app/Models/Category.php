@@ -6,9 +6,14 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['code', 'name'])]
+#[Fillable(['code', 'name', 'is_active'])]
 class Category extends Model
 {
+    protected function casts(): array
+    {
+        return ['is_active' => 'boolean'];
+    }
+
     public function items(): HasMany
     {
         return $this->hasMany(Item::class);

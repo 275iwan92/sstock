@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ItemRequest;
 use App\Models\Category;
 use App\Models\Item;
+use App\Models\Location;
 use App\Models\Unit;
 use App\Support\Palette;
 use Illuminate\Http\JsonResponse;
@@ -24,7 +25,7 @@ class ItemController extends Controller
     {
         $sup = $request->user()->isSupervisor();
         $rows = Item::query()->with('category')->orderBy('code')->get()->map(fn (Item $i) => [
-            'id' => $i->id, 'code' => $i->code, 'name' => $i->name, 'category' => $i->category->name, 'unit' => $i->unit, 'location' => $i->location,
+            'id' => $i->id, 'code' => $i->code, 'name' => $i->name, 'category' => $i->category->name, 'unit' => $i->unit, 'location' => $i->location, 'expiry' => $i->expiry_date?->format('Y-m-d'),
             'stock' => $i->stock_qty, 'rop' => $i->reorder_point, 'roq' => $i->reorder_qty, 'lead' => $i->lead_time_days,
             'price' => $sup ? $i->unit_price : null, 'value' => $sup ? $i->stockValue() : null,
             'hue' => Palette::item($i->category->code, $i->code), 'level' => $i->isBelowReorderPoint() ? 'PESAN ULANG' : 'AMAN', 'tone' => $i->isBelowReorderPoint() ? 'danger' : null, 'active' => $i->is_active,
@@ -35,17 +36,19 @@ class ItemController extends Controller
 
     public function create()
     {
-        return view('items.form', ['item' => new Item(['unit' => 'pcs']), 'categories' => $this->categories(), 'units' => $this->units()]);
+        return view('items.form', ['item' => new Item(['unit' => 'pcs']), 'categories' => $this->categories(), 'units' => $this->units(), 'locations' => $this->locations(), 'nextCodes' => $this->nextCodes()]);
     }
 
     public function show(Item $item)
     {
-        return view('items.form', ['item' => $item, 'categories' => $this->categories(), 'units' => $this->units($item->unit)]);
+        return view('items.form', ['item' => $item, 'categories' => $this->categories(false), 'units' => $this->units($item->unit), 'locations' => $this->locations($item->location), 'nextCodes' => []]);
     }
 
     public function store(ItemRequest $request): RedirectResponse
     {
-        $item = Item::create($request->validated());
+        $data = $request->validated();
+        $data['code'] = Item::nextCode(Category::findOrFail($data['category_id']), $data['expiry_date'] ?? null);
+        $item = Item::create($data);
 
         return redirect()->route('items.show', $item)->with('status', 'Barang disimpan.');
     }
@@ -59,14 +62,27 @@ class ItemController extends Controller
             return redirect()->route('items.show', $item)->with('status', $action === 'activate' ? 'Barang diaktifkan.' : 'Barang dinonaktifkan.');
         }
 
-        $item->update($request->validated());
+        $item->update($request->validated());  // kode, kategori, dan tanggal kedaluwarsa tidak berubah setelah disimpan
 
         return redirect()->route('items.show', $item)->with('status', 'Barang disimpan.');
     }
 
-    private function categories(): array
+    // Kategori aktif untuk barang baru; barang yang sudah ada menampilkan kategorinya sendiri (terkunci, kode memakai awalannya).
+    private function categories(bool $activeOnly = true): array
     {
-        return Category::orderBy('name')->pluck('name', 'id')->all();
+        return Category::query()->when($activeOnly, fn ($q) => $q->where('is_active', true))->orderBy('name')->pluck('name', 'id')->all();
+    }
+
+    // Kode berikutnya (tanpa kedaluwarsa) per kategori, untuk pratinjau di form: [category_id => 'ATK-0008'].
+    private function nextCodes(): array
+    {
+        return Category::where('is_active', true)->get()->mapWithKeys(fn (Category $c) => [$c->id => Item::nextCode($c)])->all();
+    }
+
+    // Pilihan lokasi = master Lokasi aktif (+ lokasi barang ini sendiri bila sudah dinonaktifkan).
+    private function locations(?string $keep = null): array
+    {
+        return Location::query()->where('is_active', true)->orWhere('code', $keep)->orderBy('code')->get()->mapWithKeys(fn (Location $l) => [$l->code => $l->label()])->all();
     }
 
     // Pilihan satuan = master Units aktif (+ satuan item ini sendiri bila sudah dinonaktifkan).

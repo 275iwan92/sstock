@@ -20,7 +20,7 @@ Tempel seluruh teks ini di awal sesi baru, lalu baca juga `CLAUDE.md` bila perlu
 - Perintah: `php artisan test` (61 tes lulus saat serah terima), `vendor\bin\pint --dirty`, `npm run build`, `php artisan sstock:wallpapers`, `php artisan sstock:import-geo`.
 
 ## 3. Yang sudah ada
-- **Master:** Barang (kategori, satuan, rak, harga, Reorder Point/Qty, Lead Time info), Supplier (kontak + wilayah `geo_*` salinan tmerp), Satuan + konversi (`UnitConverter`), Departemen, Penerima (dropdown di dokumen + baris "Penerima baru"/"Departemen baru" membuka dialog tambah cepat `docs/quick-add.blade.php`, dialog dipindah ke `<body>`).
+- **Master:** Barang (kategori, satuan, lokasi, tanggal kedaluwarsa opsional, harga, Reorder Point/Qty, Lead Time info; KODE OTOMATIS `{AWALAN KATEGORI 3 KARAKTER}-{URUT 4 DIGIT}[-{YYMM KEDALUWARSA}]` lewat `Item::nextCode`, kode/kategori/kedaluwarsa terkunci setelah disimpan), Kategori (awalan 3 karakter), Lokasi Penyimpanan (`items.location` menyimpan kodenya), Supplier (kontak + wilayah `geo_*` salinan tmerp), Satuan + konversi (`UnitConverter`), Departemen, Penerima (dropdown di dokumen + baris "Penerima baru"/"Departemen baru" membuka dialog tambah cepat `docs/quick-add.blade.php`, dialog dipindah ke `<body>`).
 - **Transaksi (`docs/{type}`, 4 jenis):** Saldo Awal, Penerimaan (boleh satuan lain, dikonversi), Pengeluaran, Penyesuaian. Siklus: Draf (bisa Hapus, belum ke stok) > Confirm (diproses; tanggal/jam = saat Confirm) > Cancel (lihat aturan 6; stok dibalik lewat baris pembalik `stock_movements.reversal_of`, baris asal tidak diubah). Penyesuaian: Draf > Confirm (diajukan) > Approve Supervisor (baru ke stok) / Reject. Status `cancel_pending` = pengajuan pembatalan menunggu Supervisor (di form tampil lewat tahap persetujuan DevLib). Penerimaan yang dibatalkan membuka lagi pemesanan ulang yang ditutupnya. Departemen + Penerima ada di Penerimaan, Pengeluaran, Penyesuaian (opsional kecuali Penerima di Pengeluaran; nama disalin ke kolom teks dokumen; departemen kosong = bawaan penerima).
 - **Stok:** buku besar `stock_movements` + `items.stock_qty/avg_cost` (moving average) HANYA diubah `App\Services\StockLedger` (`post`, `reverse`, `assertReversible`); siklus dokumen di `App\Services\StockDocuments`.
 - **Laporan** (`x-dl::report`, filter tanggal dari-sampai di semua): Kartu Stok (baris pembalik bertanda "(BATAL)"), Ringkasan Stok, Penerimaan, Pengeluaran (hanya dokumen Confirm / pembatalan-menunggu; draf & dibatalkan tidak dihitung), Opname & Penyesuaian. Harga/nilai hanya untuk Supervisor.
@@ -38,7 +38,7 @@ Tempel seluruh teks ini di awal sesi baru, lalu baca juga `CLAUDE.md` bila perlu
 
 ## 5. Belum dikerjakan
 - Cetak dokumen tunggal (nota Penerimaan/Pengeluaran); yang ada baru cetak laporan.
-- Pemisahan tugas pembuat vs penyetuju, kategori barang hanya lewat seeder, perkiraan tiba pemesanan dari `lead_time_days`, batalkan/ubah pencatatan pemesanan ulang, regenerasi DDL referensi, SMTP produksi.
+- Pemisahan tugas pembuat vs penyetuju, perkiraan tiba pemesanan dari `lead_time_days`, batalkan/ubah pencatatan pemesanan ulang, regenerasi DDL referensi, SMTP produksi.
 - Foto portrait wallpaper (layar HP memakai foto lanskap yang dipotong).
 
 ## 6. Menjalankan di mesin lain

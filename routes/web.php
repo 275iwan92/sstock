@@ -8,10 +8,12 @@
  */
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ItemController;
+use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\RecipientController;
@@ -71,6 +73,15 @@ Route::middleware(['auth', 'module'])->group(function () {
         Route::get('units/{unit}', [UnitController::class, 'show'])->name('units.show');
         Route::put('units/{unit}', [UnitController::class, 'update'])->name('units.update');
         Route::post('units/{unit}/toggle', [UnitController::class, 'toggle'])->name('units.toggle');
+
+        foreach (['categories' => [CategoryController::class, 'category'], 'locations' => [LocationController::class, 'location']] as $path => [$controller, $param]) {
+            Route::get($path, [$controller, 'index'])->name("{$path}.index");
+            Route::get("{$path}/create", [$controller, 'create'])->name("{$path}.create");
+            Route::post($path, [$controller, 'store'])->name("{$path}.store");
+            Route::get("{$path}/{{$param}}", [$controller, 'show'])->name("{$path}.show");
+            Route::put("{$path}/{{$param}}", [$controller, 'update'])->name("{$path}.update");
+            Route::post("{$path}/{{$param}}/toggle", [$controller, 'toggle'])->name("{$path}.toggle");
+        }
     });
     Route::get('items', [ItemController::class, 'index'])->name('items.index');
     Route::get('items/{item}', [ItemController::class, 'show'])->name('items.show');

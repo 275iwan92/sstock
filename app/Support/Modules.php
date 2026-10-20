@@ -33,6 +33,8 @@ final class Modules
             'DEP' => ['MST', 'Departemen', 'fa-solid fa-building', 'grid', 'departments.index', 'entry', ['departments.']],
             'RCP' => ['MST', 'Penerima', 'fa-solid fa-user-tag', 'grid', 'recipients.index', 'entry', ['recipients.']],
             'UOM' => ['MST', 'Satuan', 'fa-solid fa-ruler', 'grid', 'units.index', 'supervisor', ['units.']],
+            'CAT' => ['MST', 'Kategori', 'fa-solid fa-tags', 'grid', 'categories.index', 'supervisor', ['categories.']],
+            'LOC' => ['MST', 'Lokasi Penyimpanan', 'fa-solid fa-warehouse', 'grid', 'locations.index', 'supervisor', ['locations.']],
             'OPN' => ['TRX', 'Saldo Awal', 'fa-solid fa-flag-checkered', 'grid', ['docs.index', 'opening'], 'supervisor', []],
             'RCV' => ['TRX', 'Penerimaan Barang', 'fa-solid fa-truck-ramp-box', 'grid', ['docs.index', 'receiving'], 'entry', []],
             'ISS' => ['TRX', 'Pengeluaran Barang', 'fa-solid fa-dolly', 'grid', ['docs.index', 'issuance'], 'entry', []],

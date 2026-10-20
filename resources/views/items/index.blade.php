@@ -16,6 +16,7 @@
             ['key' => 'category', 'label' => 'Category'],
             ['key' => 'unit', 'label' => 'Unit'],
             ['key' => 'location', 'label' => 'Location'],
+            ['key' => 'expiry', 'label' => 'Expiry'],
             ['key' => 'stock', 'label' => 'Stock', 'type' => 'number', 'decimals' => 2],
             ['key' => 'rop', 'label' => 'Reorder Point', 'type' => 'number', 'decimals' => 2],
             ['key' => 'roq', 'label' => 'Reorder Qty', 'type' => 'number', 'decimals' => 2, 'visible' => false],
