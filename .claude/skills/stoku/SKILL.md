@@ -64,6 +64,14 @@ Berlaku untuk SEMUA form dokumen stok (Saldo Awal, Penerimaan, Pengeluaran, Peny
 
 **Tes wajib** di `tests/Feature/DocumentLifecycleTest.php` (dan `StockFlowTest.php`) untuk setiap jenis dokumen (Confirm tidak mengubah stok sebelum waktunya, Cancel ditolak saat stok kurang, pengajuan lalu persetujuan).
 
+## Selisih dengan aturan transaksional pemilik
+Aturan umum mode DRAFT/CONFIRMED/CANCELLED, tombol, default data, print MODE, dan authority bertingkat ada di skill `devlib` (bagian "Data transaksional: mode dan tombol"). Di sstock tampilannya Indonesia (Draf, Terkonfirmasi, Dibatalkan). Selisih yang diketahui per 2026-10-20 (dicek dari kode, belum diselesaikan; jangan ditutup diam-diam, putuskan bersama pemilik):
+- **PRINT:** aturan: ada di DRAFT dan mencetak tulisan MODE. sstock: tombol print DISEMBUNYIKAN di `docs/form.blade.php` (`:hide`), cetak dokumen tunggal belum ada.
+- **CANCEL:** aturan: bila data tidak cocok, ADJUSTMENT pembalik dibuat OTOMATIS. sstock: pembalikan lewat baris pembalik buku besar (`reversal_of`), dan bila stok tidak cukup pembatalan DITOLAK sampai pengguna membuat Stock Adjustment sendiri (bukan otomatis).
+- **AUTHORITY:** aturan: bisa bertingkat. sstock: satu tingkat (`approval-levels` 1, Supervisor).
+- **Default data:** aturan: isian terisi bawaan, tidak kosong. Belum diaudit per form.
+- Sesuai: Draf hanya untuk transaksi, master hanya Aktif/Nonaktif, record batal tetap tersimpan, Confirm membuat readonly.
+
 ## Gaya grid
 - **Grid transaksi** (dokumen stok, dan grid transaksi baru lainnya): POLOS. Kolom terdepan = nomor dokumen, hanya tebal, TANPA kotak/avatar warna (`'type' => 'identity', 'avatar' => false`, tanpa `box`/`hue`). WAJIB ada kolom Status bertipe `badge` dengan `tones` (hijau Terkonfirmasi/Disetujui, abu Draf, kuning menunggu, merah Dibatalkan/Ditolak); itu satu-satunya warna di baris. Contoh: `resources/views/docs/index.blade.php`.
 - **Grid master** (barang, kategori, lokasi, supplier, satuan, departemen, penerima, pengguna, dst.): kolom terdepan memakai KOTAK warna per baris berisi inisial, dengan nama tebal dan kode kecil di bawahnya: `['key' => 'name', 'label' => '<Nama>', 'type' => 'identity', 'code' => '<kolom kode>', 'box' => true]`. Tambahkan `'hue' => 'hue'` bila warnanya bermakna dan controller mengirim kolom `hue` dari `App\Support\Palette` (barang menurut kategori, satuan menurut jenis); tanpa `hue` warna dipilih otomatis. Contoh: `resources/views/items/index.blade.php`, `suppliers/index.blade.php`. Grid master BARU wajib mengikuti pola ini, bukan `avatar => false`.
