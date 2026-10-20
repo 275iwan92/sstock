@@ -338,7 +338,7 @@
             <li>Isi <b>Alasan penyesuaian / opname</b> (wajib).</li>
             <li>Tekan <b>+ Tambah Barang</b>, pilih barang: <b>Jml Sistem</b> terisi otomatis. Isi <b>Jml Hitung (fisik)</b>; <b>Selisih</b> dihitung otomatis (plus = stok bertambah, minus = berkurang).</li>
             <li><b>Simpan</b>, lalu <b>Konfirmasi</b>: dokumen menjadi <b>Menunggu Persetujuan</b> (stok belum berubah).</li>
-            <li>Supervisor menekan <b>Setujui</b> (stok diperbarui, status <b>Disetujui</b>) atau <b>Tolak</b> (stok tidak berubah, status <b>Ditolak</b>). Bila perusahaan memakai <b>persetujuan bertingkat</b>, dokumen tetap <b>Menunggu Persetujuan</b> sampai semua tingkat menyetujui (mis. Supervisor lalu Administrator); stok baru berubah setelah tingkat terakhir. Tolak di tingkat mana pun menghentikan dokumen. Riwayat mencatat tiap tingkat.</li>
+            <li>Supervisor menekan <b>Setujui</b> (stok diperbarui, status <b>Disetujui</b>) atau <b>Tolak</b> (stok tidak berubah, status <b>Ditolak</b>).</li>
         </ol>
         @include('help.diagram', ['name' => 'ug-penyesuaian', 'caption' => 'Alur Penyesuaian Stok.'])
         <div class="g-warn"><b>Setujui ditolak bila stok barang berubah</b> sejak dihitung (ada penerimaan / pengeluaran baru). Tolak dokumennya lalu hitung ulang di dokumen baru.</div>

@@ -31,7 +31,7 @@ Bahasa kerja dengan pemilik: Indonesia, ringkas. Daftar fitur, akun uji, dan hal
 **Kondisi kode terhadap aturan di atas (2026-10-20):**
 - DRAFT > CONFIRM > CANCEL (+ pengajuan batal), DELETE hanya draf, read-only setelah Confirm, pembalikan stok otomatis (baris `reversal_of`), semua master Activate/Deactivate (termasuk Grup).
 - **PRINT** ada di semua mode form dokumen stok (`docs.print`, kelas `App\Support\StockDocumentPrint` di atas `x-dl::print-doc`); cetakan memuat MODE (stempel + tanda air). Dokumen jenis baru wajib memakai pola ini.
-- **Authority bertingkat**: `config('sstock.approval.<jenis>')` = daftar peran minimal per tingkat (bawaan satu tingkat; `SSTOCK_APPROVAL_ADJUSTMENT=supervisor,administrator` = dua tingkat); tiap keputusan = baris `stock_document_approvals`; stok baru diposting setelah tingkat terakhir. Baru dipakai Penyesuaian Stok; pengajuan pembatalan tetap satu tingkat (Supervisor).
+- **Authority bertingkat TIDAK dipakai di stok** (keputusan pemilik 2026-10-20: bertingkat hanya di pembelian dan penjualan; stok untuk sementara satu tingkat, Supervisor). Jangan menambahkannya lagi tanpa diminta.
 - **Default data**: dokumen baru berisi baris pertama dengan jumlah 1 dan alasan penyesuaian bawaan; supplier / penerima sengaja dibiarkan dipilih pengguna.
 - **Pembalik otomatis**: Cancel dokumen yang sudah diproses membuat dokumen ADJUSTMENT (approved, `reversal_of_document_id`) di `StockDocuments::recordReversal`; baris buku besar tetap `reversal_of` di dokumen asal.
 - Keputusan: Pemesanan Ulang (`reorder_orders`) adalah catatan satu klik, bukan dokumen transaksi, jadi tidak memakai siklus DRAFT/CONFIRMED; ditutup otomatis oleh Penerimaan yang dikonfirmasi.

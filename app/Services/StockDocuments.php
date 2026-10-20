@@ -11,7 +11,6 @@ use App\Models\ReorderOrder;
 use App\Models\StockDocument;
 use App\Models\StockMovement;
 use App\Models\User;
-use App\Support\Modules;
 use App\Support\UnitConverter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -216,50 +215,23 @@ final class StockDocuments
         $doc->update(['status' => 'approval']);
     }
 
-    /** Peran paling rendah yang menyetujui tiap tingkat (config sstock.approval.adjustment), berurutan. */
-    public function approvalRoles(StockDocument $doc): array
-    {
-        return config('sstock.approval.'.$doc->type->slug()) ?: ['supervisor'];
-    }
-
-    /** Tingkat berikutnya yang menunggu persetujuan (1 = pertama); lebih besar dari jumlah tingkat bila semuanya sudah menyetujui. */
-    public function nextLevel(StockDocument $doc): int
-    {
-        return $doc->approvals()->where('decision', 'approved')->count() + 1;
-    }
-
-    public function canApprove(StockDocument $doc, User $user): bool
-    {
-        $role = $this->approvalRoles($doc)[$this->nextLevel($doc) - 1] ?? null;
-
-        return $role !== null && Modules::levelAllows($role, Modules::levelOf($user));
-    }
-
-    /** Menyetujui tingkat berikutnya. Setelah tingkat terakhir menyetujui baru diposting ke stok dan status menjadi approved. */
     public function approve(StockDocument $doc, User $approver): void
     {
         $this->assertStatus($doc, ['approval'], StockDocumentType::Adjustment);
-        abort_unless($this->canApprove($doc, $approver), 403, 'Tingkat persetujuan ini membutuhkan peran yang lebih tinggi.');
         DB::transaction(function () use ($doc, $approver) {
             foreach ($doc->lines()->with('item')->get() as $line) {
                 if (abs($line->item->stock_qty - (float) $line->system_qty) > 0.0005) {
                     throw ValidationException::withMessages(['lines' => "Stok {$line->item->code} berubah sejak penghitungan (sistem {$line->system_qty}, sekarang {$line->item->stock_qty}). Tolak dokumen ini lalu hitung ulang."]);
                 }
             }
-            $level = $this->nextLevel($doc);
-            $doc->approvals()->create(['level' => $level, 'user_id' => $approver->id, 'decision' => 'approved', 'decided_at' => now()]);
-            if ($level >= count($this->approvalRoles($doc))) {
-                $this->ledger->post($doc, $approver, now());
-                $doc->update(['status' => 'approved', 'approved_by' => $approver->id, 'approved_at' => now()]);
-            }
+            $this->ledger->post($doc, $approver, now());
+            $doc->update(['status' => 'approved', 'approved_by' => $approver->id, 'approved_at' => now()]);
         });
     }
 
     public function reject(StockDocument $doc, User $approver): void
     {
         $this->assertStatus($doc, ['approval'], StockDocumentType::Adjustment);
-        abort_unless($this->canApprove($doc, $approver), 403, 'Tingkat persetujuan ini membutuhkan peran yang lebih tinggi.');
-        $doc->approvals()->create(['level' => $this->nextLevel($doc), 'user_id' => $approver->id, 'decision' => 'rejected', 'decided_at' => now()]);
         $doc->update(['status' => 'rejected', 'approved_by' => $approver->id, 'approved_at' => now()]);
     }
 

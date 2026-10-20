@@ -89,45 +89,13 @@ class TransactionalRulesTest extends TestCase
         $this->get(route('docs.print', ['receiving', $adj]))->assertNotFound();
     }
 
-    public function test_adjustment_approval_is_a_single_level_by_default(): void
+    public function test_adjustment_is_approved_by_a_supervisor_only(): void
     {
         $doc = $this->adjustment();
         $this->act($doc, 'approve', $this->sup)->assertRedirect();
 
         $this->assertSame('approved', $doc->fresh()->status);
-        $this->assertSame(1, $doc->approvals()->count());
-    }
-
-    public function test_authority_can_be_multi_level_and_stock_moves_only_after_the_last_level(): void
-    {
-        config(['sstock.approval.adjustment' => ['supervisor', 'administrator']]);
-        $admin = User::factory()->administrator()->create();
-        $doc = $this->adjustment();
-
-        $this->act($doc, 'approve', $this->sup)->assertRedirect();                       // tingkat 1
-        $this->assertSame('approval', $doc->fresh()->status);
-        $this->assertSame(0.0, $this->item()->stock_qty);
-
-        $this->act($doc, 'approve', $this->sup)->assertForbidden();                        // tingkat 2 butuh Administrator
-        $this->get(route('docs.show', ['adjustment', $doc]))->assertOk();
-
-        $this->act($doc, 'approve', $admin)->assertRedirect();                             // tingkat 2
-        $this->assertSame(['approved', 4.0], [$doc->fresh()->status, $this->item()->stock_qty]);
-        $this->assertSame([1, 2], $doc->approvals()->pluck('level')->all());
-        $this->actingAs($admin)->get(route('docs.show', ['adjustment', $doc]))->assertOk()->assertSee('tingkat 2');
-    }
-
-    public function test_a_reject_at_any_level_stops_the_document(): void
-    {
-        config(['sstock.approval.adjustment' => ['supervisor', 'administrator']]);
-        $doc = $this->adjustment();
-
-        $this->act($doc, 'approve', $this->sup);
-        $this->act($doc, 'reject', User::factory()->administrator()->create());
-
-        $this->assertSame('rejected', $doc->fresh()->status);
-        $this->assertSame(0.0, $this->item()->stock_qty);
-        $this->assertSame(['approved', 'rejected'], $doc->approvals()->pluck('decision')->all());
+        $this->act($doc, 'approve', $this->entry)->assertForbidden();
     }
 
     public function test_new_documents_open_with_default_values(): void

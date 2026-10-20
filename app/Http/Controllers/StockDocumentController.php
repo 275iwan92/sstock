@@ -207,11 +207,7 @@ class StockDocumentController extends Controller
                 $reversal = StockDocument::query()->where('reversal_of_document_id', $doc->id)->value('doc_no');
                 $log[] = ['at' => $doc->cancelled_at->format('Y-m-d H:i:s'), 'by' => $doc->canceller->name, 'action' => 'Dibatalkan', 'note' => $doc->cancel_reason.($reversal ? " (dokumen pembalik otomatis: {$reversal})" : '')];
             }
-            $decisions = $doc->approvals()->with('user')->get();
-            foreach ($decisions as $d) {
-                $log[] = ['at' => $d->decided_at->format('Y-m-d H:i:s'), 'by' => $d->user->name, 'action' => ($d->decision === 'approved' ? 'Disetujui' : 'Ditolak').' (tingkat '.$d->level.')', 'note' => null];
-            }
-            if ($decisions->isEmpty() && (in_array($doc->status, ['approved', 'rejected'], true) || ($doc->status === 'cancelled' && $doc->approved_at))) {
+            if (in_array($doc->status, ['approved', 'rejected'], true) || ($doc->status === 'cancelled' && $doc->approved_at)) {
                 $log[] = ['at' => $doc->approved_at->format('Y-m-d H:i:s'), 'by' => $doc->approver->name, 'action' => self::STATUS[$doc->status === 'cancelled' ? 'approved' : $doc->status], 'note' => null];
             }
             if ($doc->confirmed_at) {
@@ -220,14 +216,7 @@ class StockDocumentController extends Controller
             $log[] = ['at' => $doc->created_at->format('Y-m-d H:i:s'), 'by' => $doc->creator->name, 'action' => 'Dibuat', 'note' => null];
         }
 
-        // Authority: pengajuan pembatalan satu tingkat (Supervisor); persetujuan Penyesuaian bertingkat menurut config sstock.approval.
-        $multi = $t === StockDocumentType::Adjustment && $doc->exists && $doc->status !== 'cancel_pending';
-        $user = auth()->user();
-
         return [
-            'approvalLevels' => $t === StockDocumentType::Adjustment ? ($doc->exists ? count($this->documents->approvalRoles($doc)) : 1) : ($doc->status === 'cancel_pending' ? 1 : 0),
-            'approvalAt' => $multi ? $this->documents->nextLevel($doc) : 1,
-            'canApprove' => $multi ? $this->documents->canApprove($doc, $user) : $user->isSupervisor(),
             't' => $t, 'doc' => $doc, 'log' => $log, 'cancelProblem' => $doc->exists ? $this->documents->cancelProblem($doc) : null,
             'recipients' => Recipient::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id')->all(),
             'departments' => Department::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id')->all(),
