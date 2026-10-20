@@ -71,6 +71,13 @@ HELP (profil > "Help & support", alamat lewat prop `help-url` pada `x-dl::layer-
 - keputusan beserta alasannya. Ditulis setelah modulnya stabil.
 - Ini satu-satunya pengecualian aturan "semua tampilan Indonesia": TG tidak lewat kamus `Indonesian` dan tidak punya versi Indonesia.
 
+**Flow = GAMBAR.** Setiap flow (alur data, alur sistem, workflow/siklus status, alur pemakaian di UG) dibuat sebagai diagram bergambar, bukan daftar teks atau tabel:
+- Format **SVG** (tajam di semua ukuran, tanpa pustaka/CDN). Sumber disimpan di `resources/help/diagrams/*.svg`, disisipkan ke halaman HELP lewat Blade (inline atau `<img src="data:image/svg+xml;base64,...">`), BUKAN berkas di `public/`, supaya diagram TG ikut terlindung hak akses Administrator.
+- Bahasa label mengikuti dokumennya: diagram TG English, diagram UG Indonesia. Warna dari token tema (terang/gelap terbaca), teks tidak terpotong, lebar menyesuaikan layar sempit (`viewBox`, `max-width: 100%`).
+- Tiap gambar punya judul/keterangan dan `alt` yang menjelaskan alurnya. Alur harus cocok dengan kode (status, tombol, aturan Cancel, nama tabel); periksa terhadap `StockDocuments`/migrasi, jangan menebak.
+- Contoh wajib: siklus dokumen (Draf > Confirm > pengajuan batal > Batal, penyesuaian dengan Approve/Reject), alur stok (dokumen > StockLedger > stock_movements > items), hubungan tabel (ERD), alur login dan hak akses.
+- Gambar diperbarui di perubahan yang sama dengan kodenya.
+
 **Akses:** item Help tampil untuk semua peran; UG terbuka untuk semua yang sudah login, tab/tautan TG hanya untuk Administrator. TG dijaga di server (middleware `administrator` / `EnsureAdministrator`, 403 untuk URL langsung); menyembunyikan tautan saja TIDAK cukup. UG hanya menampilkan modul yang dapat diakses pengguna itu (asumsi, ikut `Menu::modules`).
 **Penyimpanan:** jangan taruh berkas HELP di `public/` (terbuka tanpa login); simpan di `resources/` dan sajikan lewat controller dengan rute di dalam grup `auth`.
 **Status:** TG sudah ada (`resources/views/help/technical-guide.blade.php`, rute `help.technical-guide` di grup administrator, tes `TechnicalGuideTest`); saat ini Help & support disembunyikan bagi non-Administrator. UG BELUM ada: saat UG dibuat, tampilkan Help untuk semua peran dan pisahkan UG (semua) dari TG (Administrator saja).
