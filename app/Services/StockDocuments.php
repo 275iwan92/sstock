@@ -60,10 +60,10 @@ final class StockDocuments
     public function confirm(StockDocument $doc, User $user): array
     {
         abort_if($doc->type === StockDocumentType::Adjustment, 422, 'Penyesuaian diajukan lalu disetujui Supervisor.');
-        $this->assertStatus($doc, ['draft']);
-        abort_if($doc->lines()->doesntExist(), 422, 'Tambahkan minimal satu baris sebelum Confirm.');
 
         return DB::transaction(function () use ($doc, $user) {
+            $this->lockAndAssert($doc, ['draft']);
+            abort_if($doc->lines()->doesntExist(), 422, 'Tambahkan minimal satu baris sebelum Confirm.');
             if ($doc->type !== StockDocumentType::Opening) {
                 $doc->update(['doc_at' => now()]);
             }
@@ -88,30 +88,33 @@ final class StockDocuments
     public function cancel(StockDocument $doc, User $user, string $reason): string
     {
         $reason = mb_substr(trim($reason), 0, 255);
-        $this->assertStatus($doc, ['confirmed', 'approved', 'approval', 'cancel_pending']);
-        abort_if($doc->reversal_of_document_id, 422, 'Dokumen pembalik otomatis tidak bisa dibatalkan.');
 
-        if ($doc->status === 'cancel_pending') {
-            $doc->update($this->backToProcessed($doc) + ['cancel_reason' => null, 'cancel_requested_by' => null, 'cancel_requested_at' => null]);
+        return DB::transaction(function () use ($doc, $user, $reason) {
+            $this->lockAndAssert($doc, ['confirmed', 'approved', 'approval', 'cancel_pending']);
+            abort_if($doc->reversal_of_document_id, 422, 'Dokumen pembalik otomatis tidak bisa dibatalkan.');
 
-            return 'withdrawn';
-        }
-        abort_if(mb_strlen($reason) < 3, 422, 'Isi alasan pembatalan (minimal 3 huruf).');
+            if ($doc->status === 'cancel_pending') {
+                $doc->update($this->backToProcessed($doc) + ['cancel_reason' => null, 'cancel_requested_by' => null, 'cancel_requested_at' => null]);
 
-        if ($doc->status === 'approval') {
-            $this->finishCancel($doc, $user, $reason);
+                return 'withdrawn';
+            }
+            abort_if(mb_strlen($reason) < 3, 422, 'Isi alasan pembatalan (minimal 3 huruf).');
 
-            return 'cancelled';
-        }
-        $this->ledger->assertReversible($doc);
-        if ($user->isSupervisor()) {
-            $this->finishCancel($doc, $user, $reason);
+            if ($doc->status === 'approval') {
+                $this->finishCancel($doc, $user, $reason);
 
-            return 'cancelled';
-        }
-        $doc->update(['status' => 'cancel_pending', 'cancel_reason' => $reason, 'cancel_requested_by' => $user->id, 'cancel_requested_at' => now()]);
+                return 'cancelled';
+            }
+            $this->ledger->assertReversible($doc);
+            if ($user->isSupervisor()) {
+                $this->finishCancel($doc, $user, $reason);
 
-        return 'requested';
+                return 'cancelled';
+            }
+            $doc->update(['status' => 'cancel_pending', 'cancel_reason' => $reason, 'cancel_requested_by' => $user->id, 'cancel_requested_at' => now()]);
+
+            return 'requested';
+        });
     }
 
     /** Hasil hitungan "apakah stok masih cukup untuk menarik dokumen ini kembali": pesan masalahnya, atau null bila bisa dibatalkan. */
@@ -132,15 +135,19 @@ final class StockDocuments
     // Supervisor menyetujui pengajuan pembatalan: stok dibalik (diperiksa ulang), dokumen dibatalkan.
     public function approveCancel(StockDocument $doc, User $approver): void
     {
-        $this->assertStatus($doc, ['cancel_pending']);
-        $this->finishCancel($doc, $approver, (string) $doc->cancel_reason);
+        DB::transaction(function () use ($doc, $approver) {
+            $this->lockAndAssert($doc, ['cancel_pending']);
+            $this->finishCancel($doc, $approver, (string) $doc->cancel_reason);
+        });
     }
 
     // Supervisor menolak pengajuan: dokumen kembali berstatus sebelumnya, stok tidak berubah.
     public function rejectCancel(StockDocument $doc): void
     {
-        $this->assertStatus($doc, ['cancel_pending']);
-        $doc->update($this->backToProcessed($doc) + ['cancel_reason' => null, 'cancel_requested_by' => null, 'cancel_requested_at' => null]);
+        DB::transaction(function () use ($doc) {
+            $this->lockAndAssert($doc, ['cancel_pending']);
+            $doc->update($this->backToProcessed($doc) + ['cancel_reason' => null, 'cancel_requested_by' => null, 'cancel_requested_at' => null]);
+        });
     }
 
     private function backToProcessed(StockDocument $doc): array
@@ -197,9 +204,9 @@ final class StockDocuments
     // Hanya draf yang boleh diubah (semua jenis).
     public function update(StockDocument $doc, array $header, array $lines): void
     {
-        $this->assertStatus($doc, ['draft']);
         $header = $this->withNames($doc->type, $header);
         DB::transaction(function () use ($doc, $header, $lines) {
+            $this->lockAndAssert($doc, ['draft']);
             $old = $doc->lines()->pluck('item_id')->all();
             $doc->update($header);
             $doc->lines()->delete();
@@ -210,15 +217,17 @@ final class StockDocuments
 
     public function submit(StockDocument $doc): void
     {
-        $this->assertStatus($doc, ['draft'], StockDocumentType::Adjustment);
-        abort_if($doc->lines()->doesntExist(), 422, 'Tambahkan minimal satu baris sebelum konfirmasi.');
-        $doc->update(['status' => 'approval']);
+        DB::transaction(function () use ($doc) {
+            $this->lockAndAssert($doc, ['draft'], StockDocumentType::Adjustment);
+            abort_if($doc->lines()->doesntExist(), 422, 'Tambahkan minimal satu baris sebelum konfirmasi.');
+            $doc->update(['status' => 'approval']);
+        });
     }
 
     public function approve(StockDocument $doc, User $approver): void
     {
-        $this->assertStatus($doc, ['approval'], StockDocumentType::Adjustment);
         DB::transaction(function () use ($doc, $approver) {
+            $this->lockAndAssert($doc, ['approval'], StockDocumentType::Adjustment);
             foreach ($doc->lines()->with('item')->get() as $line) {
                 if (abs($line->item->stock_qty - (float) $line->system_qty) > 0.0005) {
                     throw ValidationException::withMessages(['lines' => "Stok {$line->item->code} berubah sejak penghitungan (sistem {$line->system_qty}, sekarang {$line->item->stock_qty}). Tolak dokumen ini lalu hitung ulang."]);
@@ -231,16 +240,20 @@ final class StockDocuments
 
     public function reject(StockDocument $doc, User $approver): void
     {
-        $this->assertStatus($doc, ['approval'], StockDocumentType::Adjustment);
-        $doc->update(['status' => 'rejected', 'approved_by' => $approver->id, 'approved_at' => now()]);
+        DB::transaction(function () use ($doc, $approver) {
+            $this->lockAndAssert($doc, ['approval'], StockDocumentType::Adjustment);
+            $doc->update(['status' => 'rejected', 'approved_by' => $approver->id, 'approved_at' => now()]);
+        });
     }
 
     public function delete(StockDocument $doc): void
     {
-        $this->assertStatus($doc, ['draft']);
-        $old = $doc->lines()->pluck('item_id')->all();
-        $doc->delete();
-        $this->purgeUnusedBatches($old);
+        DB::transaction(function () use ($doc) {
+            $this->lockAndAssert($doc, ['draft']);
+            $old = $doc->lines()->pluck('item_id')->all();
+            $doc->delete();
+            $this->purgeUnusedBatches($old);
+        });
     }
 
     // Batch berkedaluwarsa yang dibuat oleh draf lalu tidak jadi dipakai (tanpa stok, baris, atau pergerakan) dibuang supaya daftar batch tidak berisi sisa.
@@ -278,6 +291,13 @@ final class StockDocuments
         }
 
         return array_values(array_unique($out));
+    }
+
+    // Dipanggil di awal transaksi: baca ulang baris dokumen dengan kunci (permintaan lain menunggu) lalu periksa status pada data terbaru, bukan model yang dimuat sebelum transaksi.
+    private function lockAndAssert(StockDocument $doc, array $allowed, ?StockDocumentType $only = null): void
+    {
+        $doc->setRawAttributes(StockDocument::query()->lockForUpdate()->findOrFail($doc->id)->getAttributes(), true);
+        $this->assertStatus($doc, $allowed, $only);
     }
 
     private function assertStatus(StockDocument $doc, array $allowed, ?StockDocumentType $only = null): void

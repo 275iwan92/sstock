@@ -31,6 +31,7 @@ final class StockLedger
         $touched = [];
 
         DB::transaction(function () use ($doc, $user, $movedAt, &$touched) {
+            $this->lockItems($doc);
             foreach ($doc->lines()->orderBy('id')->get() as $line) {
                 $item = Item::query()->lockForUpdate()->findOrFail($line->item_id);
                 $signed = $doc->type->signed((float) $line->qty);
@@ -92,7 +93,8 @@ final class StockLedger
     {
         return DB::transaction(function () use ($doc, $user) {
             $made = [];
-            $moves = StockMovement::query()->where('stock_document_id', $doc->id)->whereNull('reversal_of')->orderByDesc('id')->get();
+            $this->lockItems($doc);
+            $moves = $this->unreversed($doc)->get();
             foreach ($moves as $m) {
                 $item = Item::query()->lockForUpdate()->findOrFail($m->item_id);
                 $signed = -(float) $m->qty;
@@ -121,7 +123,7 @@ final class StockLedger
     public function assertReversible(StockDocument $doc): void
     {
         $stock = [];
-        foreach (StockMovement::query()->where('stock_document_id', $doc->id)->whereNull('reversal_of')->orderByDesc('id')->get() as $m) {
+        foreach ($this->unreversed($doc)->get() as $m) {
             $item = Item::query()->findOrFail($m->item_id);
             $signed = -(float) $m->qty;
             $stock[$item->id] = round(($stock[$item->id] ?? $item->stock_qty) + $signed, 3);
@@ -129,6 +131,19 @@ final class StockLedger
                 throw $this->shortage($item, $signed);
             }
         }
+    }
+
+    // Movement asal dokumen yang belum punya pembalik (pembatalan kedua tidak membalik ulang).
+    private function unreversed(StockDocument $doc)
+    {
+        return StockMovement::query()->where('stock_document_id', $doc->id)->whereNull('reversal_of')
+            ->whereNotExists(fn ($q) => $q->from('stock_movements as r')->whereColumn('r.reversal_of', 'stock_movements.id'))->orderByDesc('id');
+    }
+
+    // Semua item dokumen dikunci sekaligus urut id: dokumen yang bersamaan memegang item yang sama dalam urutan sama, jadi tidak saling menunggu melingkar.
+    private function lockItems(StockDocument $doc): void
+    {
+        Item::query()->whereIn('id', $doc->lines()->pluck('item_id'))->orderBy('id')->lockForUpdate()->get();
     }
 
     private function shortage(Item $item, float $signed): ValidationException
