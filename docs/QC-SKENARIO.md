@@ -255,7 +255,7 @@ Peran: Administrator.
 | PGN-03 | Buat pengguna dengan password 5 karakter. | Ditolak: password minimal 8 karakter. | | |
 | PGN-04 | Buat pengguna dengan username yang sudah ada (`entry`). | Ditolak: username harus unik. | | |
 | PGN-05 | Keluar, masuk sebagai `qc1`. | Berhasil masuk dengan hak Data Entry. | | |
-| PGN-06 | Sebagai `admin`, nonaktifkan `qc1`. Keluar, coba masuk sebagai `qc1`. | Tidak bisa masuk. Riwayat transaksinya tetap ada. | | |
+| PGN-06 | Sebagai `admin`, nonaktifkan `qc1`. Keluar, coba masuk sebagai `qc1`. | Tidak bisa masuk. Riwayat transaksinya tetap ada. Bila `qc1` sedang masuk di browser lain, klik berikutnya di sana membuatnya keluar. | | |
 | PGN-07 | Sebagai `admin`, buka akun `admin` sendiri. Coba nonaktifkan dan ubah perannya. | Ditolak: akun sendiri tidak bisa dinonaktifkan atau diubah perannya. | | |
 | PGN-08 | Buka Grup. + Data Baru: kode `QCRO`, nama `Uji Baca Saja`. Pada tabel Akses per modul pilih RO untuk Barang, dan pastikan modul lain Tidak ada. Simpan. | Grup tersimpan. | | |
 | PGN-09 | Aktifkan `qc1` lagi, ubah Grup-nya ke `QCRO`. Masuk sebagai `qc1`. | Menu hanya Barang. Barang bisa dibuka tetapi menyimpan perubahan ditolak dengan pesan akses hanya-baca (RO). | | |
@@ -279,7 +279,7 @@ Peran: Administrator.
 
 ## 14. Pengaturan ulang data contoh (RST)
 
-Kasus ini **menghapus semua data**. Kerjakan terakhir.
+Kasus ini **menghapus semua data**. Kerjakan terakhir. Layar Data Contoh hanya berfungsi bila `.env` berisi `SSTOCK_SAMPLE_REFRESH=true` (lihat README Langkah 4).
 
 | No | Langkah | Hasil yang diharapkan | Lulus/Gagal | Catatan |
 |---|---|---|---|---|

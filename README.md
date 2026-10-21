@@ -128,6 +128,16 @@ Artinya:
 - Nilai `DB_PASSWORD` di `.env.example` hanya contoh untuk mesin lokal. Jangan dipakai di server sungguhan.
 - Jangan menyimpan atau mengirim `.env` Anda ke siapa pun. Berkas ini tidak ikut Git.
 
+Bawaan `.env.example` aman untuk server sungguhan (`APP_ENV=production`, `APP_DEBUG=false`, tombol Segarkan data contoh mati). Untuk mesin uji Anda, ubah tiga baris ini di `.env`:
+
+```dotenv
+APP_ENV=local
+APP_DEBUG=true
+SSTOCK_SAMPLE_REFRESH=true
+```
+
+`APP_DEBUG=true` membuat halaman galat menampilkan penjelasan teknis (berguna untuk laporan). `SSTOCK_SAMPLE_REFRESH=true` menyalakan layar Data Contoh ([bagian 5](#5-mengatur-ulang-data)). Jangan memakai ketiganya di server sungguhan.
+
 Bila Anda memakai `php artisan serve` (bukan Herd), ubah juga `APP_URL`:
 
 ```dotenv
@@ -197,7 +207,7 @@ Ada satu perintah yang menjalankan langkah 2, 3 (hanya bila `.env` belum ada), 5
 composer setup
 ```
 
-Perintah ini tidak bertanya apa pun. Ia memakai `DB_ADMIN_USERNAME` dan `DB_ADMIN_PASSWORD` dari `.env`. Jadi ia cocok hanya bila `root` MySQL Anda tanpa sandi, atau bila Anda sudah mengisi `.env` sebelum menjalankannya. Untuk pemula, ikuti langkah satu per satu di atas agar pesan galat mudah dibaca.
+Perintah ini tidak bertanya apa pun. Ia memakai `DB_ADMIN_USERNAME` dan `DB_ADMIN_PASSWORD` dari `.env`. Jadi ia cocok hanya bila `root` MySQL Anda tanpa sandi, atau bila Anda sudah mengisi `.env` sebelum menjalankannya. Untuk pemula, ikuti langkah satu per satu di atas agar pesan galat mudah dibaca. Setelah `composer setup`, tetap ubah `.env` seperti di Langkah 4 (tiga baris `APP_ENV`, `APP_DEBUG`, `SSTOCK_SAMPLE_REFRESH`).
 
 ## 3. Akun uji
 
@@ -248,11 +258,13 @@ Perintah ini membutuhkan akun admin MySQL dan database sumber bernama `tm2mst`. 
 
 Layar ini mengganti semua data dengan data contoh yang segar (tanggal kedaluwarsa dihitung ulang dari hari ini). Data wilayah dipertahankan.
 
-Layar ini aktif bila `APP_ENV` bukan `production` (pada `.env.example`, `APP_ENV=local`, jadi aktif). Bila `APP_ENV=production`, layar ini mati kecuali Anda menambahkan baris ini di `.env`:
+Layar ini hanya bisa dipakai bila `.env` Anda berisi baris ini (lihat Langkah 4):
 
 ```dotenv
 SSTOCK_SAMPLE_REFRESH=true
 ```
+
+Bila baris itu `false` (bawaan `.env.example`), tombolnya ditolak. Setelah mengubah `.env`, jalankan `php artisan config:clear` bila perubahan tidak terasa.
 
 **Cara 2: lewat terminal.**
 
@@ -276,7 +288,8 @@ Ini sama dengan `php artisan migrate:fresh --seed --force`. Ia menghapus **selur
 | Setelah mengubah `.env`, perubahan tidak terasa | Pengaturan tersimpan di cache | Jalankan `php artisan config:clear`. |
 | Masuk gagal dengan pesan "Terlalu banyak percobaan. Coba lagi dalam ... detik." | Lebih dari 5 kali salah password | Tunggu sejumlah detik yang tertulis, lalu coba lagi dengan password yang benar. |
 | E-mail "lupa password" tidak sampai | `MAIL_MAILER=log`: e-mail tidak dikirim, hanya ditulis ke berkas log | Buka `storage/logs/laravel.log` dan cari tautan reset di sana. |
-| Layar Data Contoh menolak dengan pesan "dimatikan di lingkungan ini" (403) | `APP_ENV=production` | Ubah `APP_ENV=local`, atau tambahkan `SSTOCK_SAMPLE_REFRESH=true` di `.env`. |
+| Layar Data Contoh menolak dengan pesan "dimatikan di lingkungan ini" (403) | `SSTOCK_SAMPLE_REFRESH` bukan `true` | Isi `SSTOCK_SAMPLE_REFRESH=true` di `.env`, lalu `php artisan config:clear`. |
+| Tiba-tiba keluar sendiri ke halaman masuk | Sesi habis setelah 30 menit tanpa aktivitas (`SESSION_LIFETIME=30` di `.env.example`) | Masuk lagi. Untuk uji panjang, naikkan `SESSION_LIFETIME` di `.env`. |
 | Port 8000 dipakai program lain saat `php artisan serve` | Bentrok port | Pakai port lain: `php artisan serve --port=8001`, lalu sesuaikan `APP_URL`. |
 
 ## 7. Menjalankan tes otomatis
