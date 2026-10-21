@@ -14,6 +14,7 @@ use App\Models\Unit;
 use App\Models\UnitConversion;
 use App\Services\StockDocuments;
 use App\Support\StockDocumentPrint;
+use App\Support\UnitConverter;
 use Devlib\Locale;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -90,7 +91,14 @@ class StockDocumentController extends Controller
             'to' => ['required', 'exists:units,code'],
             'factor' => ['required', 'numeric', 'gt:0', 'max:999999999'],
         ], ['factor.gt' => 'Faktor harus lebih dari 0.', 'factor.required' => 'Isi faktor konversi.']);
-        UnitConversion::updateOrCreate(['from_unit' => $data['from'], 'to_unit' => $data['to']], ['factor' => $data['factor']]);
+        // Faktor berlaku global: tanpa hak mengelola master Satuan hanya boleh membuat pasangan baru (arah sebaliknya dihitung, jadi dianggap sudah ada).
+        $user = $request->user();
+        abort_if(! $user->canWrite('UOM') && UnitConverter::factor($data['from'], $data['to']) !== null, 403, 'Faktor konversi sudah ada; hubungi Supervisor untuk mengubahnya.');
+        $conversion = UnitConversion::firstOrNew(['from_unit' => $data['from'], 'to_unit' => $data['to']]);
+        if (! $conversion->exists) {
+            $conversion->created_by = $user->id;
+        }
+        $conversion->fill(['factor' => $data['factor'], 'updated_by' => $user->id])->save();
 
         return response()->json(['ok' => true]);
     }

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 // 1 {from_unit} = {factor} {to_unit}, sama untuk semua item.
-#[Fillable(['from_unit', 'to_unit', 'factor'])]
+#[Fillable(['from_unit', 'to_unit', 'factor', 'created_by', 'updated_by'])]
 class UnitConversion extends Model
 {
     protected function casts(): array

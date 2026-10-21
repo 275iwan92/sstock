@@ -158,6 +158,24 @@ class UnitTest extends TestCase
         $this->assertSame(24.0, StockDocumentLine::firstOrFail()->qty);
     }
 
+    public function test_data_entry_cannot_overwrite_an_existing_conversion_but_supervisor_can(): void
+    {
+        $entry = User::factory()->create();
+        $supervisor = User::factory()->supervisor()->create();
+
+        $this->actingAs($entry)->postJson(route('docs.conversion', 'receiving'), ['from' => 'box', 'to' => 'pcs', 'factor' => 12])->assertOk();
+        $this->assertSame([$entry->id, $entry->id], [UnitConversion::firstOrFail()->created_by, UnitConversion::firstOrFail()->updated_by]);
+
+        $this->postJson(route('docs.conversion', 'receiving'), ['from' => 'box', 'to' => 'pcs', 'factor' => 99])
+            ->assertForbidden()->assertJson(['message' => 'Faktor konversi sudah ada; hubungi Supervisor untuk mengubahnya.']);
+        $this->postJson(route('docs.conversion', 'receiving'), ['from' => 'pcs', 'to' => 'box', 'factor' => 0.5])->assertForbidden();   // arah sebaliknya sudah tercakup
+        $this->assertSame([12.0, 1], [UnitConverter::factor('box', 'pcs'), UnitConversion::count()]);
+
+        $this->actingAs($supervisor)->postJson(route('docs.conversion', 'receiving'), ['from' => 'box', 'to' => 'pcs', 'factor' => 10])->assertOk();
+        $conversion = UnitConversion::firstOrFail();
+        $this->assertSame([10.0, $entry->id, $supervisor->id], [$conversion->factor, $conversion->created_by, $conversion->updated_by]);
+    }
+
     public function test_issuance_in_another_unit_is_converted_and_asks_for_a_missing_conversion(): void
     {
         $user = User::factory()->create();

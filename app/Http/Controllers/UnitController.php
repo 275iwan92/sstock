@@ -81,7 +81,7 @@ class UnitController extends Controller
     {
         $unit->conversions()->delete();
         foreach ($rows as $row) {
-            $unit->conversions()->create(['to_unit' => $row['to_unit'], 'factor' => $row['factor']]);
+            $unit->conversions()->create(['to_unit' => $row['to_unit'], 'factor' => $row['factor'], 'created_by' => auth()->id(), 'updated_by' => auth()->id()]);
         }
     }
 
