@@ -28,7 +28,7 @@
                 <x-dl::field.decimal name="qty" label="Jumlah Dipesan" :decimals="3" :value="0" required />
                 <p class="dl-note" data-reorder-unit>Satuan: satuan stok barang.</p>
                 <x-dl::field.date name="ordered_at" label="Order Date" :value="today()->format('Y-m-d')" required />
-                <x-dl::field.text name="ref_no" label="Order Reference No. (PO)" maxlength="60" />
+                <x-dl::field.text name="ref_no" label="Order Reference No." maxlength="60" />
                 <x-dl::field.text name="note" label="Catatan" maxlength="255" />
             </form>
             <x-slot:footer><x-dl::button type="submit" form="reorder-form" icon="save" label="Save" /></x-slot:footer>

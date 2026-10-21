@@ -13,10 +13,10 @@
 <rect class="n n-in"  x="490" y="30" width="190" height="80" rx="9"/>
 <text class="t b" x="585" y="58" text-anchor="middle">Catat Pemesanan</text>
 <text class="t s" x="585" y="74" text-anchor="middle">Tanggal Pesan + No. Referensi</text>
-<text class="t s" x="585" y="90" text-anchor="middle">Pemesanan (PO)</text>
+<text class="t s" x="585" y="90" text-anchor="middle">Pemesanan</text>
 <rect class="n n-ok"  x="715" y="30" width="165" height="80" rx="9"/>
 <text class="t b" x="797.5" y="58" text-anchor="middle">Status Pesanan:</text>
-<text class="t b" x="797.5" y="74" text-anchor="middle">Dipesan tgl · PO</text>
+<text class="t b" x="797.5" y="74" text-anchor="middle">Dipesan tgl · ref</text>
 <text class="t s" x="797.5" y="90" text-anchor="middle">hijau</text>
 <path class="e" d="M210,70 L255,70" marker-end="url(#m-ug-pesan-ulang)"/>
 <path class="e" d="M445,70 L490,70" marker-end="url(#m-ug-pesan-ulang)"/>
