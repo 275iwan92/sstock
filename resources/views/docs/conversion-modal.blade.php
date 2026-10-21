@@ -1,10 +1,10 @@
 {{-- REMARK
- Tujuan       : Jendela "Konversi satuan belum ada" di form Penerimaan / Pengeluaran. Muncul otomatis setelah Simpan / Confirm ditolak karena satuan baris berbeda dari satuan stok barang dan konversinya belum ada.
+ Tujuan       : Jendela "Konversi satuan belum ada" di form Penerimaan. Muncul otomatis setelah Simpan / Confirm ditolak karena satuan baris berbeda dari satuan stok barang dan konversinya belum ada.
                 Tiap pasangan diisi sekali (1 {dari} = ... {ke}); disimpan ke master konversi (berlaku untuk semua barang, arah sebaliknya dihitung), lalu pengguna menekan Simpan / Confirm lagi.
  Sumber hulu  : flash `missing_conversions` dari StockDocuments::assertConversions (from, to, items).
  Input        : tanpa prop (membaca session).
  Output       : x-dl::modal (dipindah ke <body> di luar <form> dokumen) + fetch POST docs.conversion.
- Dipakai oleh : docs/form.blade.php (Penerimaan dan Pengeluaran, dokumen belum terkunci).
+ Dipakai oleh : docs/form.blade.php (Penerimaan, dokumen belum terkunci).
  Status       : Aktif.
 --}}
 @php $missing = session('missing_conversions', []); @endphp

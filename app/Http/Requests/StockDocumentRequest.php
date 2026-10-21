@@ -67,7 +67,6 @@ class StockDocumentRequest extends FormRequest
                 'department_id' => $department,
                 'reason' => ['nullable', 'string', 'max:255'],
                 'lines.*.qty' => $qty,
-                'lines.*.unit' => ['nullable', Rule::exists('units', 'code')->where('is_active', true)],
             ] + $byItem,
             StockDocumentType::Opening => [
                 'doc_at' => ['required', 'date', 'before_or_equal:today'],

@@ -176,28 +176,6 @@ class UnitTest extends TestCase
         $this->assertSame([10.0, $entry->id, $supervisor->id], [$conversion->factor, $conversion->created_by, $conversion->updated_by]);
     }
 
-    public function test_issuance_in_another_unit_is_converted_and_asks_for_a_missing_conversion(): void
-    {
-        $user = User::factory()->create();
-        $recipient = Recipient::create(['name' => 'Budi']);
-        $item = $this->makeItem(array_merge($this->itemPayload(), ['code' => 'C-5', 'unit' => 'pcs']));
-        $supplier = Supplier::create(['code' => 'S1', 'name' => 'S One']);
-        $this->receiveAs($user, ['supplier_id' => $supplier->id, 'lines' => [['item_id' => $item->id, 'qty' => 100, 'unit' => 'pcs', 'unit_cost' => 10]]]);
-        $payload = ['recipient_id' => $recipient->id, 'lines' => [['item_id' => $item->id, 'qty' => 2, 'unit' => 'box']]];
-
-        $this->post(route('docs.store', 'issuance'), $payload)->assertSessionHas('missing_conversions', [['from' => 'box', 'to' => 'pcs', 'items' => 'C-5']]);
-
-        UnitConversion::create(['from_unit' => 'box', 'to_unit' => 'pcs', 'factor' => 12]);
-        $this->post(route('docs.store', 'issuance'), $payload)->assertRedirect();
-        $doc = StockDocument::latest('id')->firstOrFail();
-        $this->put(route('docs.update', ['issuance', $doc]), $payload + ['_action' => 'confirm'])->assertRedirect();
-
-        $line = $doc->lines()->firstOrFail();
-        $this->assertSame([24.0, 2.0, 'box'], [$line->qty, $line->entered_qty, $line->entered_unit]);
-        $this->assertSame(76.0, $item->fresh()->stock_qty);
-        $this->get(route('docs.show', ['issuance', $doc]))->assertOk();
-    }
-
     public function test_receiving_in_the_stock_unit_needs_no_conversion(): void
     {
         $supplier = Supplier::create(['code' => 'S1', 'name' => 'S One']);

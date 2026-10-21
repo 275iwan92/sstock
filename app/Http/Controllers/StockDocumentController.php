@@ -83,10 +83,10 @@ class StockDocumentController extends Controller
         return redirect()->route('docs.show', [$t->slug(), $doc])->with('status', "{$doc->doc_no} disimpan sebagai draf. Belum diproses ke stok sebelum Confirm.");
     }
 
-    // Jendela "Belum ada konversi" di form Penerimaan / Pengeluaran: 1 {from} = {factor} {to}, berlaku untuk semua barang (arah sebaliknya dihitung).
+    // Jendela "Belum ada konversi" di form Penerimaan: 1 {from} = {factor} {to}, berlaku untuk semua barang (arah sebaliknya dihitung).
     public function conversion(Request $request, string $type)
     {
-        abort_unless(in_array($this->type($request, $type), [StockDocumentType::Receiving, StockDocumentType::Issuance], true), 404);
+        abort_unless($this->type($request, $type) === StockDocumentType::Receiving, 404);
         $data = $request->validate([
             'from' => ['required', 'different:to', 'exists:units,code'],
             'to' => ['required', 'exists:units,code'],
@@ -253,9 +253,12 @@ class StockDocumentController extends Controller
             return $t === StockDocumentType::Adjustment ? [] : [$this->lineRow(['qty' => 1], null)];
         }
 
+        // Hanya Penerimaan yang menyimpan satuan ketikan; jenis lain selalu satuan stok (dokumen lama yang punya entered_* tetap terbaca benar lewat qty).
+        $entered = $t === StockDocumentType::Receiving;
+
         return $doc->exists ? $doc->lines->map(fn ($l) => $this->lineRow([
             ($byProduct ? 'product_id' : 'item_id') => $byProduct ? $l->item->product_id : $l->item_id,
-            'expiry_date' => $byProduct ? $l->item->expiry_date?->format('Y-m-d') : null, 'qty' => $l->entered_qty ?? $l->qty, 'unit' => $l->entered_unit ?? $l->item->unit, 'unit_cost' => $l->entered_unit_cost ?? $l->unit_cost,
+            'expiry_date' => $byProduct ? $l->item->expiry_date?->format('Y-m-d') : null, 'qty' => $entered ? $l->entered_qty ?? $l->qty : $l->qty, 'unit' => $entered ? $l->entered_unit ?? $l->item->unit : $l->item->unit, 'unit_cost' => $l->entered_unit_cost ?? $l->unit_cost,
             'stock_qty' => $l->qty, 'system_qty' => $l->system_qty, 'counted_qty' => $l->counted_qty, 'note' => $l->note,
         ], $l->item, $byProduct ? $l->item->product : null))->all() : [];
     }
