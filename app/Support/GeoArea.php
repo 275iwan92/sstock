@@ -17,6 +17,12 @@ final class GeoArea
 {
     private const PATTERN = '/^(VILLAGE|DISTRICT|CITY):(\d+)$/';
 
+    /** Wilayah dianggap tersedia bila master kota terisi; kosong = data wilayah belum diimpor (sstock:import-geo), maka wilayah supplier opsional. */
+    public static function available(): bool
+    {
+        return DB::table('geo_city')->exists();
+    }
+
     /** @return array<int, array<string, mixed>> kecamatan dulu, lalu kota / kabupaten (kelurahan tidak dicari; nilai lama tingkat kelurahan tetap terbaca lewat find) */
     public static function search(string $q, int $limit = 30): array
     {

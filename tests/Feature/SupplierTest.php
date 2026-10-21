@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 /* REMARK
- * Tujuan       : Menjaga Supplier: kontak + HP, wilayah wajib (minimal kota), pencarian wilayah 5 tingkat, dan satu kolom Kota, Negara di grid.
+ * Tujuan       : Menjaga Supplier: kontak + HP, wilayah wajib (minimal kota) bila data wilayah ada, opsional bila kosong, pencarian wilayah 5 tingkat, dan satu kolom Kota, Negara di grid.
  * Dipakai oleh : php artisan test.
  * Status       : Aktif.
  */
@@ -63,6 +63,7 @@ class SupplierTest extends TestCase
 
     public function test_validation_messages_are_in_indonesian(): void
     {
+        $this->seedGeo();
         $this->actingAs(User::factory()->create())->post(route('suppliers.store'), ['code' => '', 'name' => ''])->assertSessionHasErrors(['name', 'area']);
         $messages = session('errors')->getBag('default');
 
@@ -91,5 +92,26 @@ class SupplierTest extends TestCase
 
         $this->actingAs(User::factory()->create())->get(route('suppliers.index'))->assertOk()->assertSee('Kab. Sidoarjo, Indonesia', false);
         $this->get(route('suppliers.show', Supplier::first()))->assertOk()->assertSee('Jawa Timur', false);
+    }
+
+    public function test_region_is_optional_when_geo_tables_are_empty(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user)->post(route('suppliers.store'), $this->payload(['area' => '']))->assertSessionDoesntHaveErrors()->assertRedirect();
+
+        $s = Supplier::where('code', 'S9')->firstOrFail();
+        $this->assertNull($s->areaKey());
+        $this->put(route('suppliers.update', $s), $this->payload(['name' => 'Renamed', 'area' => '']))->assertSessionDoesntHaveErrors();
+        $this->assertSame('Renamed', $s->fresh()->name);
+        $this->get(route('suppliers.create'))->assertOk();
+        $this->get(route('suppliers.show', $s))->assertOk();
+        $this->get(route('suppliers.index'))->assertOk();
+    }
+
+    public function test_region_stays_required_when_geo_tables_have_data(): void
+    {
+        $this->seedGeo();
+        $this->actingAs(User::factory()->create())->post(route('suppliers.store'), $this->payload(['area' => '']))->assertSessionHasErrors('area');
+        $this->assertSame(0, Supplier::count());
     }
 }

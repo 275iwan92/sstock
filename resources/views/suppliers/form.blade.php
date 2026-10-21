@@ -1,5 +1,5 @@
 {{-- REMARK
- Tujuan       : Form master Supplier (Single Form kind=master): kode, nama, telepon kantor (PSTN), nama kontak + HP kontak, alamat jalan, lalu satu kotak cari wilayah (kelurahan / kecamatan / kota; tampil lengkap sampai negara + kode pos; wajib minimal sampai kota).
+ Tujuan       : Form master Supplier (Single Form kind=master): kode, nama, telepon kantor (PSTN), nama kontak + HP kontak, alamat jalan, lalu satu kotak cari wilayah (kelurahan / kecamatan / kota; tampil lengkap sampai negara + kode pos; wajib minimal sampai kota bila data wilayah sudah diimpor; bila tabel wilayah kosong, opsional).
  Sumber hulu  : SupplierController (supplier), Lookup geo_area (App\Support\GeoLookup). Kode pos disimpan server dari wilayah terpilih.
  Input        : supplier.
  Output       : POST suppliers.store (baru) / PUT suppliers.update (ubah, Activate, Deactivate).
@@ -31,7 +31,7 @@
             <x-dl::field.text name="address" label="Street Address" :value="$v('address')" maxlength="255" :error="$e('address')" />
         </x-dl::form.row>
         <x-dl::form.row>
-            <x-dl::field.lookup name="area" lookup="geo_area" label="District, City / Regency, Province, Country" placeholder="Search district / city / postcode..." :value="old('area', $supplier->areaKey())" required :error="$e('area')" hint="One choice gives district, city / regency, province, country, and the postal code." />
+            <x-dl::field.lookup name="area" lookup="geo_area" label="District, City / Regency, Province, Country" placeholder="Search district / city / postcode..." :value="old('area', $supplier->areaKey())" :required="App\Support\GeoArea::available()" :error="$e('area')" hint="One choice gives district, city / regency, province, country, and the postal code." />
         </x-dl::form.row>
     </x-dl::form>
 @endsection
