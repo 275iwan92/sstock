@@ -6,6 +6,7 @@ use App\Enums\StockDocumentType;
 use App\Models\Item;
 use App\Models\Product;
 use App\Models\StockDocument;
+use App\Models\Supplier;
 use App\Services\StockValuation;
 use App\Support\Menu;
 use Illuminate\Http\Request;
@@ -22,7 +23,7 @@ class HomeController extends Controller
     public function __invoke(Request $request)
     {
         $user = $request->user();
-        $below = Product::query()->belowReorderPoint()->withAvailable()->with('category', 'openOrder.creator')->orderByRaw(Product::availableSql().' / products.reorder_point', [Item::usableFrom()])->get();
+        $below = Product::query()->belowReorderPoint()->withAvailable()->with('category', 'openOrder.creator', 'openOrder.supplier')->orderByRaw(Product::availableSql().' / products.reorder_point', [Item::usableFrom()])->get();
 
         return view('home', [
             'modules' => Menu::modules($user),
@@ -30,6 +31,7 @@ class HomeController extends Controller
             'open' => $request->query('open'),
             'fresh' => (bool) session('fresh'),
             'below' => $below,
+            'suppliers' => Supplier::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id')->all(),
             'expiring' => Item::query()->nearExpiry()->orderBy('expiry_date')->get(),
             'itemCount' => Product::query()->where('is_active', true)->count(),
             'stockValue' => $user->isSupervisor() ? round(Item::query()->selectRaw('SUM(stock_qty * avg_cost) v')->value('v') ?? 0, 2) : null,

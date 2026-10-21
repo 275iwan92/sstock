@@ -45,11 +45,11 @@ class HelpTest extends TestCase
     {
         $this->actingAs(User::factory()->supervisor()->create())->get(route('help.user-guide'))->assertOk()
             ->assertSee('Satuan masuk (kemasan saat barang diterima)', false)->assertSee('Faktor satuan belum ada', false)
-            ->assertSee('Diterima sejak dipesan', false)->assertSee('selalu dalam satuan stok barang', false)
+            ->assertSee('Diterima sejak dipesan', false)->assertSee('Jumlah Dipesan', false)->assertSee('bukan dokumen PO', false)->assertSee('selalu dalam satuan stok barang', false)
             ->assertSee('Faktor ini sudah dipakai di dokumen; hubungi Supervisor untuk mengubahnya.', false);
 
         $this->actingAs(User::factory()->administrator()->create())->get(route('help.technical-guide'))->assertOk()
-            ->assertSee('product_units', false)->assertSee('ProductUnits::save', false)->assertSee('ReorderOrder::note()', false);
+            ->assertSee('product_units', false)->assertSee('ProductUnits::save', false)->assertSee('ReorderOrder::note()', false)->assertSee('add_supplier_qty_note_to_reorder_orders', false);
     }
 
     public function test_only_administrators_open_the_technical_guide(): void

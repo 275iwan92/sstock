@@ -76,7 +76,7 @@ class ReportController extends Controller
             }
         }
 
-        $orders = ReorderOrder::query()->whereNull('closed_at')->with('creator', 'product')->orderBy('id')->get()->keyBy('product_id');   // pesanan terbuka terbaru per produk
+        $orders = ReorderOrder::query()->whereNull('closed_at')->with('creator', 'product', 'supplier')->orderBy('id')->get()->keyBy('product_id');   // pesanan terbuka terbaru per produk
 
         $rows = $items->map(function (Item $i) use ($opening, $closing, $moves, $sup, $available, $orders) {
             $m = ($moves[$i->id] ?? collect())->pluck('total', 'type');
@@ -90,6 +90,8 @@ class ReportController extends Controller
                 'in' => (float) ($m['IN'] ?? 0) + (float) ($m['OPENING'] ?? 0), 'out' => abs((float) ($m['OUT'] ?? 0)), 'adj' => (float) ($m['ADJ'] ?? 0),
                 'end' => $end, 'rop' => $i->reorder_point, 'roq' => $i->reorder_qty, 'lead' => $i->lead_time_days,
                 'status' => $status, 'order' => $status === 'PESAN ULANG' ? ($orders[$i->product_id ?? 0] ?? null)?->note() : null,
+                'order_supplier' => $status === 'PESAN ULANG' ? ($orders[$i->product_id ?? 0] ?? null)?->supplier?->name : null,
+                'order_qty' => $status === 'PESAN ULANG' && ($o = $orders[$i->product_id ?? 0] ?? null) && $o->qty !== null ? Locale::decimal($o->qty, 3).' '.$i->unit : null,
                 'cost' => $sup ? $cost : null, 'value' => $sup ? Decimal::amount($end, $cost) : null,
             ];
         });

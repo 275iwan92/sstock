@@ -280,13 +280,13 @@ class StockFlowTest extends TestCase
 
         $this->actingAs($this->entry)->get(route('home'))->assertOk()->assertSee('Belum dipesan')->assertDontSee('Item R2');
 
-        $order = ['product_id' => $item->product_id, 'ordered_at' => today()->toDateString(), 'ref_no' => 'PO-77'];
+        $order = ['product_id' => $item->product_id, 'supplier_id' => Supplier::create(['code' => 'S9', 'name' => 'Toko Sembilan'])->id, 'qty' => 25, 'ordered_at' => today()->toDateString(), 'ref_no' => 'PO-77'];
         $this->post(route('reorder-orders.store'), $order)->assertRedirect(route('home'));
         $this->get(route('home'))->assertSee('Dipesan ')->assertSee('PO-77')->assertDontSee('Belum dipesan');
 
         $this->post(route('reorder-orders.store'), $order)->assertStatus(422);                                   // sudah terbuka
         $this->post(route('reorder-orders.store'), ['product_id' => $fine->product_id] + $order)->assertStatus(422);        // stok masih cukup
-        $this->post(route('reorder-orders.store'), ['ref_no' => ''] + $order)->assertSessionHasErrors('ref_no');
+        $this->post(route('reorder-orders.store'), ['qty' => 0] + $order)->assertSessionHasErrors('qty');
 
         $this->receive($item, 20, 10);
         $this->assertNotNull(ReorderOrder::where('product_id', $item->product_id)->first()->closed_at);

@@ -8,17 +8,22 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['product_id', 'ordered_at', 'ref_no', 'created_by', 'closed_at', 'receiving_id'])]
+#[Fillable(['product_id', 'ordered_at', 'ref_no', 'created_by', 'closed_at', 'receiving_id', 'supplier_id', 'qty', 'note'])]
 class ReorderOrder extends Model
 {
     protected function casts(): array
     {
-        return ['ordered_at' => 'date', 'closed_at' => 'datetime'];
+        return ['ordered_at' => 'date', 'closed_at' => 'datetime', 'qty' => 'float'];
     }
 
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function supplier(): BelongsTo
+    {
+        return $this->belongsTo(Supplier::class);
     }
 
     public function creator(): BelongsTo
@@ -28,7 +33,7 @@ class ReorderOrder extends Model
 
     /**
      * Penerimaan sejak tanggal pesan, dalam satuan stok, semua batch produk: pergerakan masuk dari dokumen Penerimaan yang terkonfirmasi dan tidak dibatalkan.
-     * Hanya informasi: tidak menutup atau mengubah pesanan (penutupan tetap oleh StockDocuments::confirm). Jumlah yang DIPESAN tidak tercatat.
+     * Hanya informasi: tidak menutup atau mengubah pesanan (penutupan tetap oleh StockDocuments::confirm). Jumlah yang dipesan (qty, boleh kosong pada baris lama) hanya ditampilkan; tidak dipakai untuk menutup pesanan.
      */
     public function receivedSince(): float
     {
@@ -43,9 +48,14 @@ class ReorderOrder extends Model
     // Keterangan untuk peringatan stok menipis (beranda, laporan Ringkasan Stok, form barang).
     public function note(): string
     {
-        $this->loadMissing('product', 'creator');
+        $this->loadMissing('product', 'creator', 'supplier');
+        $unit = $this->product->unit;
+        $qty = $this->attributes['qty'] ?? null;   // model yang baru dibuat belum membawa kolom yang kosong
+        $note = $this->attributes['note'] ?? null;
 
-        return 'Sudah dicatat dipesan pada '.$this->ordered_at->format('d/m/Y').($this->ref_no ? ", ref {$this->ref_no}" : '').($this->creator ? " oleh {$this->creator->name}" : '')
-            .'. Diterima sejak dipesan: '.Locale::decimal($this->receivedSince(), 3).' '.$this->product->unit.'.';
+        // Baris lama tidak punya jumlah / supplier: bagian itu dilewati.
+        return ($qty !== null || $this->supplier ? 'Sudah dipesan' : 'Sudah dicatat dipesan').($qty !== null ? ' '.Locale::decimal($qty, 3)." {$unit}" : '').($this->supplier ? " ke {$this->supplier->name}" : '')
+            .' pada '.$this->ordered_at->format('d/m/Y').($this->ref_no ? ", ref {$this->ref_no}" : '').($this->creator ? " oleh {$this->creator->name}" : '')
+            .'. Diterima sejak dipesan: '.Locale::decimal($this->receivedSince(), 3)." {$unit}.".($note ? " Catatan: {$note}." : '');
     }
 }

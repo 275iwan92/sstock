@@ -40,6 +40,8 @@
             $sup ? ['key' => 'cost', 'label' => 'Avg Cost', 'type' => 'money'] : null,
             $sup ? ['key' => 'value', 'label' => 'Stock Value', 'type' => 'money', 'sum' => true, 'bold' => true] : null,
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['AMAN' => 'success', 'PESAN ULANG' => 'danger'], 'rowTones' => ['PESAN ULANG' => 'danger']],
+            ['key' => 'order_supplier', 'label' => 'Supplier Pesanan'],
+            ['key' => 'order_qty', 'label' => 'Jumlah Dipesan'],
             ['key' => 'order', 'label' => 'Info Pemesanan'],
         ]))"
         :rows="$rows" :signatures="[['Prepared by', 'Warehouse'], ['Checked by', 'Supervisor']]" source="items, stock_movements" />

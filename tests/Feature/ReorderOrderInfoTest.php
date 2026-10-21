@@ -78,14 +78,13 @@ class ReorderOrderInfoTest extends TestCase
         $this->assertSame(10.0, $order->receivedSince());
     }
 
-    public function test_home_shows_the_note_and_never_an_ordered_quantity(): void
+    public function test_home_shows_the_note_for_an_order_recorded_without_quantity(): void
     {
         $this->scenario();
 
         $html = $this->get(route('home'))->assertOk()->getContent();
         $this->assertStringContainsString('Sudah dicatat dipesan pada '.today()->subDays(2)->format('d/m/Y').', ref PO-77 oleh Sari Supervisor. Diterima sejak dipesan: 10 pcs.', $html);
-        $this->assertStringNotContainsString('Jumlah dipesan', $html);
-        $this->assertFalse(\Illuminate\Support\Facades\Schema::hasColumn('reorder_orders', 'qty'));   // jumlah pesanan tidak dicatat
+        $this->assertStringNotContainsString('Sudah dipesan ', $html);   // baris lama tanpa jumlah / supplier: bagian itu dilewati
     }
 
     public function test_the_summary_report_and_the_product_form_show_the_same_note(): void
