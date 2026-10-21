@@ -29,8 +29,28 @@ final class UnitConverter
 
     public static function convert(float $qty, string $from, string $to): ?float
     {
-        $factor = self::factor($from, $to);
+        $exact = self::exact(Decimal::of($qty), $from, $to);
 
-        return $factor === null ? null : round($qty * $factor, 6);
+        return $exact === null ? null : Decimal::round($exact, 6);
+    }
+
+    /**
+     * $x x faktor({from} ke {to}) tanpa float (string desimal presisi; pembulatan di pemanggil). $reverse = $x / faktor, mis. biaya per satuan {from} menjadi biaya per satuan {to}.
+     * Kebalikan memakai baris konversi yang ada (x / g), bukan 1/g yang sudah dibulatkan, jadi 1 box = 3 pcs lalu kembali lagi tetap tepat. Null bila tak ada aturannya.
+     */
+    public static function exact(string $x, string $from, string $to, bool $reverse = false): ?string
+    {
+        if ($from === $to) {
+            return $x;
+        }
+        if ($direct = UnitConversion::query()->where('from_unit', $from)->where('to_unit', $to)->value('factor')) {
+            return $reverse ? Decimal::div($x, Decimal::of($direct)) : Decimal::mul($x, Decimal::of($direct));
+        }
+        $inverse = UnitConversion::query()->where('from_unit', $to)->where('to_unit', $from)->value('factor');
+        if (! $inverse) {
+            return null;
+        }
+
+        return $reverse ? Decimal::mul($x, Decimal::of($inverse)) : Decimal::div($x, Decimal::of($inverse));
     }
 }

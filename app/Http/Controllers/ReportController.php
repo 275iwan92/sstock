@@ -8,6 +8,7 @@ use App\Models\Item;
 use App\Models\StockDocumentLine;
 use App\Models\StockMovement;
 use App\Models\Supplier;
+use App\Support\Decimal;
 use Devlib\Locale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -41,7 +42,7 @@ class ReportController extends Controller
                     'doc' => $m->document->doc_no, 'src' => $m->document->supplier?->name ?? $m->document->recipient ?? $m->document->reason,
                     'type' => self::TYPE_LABEL[$m->type].($m->reversal_of ? ' (BATAL)' : ''), 'ref' => $m->document->ref_no ?? $m->document->department ?? $m->document->reason ?? '', 'user' => $m->user->name,
                     'in' => $m->type !== 'ADJ' ? max($m->qty, 0) : 0, 'out' => $m->type !== 'ADJ' ? max(-$m->qty, 0) : 0, 'adj' => $m->type === 'ADJ' ? $m->qty : 0,
-                    'cost' => $sup ? $m->unit_cost : null, 'bal_value' => $sup ? round($m->balance_qty * $m->balance_avg_cost, 2) : null,
+                    'cost' => $sup ? $m->unit_cost : null, 'bal_value' => $sup ? Decimal::amount($m->balance_qty, $m->balance_avg_cost) : null,
                 ])->all();
         }
 
@@ -85,7 +86,7 @@ class ReportController extends Controller
                 'in' => (float) ($m['IN'] ?? 0) + (float) ($m['OPENING'] ?? 0), 'out' => abs((float) ($m['OUT'] ?? 0)), 'adj' => (float) ($m['ADJ'] ?? 0),
                 'end' => $end, 'rop' => $i->reorder_point, 'roq' => $i->reorder_qty, 'lead' => $i->lead_time_days,
                 'status' => $i->is_active && $i->reorder_point > 0 && ($available[$i->product_id ?? 'i'.$i->id] ?? 0) <= $i->reorder_point ? 'PESAN ULANG' : 'AMAN',
-                'cost' => $sup ? $cost : null, 'value' => $sup ? round($end * $cost, 2) : null,
+                'cost' => $sup ? $cost : null, 'value' => $sup ? Decimal::amount($end, $cost) : null,
             ];
         });
         if ($request->boolean('only_reorder')) {
@@ -160,7 +161,7 @@ class ReportController extends Controller
                 'code' => $l->item->code, 'item' => $l->item->name, 'unit' => $l->item->unit, 'qty' => $l->qty,
                 'entered' => $l->entered_unit ? Locale::decimal($l->entered_qty, 3).' '.$l->entered_unit : '',
                 'system' => $l->system_qty, 'counted' => $l->counted_qty,
-                'cost' => $sup ? $cost : null, 'amount' => $sup ? round(abs($l->qty) * $cost, 2) : null, 'effect' => $sup ? round($l->qty * $cost, 2) : null,
+                'cost' => $sup ? $cost : null, 'amount' => $sup ? Decimal::amount(abs($l->qty), $cost) : null, 'effect' => $sup ? Decimal::amount($l->qty, $cost) : null,
                 'user' => $d->creator->name, 'approver' => $d->approver?->name ?? '',
             ];
         })->values()->all();

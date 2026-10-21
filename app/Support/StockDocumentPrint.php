@@ -62,10 +62,10 @@ final class StockDocumentPrint extends Document
                 'qty' => $t === StockDocumentType::Adjustment ? $l->qty : $qty, 'unit' => $l->entered_unit ?? $l->item->unit,
                 'expiry' => $l->item->expiry_date?->toDateString(), 'note' => $l->note,
                 'system' => $l->system_qty, 'counted' => $l->counted_qty,
-                'price' => $price, 'subtotal' => round((float) $qty * (float) $price, 2),
+                'price' => $price, 'subtotal' => Decimal::amount($qty, $price),
             ];
         })->all();
-        $total = array_sum(array_column($rows, 'subtotal'));
+        $total = Decimal::total(array_map(fn ($r) => [1, $r['subtotal']], $rows));
 
         $status = $doc->status === 'cancel_pending' ? ($t === StockDocumentType::Adjustment ? 'approved' : 'confirmed') : $doc->status;
         $notes = array_filter([['Notes', $doc->note], $doc->status === 'cancelled' ? ['Cancel Reason', $doc->cancel_reason] : null], fn ($n) => $n && filled($n[1]));

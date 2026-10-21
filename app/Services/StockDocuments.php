@@ -11,6 +11,7 @@ use App\Models\ReorderOrder;
 use App\Models\StockDocument;
 use App\Models\StockMovement;
 use App\Models\User;
+use App\Support\Decimal;
 use App\Support\UnitConverter;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
@@ -416,17 +417,16 @@ final class StockDocuments
         if ($factor === null) {
             throw ValidationException::withMessages(['lines' => "Belum ada konversi dari {$row['unit']} ke {$item->unit} untuk {$item->code}. Tambahkan di Data Master > Satuan."]);
         }
-        $qty = round((float) $row['qty'] * $factor, 3);
+        $qty = Decimal::round(UnitConverter::exact(Decimal::of($row['qty']), $row['unit'], $item->unit), 3);
         if ($qty <= 0) {
             throw ValidationException::withMessages(['lines' => "Jumlah {$item->code} terlalu kecil untuk dikonversi ke {$item->unit}."]);
         }
 
         $cost = $row['unit_cost'] ?? null;   // Pengeluaran tidak punya harga: biaya dari rata-rata stok
 
-        return [$qty, $cost === null ? null : round((float) $cost / $factor, 4), ['entered_qty' => $row['qty'], 'entered_unit' => $row['unit'], 'entered_unit_cost' => $cost]];
+        return [$qty, $cost === null ? null : Decimal::round(UnitConverter::exact(Decimal::of($cost), $row['unit'], $item->unit, true), 4), ['entered_qty' => $row['qty'], 'entered_unit' => $row['unit'], 'entered_unit_cost' => $cost]];
     }
 
-    // PREFIX-YYMM-NNNN, urut per jenis per bulan; kolom doc_no unik menjaga dari nomor ganda.
     // Dua penyimpan bersamaan bisa membaca nomor terakhir yang sama: kolom unik menolak yang kalah, lalu nomor berikutnya diambil lagi.
     private function createNumbered(StockDocumentType $type, array $attributes): StockDocument
     {
@@ -442,6 +442,7 @@ final class StockDocuments
         }
     }
 
+    // PREFIX-YYMM-NNNN, urut per jenis per bulan; kolom doc_no unik menjaga dari nomor ganda.
     private function nextNumber(StockDocumentType $type): string
     {
         $stem = $type->prefix().'-'.now()->format('ym').'-';

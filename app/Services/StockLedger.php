@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\StockDocument;
 use App\Models\StockMovement;
 use App\Models\User;
+use App\Support\Decimal;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -53,9 +54,7 @@ final class StockLedger
                     $signed > 0 => $item->avg_cost > 0 ? $item->avg_cost : $item->unit_price,
                     default => $item->avg_cost,
                 };
-                $avg = $signed > 0 && $balance > 0
-                    ? round(($item->stock_qty * $item->avg_cost + $signed * $cost) / $balance, 4)
-                    : $item->avg_cost;
+                $avg = $signed > 0 && $balance > 0 ? $this->movingAverage($item, $signed, $cost, $balance) : $item->avg_cost;
 
                 $line->update(['unit_cost' => $cost]);
                 // Saldo sengaja tidak mass-assignable di Item: hanya buku besar ini yang boleh mengubahnya.
@@ -105,8 +104,8 @@ final class StockLedger
                 $cost = (float) $m->unit_cost;
                 $avg = match (true) {
                     $balance <= self::EPS => $item->avg_cost,
-                    $signed > 0 => round(($item->stock_qty * $item->avg_cost + $signed * $cost) / $balance, 4),
-                    default => max(0, round(($item->stock_qty * $item->avg_cost - abs($signed) * $cost) / $balance, 4)),
+                    $signed > 0 => $this->movingAverage($item, $signed, $cost, $balance),
+                    default => max(0, $this->movingAverage($item, $signed, $cost, $balance)),
                 };
                 $item->forceFill(['stock_qty' => $balance, 'avg_cost' => $avg])->save();
                 $made[] = StockMovement::create([
@@ -131,6 +130,14 @@ final class StockLedger
                 throw $this->shortage($item, $signed);
             }
         }
+    }
+
+    // Rata-rata bergerak = (nilai lama + nilai perubahan) / saldo baru, dihitung presisi dan dibulatkan sekali ke 4 desimal (skala kolom avg_cost). $signed negatif = nilai dikurangi.
+    private function movingAverage(Item $item, float $signed, float $cost, float $balance): float
+    {
+        $value = Decimal::add(Decimal::mul(Decimal::of($item->stock_qty), Decimal::of($item->avg_cost)), Decimal::mul(Decimal::of($signed), Decimal::of($cost)));
+
+        return Decimal::round(Decimal::div($value, Decimal::of($balance)), 4);
     }
 
     // Movement asal dokumen yang belum punya pembalik (pembatalan kedua tidak membalik ulang).

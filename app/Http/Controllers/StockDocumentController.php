@@ -13,6 +13,7 @@ use App\Models\Supplier;
 use App\Models\Unit;
 use App\Models\UnitConversion;
 use App\Services\StockDocuments;
+use App\Support\Decimal;
 use App\Support\StockDocumentPrint;
 use App\Support\UnitConverter;
 use Devlib\Locale;
@@ -42,7 +43,7 @@ class StockDocumentController extends Controller
                 'id' => $d->id, 'doc_no' => $d->doc_no, 'doc_at' => $d->doc_at->format('Y-m-d H:i:s'),
                 'party' => $d->supplier?->name ?? $d->recipient ?? $d->reason ?? '—',
                 'ref' => $d->ref_no ?? $d->department ?? ($t === StockDocumentType::Adjustment ? $d->reason : null),
-                'value' => $sup ? round($d->lines->sum(fn ($l) => abs($l->qty) * ($l->unit_cost ?? $l->item->avg_cost)), 2) : null,
+                'value' => $sup ? Decimal::total($d->lines->map(fn ($l) => [abs($l->qty), $l->unit_cost ?? $l->item->avg_cost]), 2) : null,
                 'status' => self::STATUS[$d->status] ?? $d->status, 'user' => $d->creator->name, 'active' => true,
                 'lines' => $d->lines->map(fn ($l) => ['name' => $l->item->name, 'code' => $l->item->code, 'qty' => $l->qty, 'unit' => $l->item->unit,
                     'cost' => $sup ? ($l->unit_cost ?? $l->item->avg_cost) : null])->all(),

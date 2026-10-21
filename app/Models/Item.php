@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Decimal;
 use Devlib\Locale;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -85,6 +86,6 @@ class Item extends Model
 
     public function stockValue(): float
     {
-        return round($this->stock_qty * $this->avg_cost, 2);
+        return Decimal::amount($this->stock_qty, $this->avg_cost);
     }
 }
