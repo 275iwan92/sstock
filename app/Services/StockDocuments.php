@@ -351,8 +351,9 @@ final class StockDocuments
     }
 
     /**
-     * Hanya Penerimaan yang boleh memakai satuan selain satuan stok barang (Pengeluaran dan Penyesuaian selalu dalam satuan stok); konversinya harus ada. Semua pasangan yang belum ada dikumpulkan
-     * (bukan satu per satu) dan dikirim ke form lewat flash `missing_conversions` supaya layar menampilkan jendela isi konversi.
+     * Hanya Penerimaan yang boleh memakai satuan selain satuan stok barang (Pengeluaran dan Penyesuaian selalu dalam satuan stok). Faktornya: satuan masuk milik barang, lalu konversi global;
+     * bila tidak ada keduanya, semua pasangan yang belum ada dikumpulkan (bukan satu per satu) dan dikirim ke form lewat flash `missing_conversions`
+     * supaya layar menampilkan jendela isi faktor (jendela itu membuat satuan masuk milik BARANG, bukan konversi global).
      */
     private function assertConversions(StockDocumentType $type, array $lines): void
     {
@@ -363,19 +364,16 @@ final class StockDocuments
         foreach ($lines as $row) {
             $from = $row['unit'] ?? null;
             $stock = ! empty($row['item_id']) ? Item::query()->find($row['item_id']) : (! empty($row['product_id']) ? Product::query()->find($row['product_id']) : null);
-            if ($from && $stock && $from !== $stock->unit && UnitConverter::factor($from, $stock->unit) === null) {
-                $missing["{$from}>{$stock->unit}"][] = $stock->code;
+            $productId = $stock instanceof Item ? $stock->product_id : $stock?->id;
+            if ($from && $stock && $from !== $stock->unit && UnitConverter::factor($from, $stock->unit, $productId) === null) {
+                $missing["{$productId}>{$from}"] = ['product_id' => $productId, 'from' => $from, 'to' => $stock->unit, 'items' => $productId ? Product::query()->whereKey($productId)->value('code') : $stock->code];
             }
         }
         if ($missing) {
-            $pairs = [];
-            foreach ($missing as $key => $codes) {
-                [$from, $to] = explode('>', $key);
-                $pairs[] = ['from' => $from, 'to' => $to, 'items' => implode(', ', array_unique($codes))];
-            }
+            $pairs = array_values($missing);
             session()->flash('missing_conversions', $pairs);
 
-            throw ValidationException::withMessages(['lines' => 'Belum ada konversi satuan: '.collect($pairs)->map(fn ($p) => "{$p['from']} ke {$p['to']} ({$p['items']})")->implode('; ').'. Isi konversinya di jendela yang muncul.']);
+            throw ValidationException::withMessages(['lines' => 'Belum ada faktor satuan: '.collect($pairs)->map(fn ($p) => "{$p['from']} ke {$p['to']} ({$p['items']})")->implode('; ').'. Isi faktornya di jendela yang muncul.']);
         }
     }
 
@@ -411,18 +409,17 @@ final class StockDocuments
     /** @return array{0: float, 1: ?float, 2: array<string, mixed>} qty dan biaya per satuan stok + data yang diketik */
     private function toStockUnit(Item $item, array $row): array
     {
-        $factor = UnitConverter::factor($row['unit'], $item->unit);
-        if ($factor === null) {
-            throw ValidationException::withMessages(['lines' => "Belum ada konversi dari {$row['unit']} ke {$item->unit} untuk {$item->code}. Tambahkan di Data Master > Satuan."]);
+        if (UnitConverter::factor($row['unit'], $item->unit, $item->product_id) === null) {
+            throw ValidationException::withMessages(['lines' => "Belum ada faktor dari {$row['unit']} ke {$item->unit} untuk {$item->code}. Isi di bagian Satuan masuk pada barangnya."]);
         }
-        $qty = Decimal::round(UnitConverter::exact(Decimal::of($row['qty']), $row['unit'], $item->unit), 3);
+        $qty = Decimal::round(UnitConverter::exact(Decimal::of($row['qty']), $row['unit'], $item->unit, false, $item->product_id), 3);
         if ($qty <= 0) {
             throw ValidationException::withMessages(['lines' => "Jumlah {$item->code} terlalu kecil untuk dikonversi ke {$item->unit}."]);
         }
 
         $cost = $row['unit_cost'] ?? null;
 
-        return [$qty, $cost === null ? null : Decimal::round(UnitConverter::exact(Decimal::of($cost), $row['unit'], $item->unit, true), 4), ['entered_qty' => $row['qty'], 'entered_unit' => $row['unit'], 'entered_unit_cost' => $cost]];
+        return [$qty, $cost === null ? null : Decimal::round(UnitConverter::exact(Decimal::of($cost), $row['unit'], $item->unit, true, $item->product_id), 4), ['entered_qty' => $row['qty'], 'entered_unit' => $row['unit'], 'entered_unit_cost' => $cost]];
     }
 
     // Dua penyimpan bersamaan bisa membaca nomor terakhir yang sama: kolom unik menolak yang kalah, lalu nomor berikutnya diambil lagi.

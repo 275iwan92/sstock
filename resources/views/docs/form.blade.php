@@ -29,7 +29,7 @@
         $columns = match ($t) {
             T::Receiving => [$item, $expiry,
                 ['key' => 'qty', 'label' => 'Qty', 'type' => 'number', 'required' => true, 'width' => '110px'],
-                ['key' => 'unit', 'label' => 'Unit', 'type' => 'select', 'options' => $units, 'required' => true, 'width' => '150px'],
+                ['key' => 'unit', 'label' => 'Unit', 'type' => 'select', 'options' => $units, 'required' => true, 'width' => '200px'],
                 ['key' => 'unit_cost', 'label' => 'Purchase Price / Unit', 'type' => 'money', 'required' => true, 'width' => '150px'],
                 ['key' => 'subtotal', 'label' => 'Subtotal', 'type' => 'money', 'formula' => 'qty * unit_cost', 'sum' => true, 'width' => '150px'],
                 ['key' => 'stock_qty', 'label' => '= In stock unit', 'type' => 'display', 'width' => '120px'], $note],
@@ -51,8 +51,11 @@
     @if (! empty($cancelProblem))
         <x-dl::alert tone="warn" :message="raw($cancelProblem)" />
     @endif
-    @if (! $locked && $t === T::Receiving)
-        @include('docs.conversion-modal')
+    @if ($t === T::Receiving)
+        @include('docs.pack-units')
+        @if (! $locked)
+            @include('docs.conversion-modal')
+        @endif
     @endif
     @if (! empty($fefo))
         <x-dl::alert tone="warn" :message="raw(implode(' ', $fefo))" />

@@ -147,33 +147,16 @@ class UnitTest extends TestCase
         $payload = ['supplier_id' => $supplier->id, 'lines' => [['item_id' => $item->id, 'qty' => 2, 'unit' => 'box', 'unit_cost' => 1200]]];
 
         $this->actingAs(User::factory()->create())->post(route('docs.store', 'receiving'), $payload)
-            ->assertSessionHasErrors('lines')->assertSessionHas('missing_conversions', [['from' => 'box', 'to' => 'pcs', 'items' => 'C-4']]);
+            ->assertSessionHasErrors('lines')->assertSessionHas('missing_conversions', [['product_id' => $item->product_id, 'from' => 'box', 'to' => 'pcs', 'items' => 'C-4']]);
 
-        $this->postJson(route('docs.conversion', 'receiving'), ['from' => 'box', 'to' => 'pcs', 'factor' => 12])->assertOk();
-        $this->assertSame(12.0, UnitConverter::factor('box', 'pcs'));
-        $this->postJson(route('docs.conversion', 'receiving'), ['from' => 'box', 'to' => 'box', 'factor' => 12])->assertStatus(422);
-        $this->postJson(route('docs.conversion', 'receiving'), ['from' => 'box', 'to' => 'pcs', 'factor' => 0])->assertStatus(422);
+        $this->postJson(route('docs.conversion', 'receiving'), ['product_id' => $item->product_id, 'unit' => 'box', 'factor' => 12])->assertOk();
+        $this->assertSame(12.0, UnitConverter::factor('box', 'pcs', $item->product_id));
+        $this->assertNull(UnitConverter::factor('box', 'pcs'));   // milik barang, bukan global
+        $this->postJson(route('docs.conversion', 'receiving'), ['product_id' => $item->product_id, 'unit' => 'pcs', 'factor' => 12])->assertStatus(422);
+        $this->postJson(route('docs.conversion', 'receiving'), ['product_id' => $item->product_id, 'unit' => 'box', 'factor' => 0])->assertStatus(422);
 
         $this->post(route('docs.store', 'receiving'), $payload)->assertSessionHasNoErrors();
         $this->assertSame(24.0, StockDocumentLine::firstOrFail()->qty);
-    }
-
-    public function test_data_entry_cannot_overwrite_an_existing_conversion_but_supervisor_can(): void
-    {
-        $entry = User::factory()->create();
-        $supervisor = User::factory()->supervisor()->create();
-
-        $this->actingAs($entry)->postJson(route('docs.conversion', 'receiving'), ['from' => 'box', 'to' => 'pcs', 'factor' => 12])->assertOk();
-        $this->assertSame([$entry->id, $entry->id], [UnitConversion::firstOrFail()->created_by, UnitConversion::firstOrFail()->updated_by]);
-
-        $this->postJson(route('docs.conversion', 'receiving'), ['from' => 'box', 'to' => 'pcs', 'factor' => 99])
-            ->assertForbidden()->assertJson(['message' => 'Faktor konversi sudah ada; hubungi Supervisor untuk mengubahnya.']);
-        $this->postJson(route('docs.conversion', 'receiving'), ['from' => 'pcs', 'to' => 'box', 'factor' => 0.5])->assertForbidden();   // arah sebaliknya sudah tercakup
-        $this->assertSame([12.0, 1], [UnitConverter::factor('box', 'pcs'), UnitConversion::count()]);
-
-        $this->actingAs($supervisor)->postJson(route('docs.conversion', 'receiving'), ['from' => 'box', 'to' => 'pcs', 'factor' => 10])->assertOk();
-        $conversion = UnitConversion::firstOrFail();
-        $this->assertSame([10.0, $entry->id, $supervisor->id], [$conversion->factor, $conversion->created_by, $conversion->updated_by]);
     }
 
     public function test_receiving_in_the_stock_unit_needs_no_conversion(): void

@@ -42,6 +42,12 @@ class Product extends Model
         return $this->hasMany(Item::class);
     }
 
+    // Satuan masuk (kemasan saat diterima) beserta faktornya ke satuan stok.
+    public function packUnits(): HasMany
+    {
+        return $this->hasMany(ProductUnit::class)->orderBy('unit');
+    }
+
     // Pemesanan ulang yang masih menunggu barang datang (ditutup saat Receiving).
     public function openOrder(): HasOne
     {

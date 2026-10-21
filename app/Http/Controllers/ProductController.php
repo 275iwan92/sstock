@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 /* REMARK
  * Tujuan       : Master Barang (produk / group). Semua pengguna boleh melihat dan menambah barang baru; hanya Supervisor mengubah parameter (harga, titik pesan ulang, lead time) dan mengaktifkan / menonaktifkan.
@@ -74,6 +75,11 @@ class ProductController extends Controller
             $this->setActive($product, $action === 'activate');
 
             return redirect()->route('products.show', $product)->with('status', $action === 'activate' ? 'Barang diaktifkan.' : 'Barang dinonaktifkan.');
+        }
+
+        // Faktor satuan masuk dihitung terhadap satuan stok; mengganti satuan stok membuatnya salah, jadi ditolak selama barang masih punya satuan masuk.
+        if ($request->validated('unit') !== $product->unit && $product->packUnits()->exists()) {
+            throw ValidationException::withMessages(['unit' => 'Satuan stok tidak bisa diganti selama barang ini punya Satuan masuk (faktornya mengacu ke satuan stok sekarang).']);
         }
 
         DB::transaction(function () use ($request, $product) {
