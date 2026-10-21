@@ -10,6 +10,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ \Devlib\Lang::text($title ?? 'Stoku') }} — Stoku</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -20,6 +21,10 @@
 </head>
 <body class="dl-body {{ $bodyClass ?? '' }}">
     @yield('body')
+    {{-- Logout otomatis: hanya halaman berlogin (tamu tidak punya sesi); lamanya = umur sesi server, ping memperpanjang sesi. --}}
+    @auth
+        <x-dl::idle-logout :minutes="config('session.lifetime')" logout-url="{{ route('logout') }}" ping-url="{{ route('session.ping') }}" login-url="{{ route('login') }}" />
+    @endauth
     <script>
         // Cegah kirim ganda (klik Simpan dua kali): form yang baru saja terkirim menolak kiriman kedua selama 8 detik.
         // Fase tangkap = menolak; fase gelembung = menandai hanya bila validasi form tidak membatalkan kiriman.

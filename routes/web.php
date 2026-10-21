@@ -41,6 +41,8 @@ Route::middleware(['auth', 'active', 'module'])->group(function () {
     Route::get('/', HomeController::class)->name('home');
     Route::post('reorder-orders', [ReorderOrderController::class, 'store'])->name('reorder-orders.store');
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
+    // Ping x-dl::idle-logout: permintaan ini memperpanjang sesi; ikut EnsureActive (akun nonaktif ditolak), tanpa kode modul.
+    Route::get('session/ping', fn () => response()->noContent())->name('session.ping');
     // HELP: User's Guide (Indonesia) untuk semua yang login; Technical Guide (English) hanya Administrator (grup di bawah).
     Route::view('help', 'help.user-guide')->name('help.user-guide');
 
