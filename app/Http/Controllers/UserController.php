@@ -8,6 +8,7 @@ use App\Models\UserGroup;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 /* REMARK
  * Tujuan       : Menu Keamanan > Pengguna: daftar, tambah, ubah (nama, e-mail, peran, password baru), aktif / nonaktif. Hanya Administrator.
@@ -49,10 +50,13 @@ class UserController extends Controller
     {
         $action = $request->input('_action');
         if (in_array($action, ['activate', 'deactivate'], true)) {
-            if ($action === 'deactivate' && $user->is($request->user())) {
-                return redirect()->route('users.show', $user)->withErrors(['user' => 'Anda tidak bisa menonaktifkan akun sendiri.']);
+            if ($action === 'deactivate') {
+                if ($error = $this->deactivate($request, $user)) {
+                    return redirect()->route('users.show', $user)->withErrors(['user' => $error]);
+                }
+            } else {
+                $user->update(['is_active' => true]);
             }
-            $user->update(['is_active' => $action === 'activate']);
 
             return redirect()->route('users.show', $user)->with('status', $action === 'activate' ? 'Pengguna diaktifkan.' : 'Pengguna dinonaktifkan.');
         }
@@ -78,8 +82,28 @@ class UserController extends Controller
     public function toggle(Request $request, User $user): JsonResponse
     {
         abort_if($user->is($request->user()), 422, 'Anda tidak bisa menonaktifkan akun sendiri.');
-        $user->update(['is_active' => ! $user->is_active]);
+        if ($user->is_active) {
+            abort_if($error = $this->deactivate($request, $user), 422, (string) $error);
+        } else {
+            $user->update(['is_active' => true]);
+        }
 
         return response()->json(['active' => $user->is_active]);
+    }
+
+    // Menonaktifkan = sesi dan "ingat saya" ikut dicabut supaya akun langsung keluar. Mengembalikan pesan galat, atau null bila berhasil.
+    private function deactivate(Request $request, User $user): ?string
+    {
+        if ($user->is($request->user())) {
+            return 'Anda tidak bisa menonaktifkan akun sendiri.';
+        }
+        $otherAdmins = User::query()->where('role', User::ROLE_ADMINISTRATOR)->where('is_active', true)->whereKeyNot($user->id);
+        if ($user->isAdministrator() && ! $otherAdmins->exists()) {
+            return 'Administrator aktif terakhir tidak bisa dinonaktifkan.';
+        }
+        $user->forceFill(['is_active' => false, 'remember_token' => null])->save();
+        DB::table('sessions')->where('user_id', $user->id)->delete();
+
+        return null;
     }
 }

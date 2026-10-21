@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Middleware\EnsureActive;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
@@ -9,6 +10,7 @@ use App\Models\UserGroup;
 use App\Support\Menu;
 use App\Support\Modules;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 /* REMARK
@@ -108,5 +110,46 @@ class SecurityTest extends TestCase
         $this->put(route('users.update', $admin), ['name' => $admin->name, 'username' => 'boss', 'email' => $admin->email, 'role' => 'data_entry', 'password' => ''])->assertSessionHasErrors('role');
         $this->assertTrue($admin->fresh()->isAdministrator());
         $this->postJson(route('users.toggle', $admin))->assertStatus(422);
+    }
+
+    public function test_user_deactivated_during_an_active_session_is_rejected_and_loses_sessions(): void
+    {
+        $admin = User::factory()->administrator()->create();
+        $entry = User::factory()->create(['remember_token' => 'abc']);
+        DB::table('sessions')->insert([['id' => 's1', 'user_id' => $entry->id, 'payload' => '', 'last_activity' => time()], ['id' => 's2', 'user_id' => $admin->id, 'payload' => '', 'last_activity' => time()]]);
+
+        $this->actingAs($entry)->get(route('home'))->assertOk();
+        $this->actingAs($admin)->postJson(route('users.toggle', $entry))->assertOk()->assertJson(['active' => false]);
+        $this->assertNull($entry->fresh()->remember_token);
+        $this->assertSame(['s2'], DB::table('sessions')->pluck('id')->all());   // hanya sesi pengguna itu yang dicabut
+
+        $this->actingAs($entry->fresh())->get(route('home'))->assertRedirect(route('login'))->assertSessionHas('error', 'Akun Anda dinonaktifkan.');
+        $this->assertGuest();
+        $this->actingAs($entry->fresh())->getJson(route('home'))->assertForbidden()->assertJson(['message' => 'Akun Anda dinonaktifkan.']);
+        $this->assertGuest();
+    }
+
+    public function test_deactivate_action_from_the_form_also_revokes_sessions(): void
+    {
+        $admin = User::factory()->administrator()->create();
+        $entry = User::factory()->create();
+        DB::table('sessions')->insert(['id' => 's1', 'user_id' => $entry->id, 'payload' => '', 'last_activity' => time()]);
+
+        $this->actingAs($admin)->put(route('users.update', $entry), ['_action' => 'deactivate'])->assertRedirect();
+        $this->assertFalse($entry->fresh()->is_active);
+        $this->assertSame(0, DB::table('sessions')->where('user_id', $entry->id)->count());
+    }
+
+    public function test_the_last_active_administrator_cannot_be_deactivated(): void
+    {
+        $first = User::factory()->administrator()->create();
+        $second = User::factory()->administrator()->create();
+
+        $this->actingAs($first)->postJson(route('users.toggle', $second))->assertOk();   // masih ada $first
+        $this->assertTrue($first->fresh()->is_active);
+
+        // Pelaku yang bukan administrator aktif (middleware dilewati) tetap tidak bisa menonaktifkan administrator aktif terakhir.
+        $this->withoutMiddleware(EnsureActive::class)->actingAs($second->fresh())->postJson(route('users.toggle', $first))->assertStatus(422);
+        $this->assertTrue($first->fresh()->is_active);
     }
 }
