@@ -58,7 +58,7 @@
                         <td>
                             @if ($i->openOrder)
                                 <x-dl::badge tone="success" icon="fa-circle-check" :label="'Dipesan '.$i->openOrder->ordered_at->format('d/m/Y').($i->openOrder->ref_no ? ' · '.$i->openOrder->ref_no : '')" />
-                                <div class="dl-note">{{ $i->openOrder->note() }}</div>
+                                <div class="dl-note">{{ $i->openOrder->note($leadTimes[$i->id] ?? null) }}</div>
                             @else
                                 <x-dl::badge tone="danger" icon="fa-triangle-exclamation" label="Belum dipesan" />
                             @endif

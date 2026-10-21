@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\ProductUnit;
 use App\Models\Unit;
 use App\Models\User;
+use App\Services\LeadTimes;
 use App\Services\ProductUnits;
 use App\Support\Palette;
 use Devlib\Locale;
@@ -62,6 +63,7 @@ class ProductController extends Controller
         return view('products.form', [
             'product' => $product, 'batches' => $product->items()->orderByRaw('expiry_date is null')->orderBy('expiry_date')->get(), 'categories' => $this->categories(false),
             'units' => $this->units($product->unit), 'locations' => $this->locations($product->location), 'nextCodes' => [],
+            'leadTime' => LeadTimes::for($product), 'dailyUsage' => LeadTimes::dailyUsage($product),
         ] + $this->packUnitData($product, $request->user()));
     }
 

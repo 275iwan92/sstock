@@ -7,6 +7,7 @@ use App\Models\Item;
 use App\Models\Product;
 use App\Models\StockDocument;
 use App\Models\Supplier;
+use App\Services\LeadTimes;
 use App\Services\StockValuation;
 use App\Support\Menu;
 use Illuminate\Http\Request;
@@ -31,6 +32,7 @@ class HomeController extends Controller
             'open' => $request->query('open'),
             'fresh' => (bool) session('fresh'),
             'below' => $below,
+            'leadTimes' => LeadTimes::forMany($below),
             'suppliers' => Supplier::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id')->all(),
             'expiring' => Item::query()->nearExpiry()->orderBy('expiry_date')->get(),
             'itemCount' => Product::query()->where('is_active', true)->count(),

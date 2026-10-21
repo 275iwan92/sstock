@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enums\StockDocumentType;
+use App\Services\LeadTimes;
+use Devlib\Engine\LeadTime;
 use Devlib\Locale;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
@@ -45,8 +47,8 @@ class ReorderOrder extends Model
             ->sum('stock_movements.qty'), 3);
     }
 
-    // Keterangan untuk peringatan stok menipis (beranda, laporan Ringkasan Stok, form barang).
-    public function note(): string
+    // Keterangan untuk peringatan stok menipis (beranda, laporan Ringkasan Stok, form barang). Pesanan yang masih terbuka ditambah perkiraan tiba (engine LeadTime) bila ada angkanya; $leadTime dari LeadTimes::forMany menghindari query per baris.
+    public function note(?LeadTime $leadTime = null): string
     {
         $this->loadMissing('product', 'creator', 'supplier');
         $unit = $this->product->unit;
@@ -56,6 +58,7 @@ class ReorderOrder extends Model
         // Baris lama tidak punya jumlah / supplier: bagian itu dilewati.
         return ($qty !== null || $this->supplier ? 'Sudah dipesan' : 'Sudah dicatat dipesan').($qty !== null ? ' '.Locale::decimal($qty, 3)." {$unit}" : '').($this->supplier ? " ke {$this->supplier->name}" : '')
             .' pada '.$this->ordered_at->format('d/m/Y').($this->ref_no ? ", ref {$this->ref_no}" : '').($this->creator ? " oleh {$this->creator->name}" : '')
-            .'. Diterima sejak dipesan: '.Locale::decimal($this->receivedSince(), 3)." {$unit}.".($note ? " Catatan: {$note}." : '');
+            .'. Diterima sejak dipesan: '.Locale::decimal($this->receivedSince(), 3)." {$unit}.".($note ? " Catatan: {$note}." : '')
+            .($this->closed_at === null ? LeadTimes::openOrderSentence($leadTime ?? LeadTimes::for($this->product), $this) : '');
     }
 }

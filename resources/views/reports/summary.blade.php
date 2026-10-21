@@ -37,6 +37,7 @@
             ['key' => 'end', 'label' => 'Closing', 'type' => 'number', 'bold' => true],
             ['key' => 'rop', 'label' => 'Reorder Point', 'type' => 'number'],
             ['key' => 'lead', 'label' => 'Lead Time (d)', 'type' => 'number'],
+            ['key' => 'lead_auto', 'label' => 'Lead Time Otomatis (d)', 'type' => 'number'],
             $sup ? ['key' => 'cost', 'label' => 'Avg Cost', 'type' => 'money'] : null,
             $sup ? ['key' => 'value', 'label' => 'Stock Value', 'type' => 'money', 'sum' => true, 'bold' => true] : null,
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['AMAN' => 'success', 'PESAN ULANG' => 'danger'], 'rowTones' => ['PESAN ULANG' => 'danger']],
