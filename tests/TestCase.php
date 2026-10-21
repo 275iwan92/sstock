@@ -9,6 +9,13 @@ use Illuminate\Support\Arr;
 
 abstract class TestCase extends BaseTestCase
 {
+    // Tes tidak boleh bergantung pada `npm run build` (public/build tidak ikut Git): Vite dimatikan agar penguji baru tidak melihat puluhan tes merah.
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->withoutVite();
+    }
+
     // Barang uji: produk baru (kode tetap) beserta batch tunggalnya; mengembalikan batch (Item) yang dipakai dokumen.
     protected function makeItem(array $attrs): Item
     {
