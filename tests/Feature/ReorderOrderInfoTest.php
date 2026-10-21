@@ -115,7 +115,7 @@ class ReorderOrderInfoTest extends TestCase
     {
         $order = $this->scenario();
 
-        $this->receive(1);   // penerimaan apa pun tetap menutup pesanan
+        $this->receive(1);   // pesanan lama tanpa jumlah: penerimaan apa pun tetap menutupnya
         $this->assertNotNull($order->fresh()->closed_at);
         $this->assertSame(3.0, $this->item->fresh()->stock_qty);
         $this->assertTrue($this->item->product->fresh()->isBelowReorderPoint());   // 3 <= 5: peringatan tetap menurut stok

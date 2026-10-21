@@ -13,7 +13,7 @@ use Tests\TestCase;
 
 /* REMARK
  * Tujuan       : Menjaga catatan pemesanan sederhana (bukan PO) di "Catat Pemesanan": supplier (aktif), jumlah dipesan > 0 dalam satuan stok, tanggal, ref dan catatan opsional; info peringatan menampilkan supplier + jumlah;
- *                baris lama tanpa supplier / jumlah tetap tampil; aturan penutupan pesanan (penerimaan apa pun) tidak berubah.
+ *                baris lama tanpa supplier / jumlah tetap tampil; pesanan ber-jumlah tertutup hanya bila jumlah diterima memenuhi jumlah dipesan (lihat ReorderOrderClosingTest).
  * Dipakai oleh : php artisan test.
  * Status       : Aktif.
  */
@@ -83,7 +83,7 @@ class ReorderOrderRecordTest extends TestCase
     {
         $this->get(route('home'))->assertOk()->assertSee('name="supplier_id"', false)->assertSee('Jumlah Dipesan', false)->assertSee('Toko Maju', false)->assertSee('data-reorder-unit', false)->assertSee('No. Referensi Pemesanan', false)->assertDontSee('Referensi Pemesanan (PO)', false);   // popup (hanya ada selama ada barang yang belum dipesan)
         $this->post(route('reorder-orders.store'), $this->order());
-        $expected = 'Sudah dipesan 25 pcs ke Toko Maju pada '.today()->format('d/m/Y').', ref PO-5 oleh Sari Supervisor. Diterima sejak dipesan: 3 pcs.';
+        $expected = 'Sudah dipesan 25 pcs ke Toko Maju pada '.today()->format('d/m/Y').', ref PO-5 oleh Sari Supervisor. Diterima sejak dipesan: 3 dari 25 pcs.';
 
         $this->get(route('home'))->assertOk()->assertSee($expected, false)->assertSee('Catatan: kirim pagi', false);
         $this->get(route('products.show', $this->item->product))->assertOk()->assertSee($expected, false);
@@ -113,11 +113,14 @@ class ReorderOrderRecordTest extends TestCase
         $this->get(route('home'))->assertOk()->assertSee('Sudah dipesan 25 pcs pada', false);
     }
 
-    public function test_any_receiving_still_closes_the_order_whatever_the_ordered_quantity(): void
+    public function test_a_partial_receiving_keeps_the_order_open_until_the_ordered_quantity_arrives(): void
     {
-        $this->post(route('reorder-orders.store'), $this->order());   // dipesan 25
+        $this->post(route('reorder-orders.store'), $this->order());   // dipesan 25; 3 dari penerimaan hari yang sama ikut dihitung
 
-        $this->receive(1);                                            // hanya 1 yang datang: tetap menutup
+        $this->receive(1);                                            // 4 dari 25: tetap terbuka
+        $this->assertNull(ReorderOrder::firstOrFail()->closed_at);
+
+        $this->receive(21);                                           // 25 dari 25: tuntas
         $this->assertNotNull(ReorderOrder::firstOrFail()->closed_at);
     }
 }

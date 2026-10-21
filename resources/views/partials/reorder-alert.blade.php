@@ -2,7 +2,7 @@
  Tujuan       : Peringatan item yang stoknya menyentuh / di bawah Reorder Point: kartu alert + tabel ringkas (nama, jumlah pesan ulang, stok saat ini) di dashboard, tanpa popup.
  Sumber hulu  : HomeController ($below = Product::belowReorderPoint, stok tersedia = batch belum kedaluwarsa).
  Input        : below.
- Output       : x-dl::alert, x-dl::table (termasuk status pesanan + keterangan: jumlah, supplier, tanggal, ref, oleh, diterima sejak dipesan), x-dl::button menuju Receiving, modal catat pemesanan (supplier, jumlah, tanggal, ref, catatan).
+ Output       : x-dl::alert, x-dl::table (termasuk status pesanan + keterangan: jumlah, supplier, tanggal, ref, oleh, diterima sejak dipesan), x-dl::button menuju Receiving, modal catat pemesanan (supplier, jumlah, tanggal, ref, catatan), modal Tutup Pesanan per pesanan terbuka (alasan opsional).
  Dipakai oleh : home.blade.php (slot dashboard).
  Status       : Aktif.
 --}}
@@ -45,7 +45,7 @@
             })();
         </script>
     @endif
-    {{-- Tabel ditulis langsung (bukan x-dl::table) karena kolom status memakai x-dl::badge berwarna. --}}
+    {{-- Tabel ditulis langsung (bukan x-dl::table) karena kolom status memakai x-dl::badge berwarna (Dipesan / Diterima sebagian). --}}
     <div class="dl-table-wrap sstock-reorder">
         <table class="dl-table is-striped">
             <thead><tr>@foreach ($cols as $c)<th>{{ \Devlib\Lang::text($c) }}</th>@endforeach</tr></thead>
@@ -57,7 +57,9 @@
                         <td>{{ \Devlib\Locale::number($i->available_qty, 2) }} {{ $i->unit }}</td>
                         <td>
                             @if ($i->openOrder)
-                                <x-dl::badge tone="success" icon="fa-circle-check" :label="'Dipesan '.$i->openOrder->ordered_at->format('d/m/Y').($i->openOrder->ref_no ? ' · '.$i->openOrder->ref_no : '')" />
+                                @php $partial = $i->openOrder->status() === 'partial'; @endphp
+                                <x-dl::badge :tone="$partial ? 'warn' : 'success'" :icon="$partial ? 'fa-box-open' : 'fa-circle-check'" :label="$i->openOrder->statusLabel().' '.$i->openOrder->ordered_at->format('d/m/Y').($i->openOrder->ref_no ? ' · '.$i->openOrder->ref_no : '')" />
+                                <x-dl::button variant="secondary" size="sm" icon="fa-ban" label="Close Order" :data-dl-open="'close-order-'.$i->openOrder->id" />
                                 <div class="dl-note">{{ $i->openOrder->note($leadTimes[$i->id] ?? null) }}</div>
                             @else
                                 <x-dl::badge tone="danger" icon="fa-triangle-exclamation" label="Belum dipesan" />
@@ -68,4 +70,15 @@
             </tbody>
         </table>
     </div>
+    {{-- Tutup manual: untuk pesanan yang tidak akan dipenuhi penuh (supplier mengirim kurang). Tidak menghapus apa pun; jumlah yang sudah diterima tetap tercatat di Penerimaan. --}}
+    @foreach ($below->filter(fn ($i) => $i->openOrder) as $i)
+        <x-dl::modal :id="'close-order-'.$i->openOrder->id" title="Close Order" icon="fa-ban" size="sm">
+            <form id="close-order-form-{{ $i->openOrder->id }}" method="POST" action="{{ route('reorder-orders.close', $i->openOrder) }}">
+                @csrf
+                <p class="dl-note">Tutup pesanan {{ $i->name }} yang belum diterima penuh? Pesanan yang sudah ditutup tidak bisa dibuka lagi.</p>
+                <x-dl::field.text name="note" label="Alasan (opsional)" maxlength="150" />
+            </form>
+            <x-slot:footer><x-dl::button type="submit" :form="'close-order-form-'.$i->openOrder->id" icon="save" label="Close Order" /></x-slot:footer>
+        </x-dl::modal>
+    @endforeach
 @endif

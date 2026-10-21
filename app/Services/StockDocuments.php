@@ -7,7 +7,6 @@ use App\Models\Department;
 use App\Models\Item;
 use App\Models\Product;
 use App\Models\Recipient;
-use App\Models\ReorderOrder;
 use App\Models\StockDocument;
 use App\Models\StockMovement;
 use App\Models\User;
@@ -27,7 +26,7 @@ use Illuminate\Validation\ValidationException;
  */
 final class StockDocuments
 {
-    public function __construct(private readonly StockLedger $ledger) {}
+    public function __construct(private readonly StockLedger $ledger, private readonly ReorderOrders $reorders) {}
 
     /**
      * Dokumen baru SELALU berstatus draf dan belum menyentuh stok; stok baru diproses saat Confirm (penyesuaian: saat Approve).
@@ -70,10 +69,7 @@ final class StockDocuments
             }
             $below = $this->ledger->post($doc->refresh(), $user);
             $doc->update(['status' => 'confirmed', 'confirmed_by' => $user->id, 'confirmed_at' => now()]);
-            if ($doc->type === StockDocumentType::Receiving) {
-                // Barang datang menutup pemesanan ulang yang terbuka (juga bila baru sebagian; pesan lagi bila masih kurang).
-                ReorderOrder::query()->whereNull('closed_at')->whereIn('product_id', Item::query()->whereIn('id', $doc->lines()->pluck('item_id'))->pluck('product_id'))->update(['closed_at' => now(), 'receiving_id' => $doc->id]);
-            }
+            $this->reorders->reconcileDocument($doc);   // penerimaan menambah jumlah diterima pesanan; menutup hanya bila jumlah dipesan terpenuhi
 
             return $below;
         });
@@ -163,10 +159,7 @@ final class StockDocuments
                 $this->recordReversal($doc, $by, $reason, $this->ledger->reverse($doc, $by));
             }
             $doc->update(['status' => 'cancelled', 'cancelled_by' => $by->id, 'cancelled_at' => now(), 'cancel_reason' => $reason]);
-            if ($doc->type === StockDocumentType::Receiving) {
-                // Pemesanan yang ditutup oleh penerimaan ini terbuka lagi.
-                ReorderOrder::query()->where('receiving_id', $doc->id)->update(['closed_at' => null, 'receiving_id' => null]);
-            }
+            $this->reorders->reconcileDocument($doc);   // penerimaan yang dibatalkan tidak dihitung lagi: pesanan yang jumlahnya jadi kurang terbuka kembali
         });
     }
 

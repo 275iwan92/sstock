@@ -271,7 +271,7 @@ class StockFlowTest extends TestCase
         $this->actingAs($this->entry)->get(route('home'))->assertOk()->assertDontSee('data-dl-chart', false);
     }
 
-    public function test_reorder_order_is_recorded_shown_on_the_opening_screen_and_closed_by_receiving(): void
+    public function test_reorder_order_is_recorded_shown_on_the_opening_screen_and_closed_when_the_quantity_is_received(): void
     {
         $item = $this->item('R1', rop: 5);
         $fine = $this->item('R2', rop: 5);
@@ -282,13 +282,15 @@ class StockFlowTest extends TestCase
 
         $order = ['product_id' => $item->product_id, 'supplier_id' => Supplier::create(['code' => 'S9', 'name' => 'Toko Sembilan'])->id, 'qty' => 25, 'ordered_at' => today()->toDateString(), 'ref_no' => 'PO-77'];
         $this->post(route('reorder-orders.store'), $order)->assertRedirect(route('home'));
-        $this->get(route('home'))->assertSee('Dipesan ')->assertSee('PO-77')->assertDontSee('Belum dipesan');
+        $this->get(route('home'))->assertSee('Diterima sebagian')->assertSee('PO-77')->assertDontSee('Belum dipesan');   // 3 dari 25: penerimaan hari yang sama dengan tanggal pesan ikut dihitung
 
         $this->post(route('reorder-orders.store'), $order)->assertStatus(422);                                   // sudah terbuka
         $this->post(route('reorder-orders.store'), ['product_id' => $fine->product_id] + $order)->assertStatus(422);        // stok masih cukup
         $this->post(route('reorder-orders.store'), ['qty' => 0] + $order)->assertSessionHasErrors('qty');
 
-        $this->receive($item, 20, 10);
+        $this->receive($item, 20, 10);   // 23 dari 25: masih terbuka
+        $this->assertNull(ReorderOrder::where('product_id', $item->product_id)->first()->closed_at);
+        $this->receive($item, 2, 10);    // 25 dari 25: tuntas
         $this->assertNotNull(ReorderOrder::where('product_id', $item->product_id)->first()->closed_at);
         $this->assertNull($item->product->fresh()->openOrder);
     }

@@ -40,6 +40,7 @@ Route::middleware('guest')->group(function () {
 Route::middleware(['auth', 'active', 'module'])->group(function () {
     Route::get('/', HomeController::class)->name('home');
     Route::post('reorder-orders', [ReorderOrderController::class, 'store'])->name('reorder-orders.store');
+    Route::post('reorder-orders/{order}/close', [ReorderOrderController::class, 'close'])->name('reorder-orders.close');
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
     // Ping x-dl::idle-logout: permintaan ini memperpanjang sesi; ikut EnsureActive (akun nonaktif ditolak), tanpa kode modul.
     Route::get('session/ping', fn () => response()->noContent())->name('session.ping');

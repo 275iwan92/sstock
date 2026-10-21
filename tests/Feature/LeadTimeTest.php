@@ -15,7 +15,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /* REMARK
- * Tujuan       : Menjaga sambungan engine LeadTime DevLib: lead time dari pesanan tertutup (selisih hari kalender), minimal 3 data (kurang = lead time manual barang), penerimaan yang dibatalkan tidak dihitung,
+ * Tujuan       : Menjaga sambungan engine LeadTime DevLib: lead time dari pesanan yang sudah menerima barang (selisih hari kalender sampai penerimaan pertama), minimal 3 data (kurang = lead time manual barang), penerimaan yang dibatalkan tidak dihitung,
  *                perkiraan tiba dan peringatan terlambat pada pesanan terbuka, saran titik pesan ulang dari pemakaian 90 hari, dan tanpa galat saat tanpa data. Hanya keterangan / saran: aturan penutupan dan peringatan tidak berubah.
  * Dipakai oleh : php artisan test.
  * Status       : Aktif.
@@ -57,9 +57,10 @@ class LeadTimeTest extends TestCase
     }
 
     // Pesanan selesai: dipesan $days hari sebelum "tiba", tiba $ago hari lalu (jam sengaja akhir hari: yang dihitung tanggal kalender).
+    // Baris sintetis tanpa penerimaan nyata: close_reason 'manual' supaya ReorderOrders::reconcile (dijalankan tiap Penerimaan) tidak menghitung ulang dan membukanya.
     private function closedOrder(int $days, int $ago = 20): ReorderOrder
     {
-        return ReorderOrder::create(['product_id' => $this->item->product_id, 'ordered_at' => today()->subDays($ago + $days), 'ref_no' => 'X', 'closed_at' => today()->subDays($ago)->setTime(23, 59)]);
+        return ReorderOrder::create(['product_id' => $this->item->product_id, 'ordered_at' => today()->subDays($ago + $days), 'ref_no' => 'X', 'closed_at' => today()->subDays($ago)->setTime(23, 59), 'first_received_at' => today()->subDays($ago)->setTime(23, 59), 'close_reason' => 'manual']);
     }
 
     private function lead(): \Devlib\Engine\LeadTime
@@ -113,7 +114,8 @@ class LeadTimeTest extends TestCase
         $this->closedOrder(4, 30);
         $this->closedOrder(5, 20);
         $this->closedOrder(6, 10);   // biasanya 5 hari
-        $this->receive(3);           // 3 <= titik 5
+        $in = $this->receive(3);     // 3 <= titik 5, diterima sebelum pesanan ini (dimundurkan) supaya pesanan belum menerima apa pun
+        StockMovement::where('stock_document_id', $in->id)->update(['moved_at' => now()->subDays(20)]);
 
         $late = ReorderOrder::create(['product_id' => $this->item->product_id, 'ordered_at' => today()->subDays(9), 'ref_no' => 'P-LATE', 'supplier_id' => Supplier::first()->id, 'qty' => 25, 'created_by' => $this->sup->id]);
         $expected = (new \DateTimeImmutable('today'))->modify('-4 days');
@@ -121,7 +123,7 @@ class LeadTimeTest extends TestCase
         $this->assertStringContainsString('Perkiraan tiba', $note);
         $this->assertStringContainsString(\Devlib\DateValue::of($expected->format('Y-m-d'))->display(), $note);
         $this->assertStringContainsString('Sudah 9 hari, biasanya 5. Periksa pesanan.', $note);
-        $this->get(route('home'))->assertOk()->assertSee('Sudah 9 hari, biasanya 5. Periksa pesanan.', false)->assertSee('Sari Supervisor. Diterima sejak dipesan: 3 pcs. Perkiraan tiba', false);
+        $this->get(route('home'))->assertOk()->assertSee('Sudah 9 hari, biasanya 5. Periksa pesanan.', false)->assertSee('Sari Supervisor. Diterima sejak dipesan: 0 dari 25 pcs. Perkiraan tiba', false);
 
         $late->update(['ordered_at' => today()->subDays(2)]);   // belum terlambat: perkiraan saja
         $this->assertStringContainsString('Perkiraan tiba', $late->fresh()->note());

@@ -49,15 +49,16 @@
 <text class="t m" x="278" y="178">lead_time_days</text>
 <text class="t m" x="278" y="193">tracks_expiry</text>
 <text class="t m" x="278" y="208">is_active</text>
-<rect class="n n-gray" x="270" y="260" width="250" height="122" rx="7"/>
+<rect class="n n-gray" x="270" y="260" width="250" height="138" rx="7"/>
 <line class="n-rule" x1="270" y1="284" x2="520" y2="284"/>
 <text class="t b" x="278" y="276">reorder_orders</text>
 <text class="t m" x="278" y="298">id PK</text>
 <text class="t m" x="278" y="313">product_id FK</text>
 <text class="t m" x="278" y="328">ordered_at, ref_no</text>
 <text class="t m" x="278" y="343">created_by FK</text>
-<text class="t m" x="278" y="358">closed_at</text>
-<text class="t m" x="278" y="373">receiving_id FK</text>
+<text class="t m" x="278" y="358">received_qty, first_received_at</text>
+<text class="t m" x="278" y="373">closed_at, close_reason</text>
+<text class="t m" x="278" y="388">receiving_id FK</text>
 <rect class="n n-in" x="270" y="430" width="250" height="167" rx="7"/>
 <line class="n-rule" x1="270" y1="454" x2="520" y2="454"/>
 <text class="t b" x="278" y="446">items  (= batches)</text>

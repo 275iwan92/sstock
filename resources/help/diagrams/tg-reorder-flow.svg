@@ -21,9 +21,9 @@
 <path class="e" d="M680,68 L720,68" marker-end="url(#m-tg-reorder-flow)"/>
 <rect class="n n-teal"  x="490" y="160" width="390" height="62" rx="9"/>
 <text class="t b" x="685" y="187" text-anchor="middle">Receiving confirmed</text>
-<text class="t s" x="685" y="203" text-anchor="middle">closes open orders of its products: closed_at, receiving_id</text>
+<text class="t s" x="685" y="203" text-anchor="middle">received_qty (FIFO); closes only when qty is reached</text>
 <path class="e" d="M800,106 L800,160" marker-end="url(#m-tg-reorder-flow)"/>
 <path class="e dash" d="M490,191 L350,191 L350,106" marker-end="url(#m-tg-reorder-flow)"/>
-<text class="t el" x="20" y="190" text-anchor="start">Receiving cancelled (finishCancel):</text>
-<text class="t el" x="20" y="205" text-anchor="start">reopens orders where receiving_id = document</text>
+<text class="t el" x="20" y="190" text-anchor="start">Receiving cancelled (finishCancel): recomputed,</text>
+<text class="t el" x="20" y="205" text-anchor="start">orders no longer complete reopen. Or Close Order (manual)</text>
 </svg>

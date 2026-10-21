@@ -10,7 +10,7 @@ use Devlib\Engine\LeadTime;
 
 /* REMARK
  * Tujuan       : Menyambung engine LeadTime DevLib ke Stoku: lead time per barang dari pesanan nyata (reorder_orders: tanggal pesan sampai tanggal masuk), dengan lead time manual barang (products.lead_time_days) sebagai cadangan.
- *                Tanggal masuk = closed_at. Pesanan hanya tertutup oleh Penerimaan terkonfirmasi; bila penerimaan itu dibatalkan, pesanan dibuka lagi (closed_at kosong) sehingga tidak ikut dihitung.
+ *                Tanggal masuk = penerimaan PERTAMA (first_received_at), juga untuk pesanan yang masih diterima sebagian. Pesanan tanpa penerimaan (termasuk yang ditutup manual tanpa penerimaan) tidak dihitung; bila penerimaan dibatalkan, ReorderOrders::reconcile mengosongkannya lagi.
  *                Hanya SARAN dan keterangan: tidak mengubah lead time manual, titik pesan ulang, aturan penutupan pesanan, maupun perhitungan peringatan.
  * Sumber hulu  : reorder_orders, products.lead_time_days (0 = belum diisi, dianggap tanpa cadangan), stock_movements (pemakaian harian).
  * Output       : LeadTime per produk (forMany: satu query untuk banyak produk), pemakaian harian rata-rata.
@@ -39,10 +39,10 @@ final class LeadTimes
     public static function forMany(iterable $products): array
     {
         $products = collect($products)->keyBy('id');
-        $orders = ReorderOrder::query()->whereIn('product_id', $products->keys())->orderBy('id')->get(['id', 'product_id', 'ordered_at', 'closed_at'])->groupBy('product_id');
+        $orders = ReorderOrder::query()->whereIn('product_id', $products->keys())->orderBy('id')->get(['id', 'product_id', 'ordered_at', 'first_received_at'])->groupBy('product_id');
 
         return $products->map(fn (Product $p) => LeadTime::of(
-            ($orders[$p->id] ?? collect())->map(fn (ReorderOrder $o) => ['start' => $o->ordered_at->toDateString(), 'end' => $o->closed_at?->toDateString(), 'key' => $o->id])->all(),
+            ($orders[$p->id] ?? collect())->map(fn (ReorderOrder $o) => ['start' => $o->ordered_at->toDateString(), 'end' => $o->first_received_at?->toDateString(), 'key' => $o->id])->all(),
             ['samples' => self::SAMPLES, 'min_samples' => self::MIN_SAMPLES, 'fallback_days' => $p->lead_time_days > 0 ? $p->lead_time_days : null, 'late_tolerance_days' => self::LATE_TOLERANCE_DAYS],
         ))->all();
     }
@@ -63,7 +63,8 @@ final class LeadTimes
     /** Kalimat tambahan untuk pesanan yang masih terbuka: perkiraan tiba dan, bila terlambat, peringatannya; kosong bila tidak ada angka lead time. */
     public static function openOrderSentence(LeadTime $lt, ReorderOrder $order): string
     {
-        if ($order->closed_at !== null || $lt->effective() === null) {
+        // Perkiraan tiba dan terlambat mengikuti kedatangan PERTAMA: setelah ada penerimaan (sebagian) pesanan tidak ditandai terlambat lagi.
+        if ($order->closed_at !== null || $order->first_received_at !== null || $lt->effective() === null) {
             return '';
         }
         $late = $lt->status($order->ordered_at, today())['state'] === 'late';
