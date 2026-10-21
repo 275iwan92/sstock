@@ -1,58 +1,294 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Stoku
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Stoku adalah aplikasi stok barang untuk gudang. Setiap barang punya batch (satu batch = satu tanggal kedaluwarsa). Barang yang paling cepat kedaluwarsa dikeluarkan lebih dulu (FEFO). Aplikasi memberi peringatan saat stok sampai titik pesan ulang dan saat batch hampir kedaluwarsa. Semua perubahan stok dicatat lewat dokumen: Saldo Awal, Penerimaan Barang, Pengeluaran Barang, dan Penyesuaian Stok. Hak akses dibagi tiga peran (Data Entry, Supervisor, Administrator) dan bisa diatur lagi per grup.
 
-## About Laravel
+Dokumen ini ditulis untuk penguji (QC) pemula. Ikuti langkahnya satu per satu, dari atas ke bawah.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Isi:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+1. [Prasyarat](#1-prasyarat)
+2. [Memasang dari nol](#2-memasang-dari-nol)
+3. [Akun uji](#3-akun-uji)
+4. [Wilayah (opsional)](#4-wilayah-opsional)
+5. [Mengatur ulang data](#5-mengatur-ulang-data)
+6. [Masalah umum](#6-masalah-umum)
+7. [Menjalankan tes otomatis](#7-menjalankan-tes-otomatis)
+8. [Skenario uji dan bantuan di dalam aplikasi](#8-skenario-uji-dan-bantuan-di-dalam-aplikasi)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 1. Prasyarat
 
-## Learning Laravel
+Pasang semua ini lebih dulu:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+| Perangkat | Versi | Keterangan |
+|---|---|---|
+| PHP | 8.3 atau lebih baru | Syarat dari `composer.json` (`"php": "^8.3"`). Ekstensi `pdo_mysql` harus aktif. Ekstensi `gd` hanya dipakai bila Anda menambah gambar latar login (opsional). |
+| Composer | 2.x | Mengunduh paket PHP. |
+| MySQL | 8 | Database aplikasi. Aplikasi ini hanya diuji di MySQL. |
+| Node.js dan npm | Node 20.19 atau lebih baru, atau 22.12 atau lebih baru | Syarat dari Vite 8 (lihat `package.json`). Wajib, karena tampilan (CSS/JS) harus dibangun dulu. |
+| Git | versi terbaru | Mengunduh kode dari GitHub. |
+| Herd atau cara lain | - | Untuk menjalankan aplikasi: Laravel Herd (alamat `sstock.test`) atau perintah `php artisan serve`. |
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Cek versi di terminal:
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```powershell
+php -v
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+```powershell
+composer -V
+```
 
-## Contributing
+```powershell
+node -v
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```powershell
+git --version
+```
 
-## Code of Conduct
+## 2. Memasang dari nol
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Perintah di bawah memakai PowerShell (Windows). Di macOS atau Linux, perintahnya sama kecuali yang disebut khusus.
 
-## Security Vulnerabilities
+### Langkah 1. Ambil kode
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Stoku memakai pustaka tampilan bernama DevLib. Pustaka ini ada di repositori terpisah. `composer.json` memanggilnya dari folder `../devlib`. Artinya folder `devlib` dan folder `sstock` harus **berdampingan** (satu folder induk yang sama).
 
-## License
+Kedua repositori di GitHub bersifat **privat**. Anda harus punya akun GitHub, dan pemilik (Jo) harus memberi Anda akses ke `275iwan92/sstock` dan `275iwan92/devlib`. Tanpa akses, perintah `git clone` akan gagal.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Pindah ke folder induk yang Anda pilih. Contoh (ganti dengan folder Anda):
+
+```powershell
+cd C:\Users\NAMA_ANDA\Herd
+```
+
+Unduh DevLib:
+
+```powershell
+git clone https://github.com/275iwan92/devlib.git
+```
+
+Unduh Stoku:
+
+```powershell
+git clone https://github.com/275iwan92/sstock.git
+```
+
+Hasilnya dua folder berdampingan: `...\Herd\devlib` dan `...\Herd\sstock`. Jangan ganti nama kedua folder itu.
+
+Masuk ke folder Stoku. Semua langkah berikut dijalankan dari sini:
+
+```powershell
+cd sstock
+```
+
+### Langkah 2. Pasang paket PHP
+
+```powershell
+composer install
+```
+
+### Langkah 3. Salin berkas pengaturan
+
+Berkas `.env` berisi pengaturan mesin Anda. Salin dari contoh.
+
+Windows (PowerShell):
+
+```powershell
+Copy-Item .env.example .env
+```
+
+macOS atau Linux:
+
+```bash
+cp .env.example .env
+```
+
+### Langkah 4. Isi pengaturan database
+
+Database `sstock` dan user MySQL-nya **tidak perlu dibuat sendiri**. Perintah pemasangan di Langkah 6 yang membuatnya, asal Anda memberi akun admin MySQL.
+
+Buka `.env` dengan editor teks, lalu cek bagian ini:
+
+```dotenv
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=sstock
+DB_USERNAME=sstock_usr
+DB_PASSWORD=isi_sandi_mysql_anda
+DB_ADMIN_USERNAME=root
+DB_ADMIN_PASSWORD=isi_sandi_admin_mysql_anda
+```
+
+Artinya:
+
+- `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`: database dan user yang dipakai aplikasi. Hanya huruf, angka, dan garis bawah (maksimal 32 karakter). Ganti `isi_sandi_mysql_anda` dengan sandi pilihan Anda. Pemasang membuat user itu dengan sandi tersebut.
+- `DB_ADMIN_USERNAME` dan `DB_ADMIN_PASSWORD`: akun admin MySQL, hanya dipakai pemasang untuk membuat database dan user. Aplikasi tidak memakainya. Bila `root` di mesin Anda tanpa sandi, kosongkan `DB_ADMIN_PASSWORD`. Bila dikosongkan, pemasang akan menanyakan sandinya.
+- Nilai `DB_PASSWORD` di `.env.example` hanya contoh untuk mesin lokal. Jangan dipakai di server sungguhan.
+- Jangan menyimpan atau mengirim `.env` Anda ke siapa pun. Berkas ini tidak ikut Git.
+
+Bila Anda memakai `php artisan serve` (bukan Herd), ubah juga `APP_URL`:
+
+```dotenv
+APP_URL=http://127.0.0.1:8000
+```
+
+### Langkah 5. Buat kunci aplikasi
+
+```powershell
+php artisan key:generate
+```
+
+### Langkah 6. Pasang database
+
+```powershell
+php artisan sstock:install
+```
+
+Perintah ini aman dijalankan ulang. Ia tidak menimpa data yang sudah ada. Urutan kerjanya:
+
+1. Membuat database `sstock` dan user MySQL (bila belum ada). Bila sandi admin tidak ada di `.env`, ia menanyakannya (tekan Enter bila `root` tanpa sandi). Di langkah 3 Anda mungkin ditanya sekali lagi.
+2. Menjalankan migrasi (membuat semua tabel).
+3. Mencoba menyalin data wilayah dari database proyek lain. **Di mesin penguji ini hampir pasti gagal, dan itu tidak apa-apa.** Anda akan melihat peringatan "Data wilayah belum disalin". Lihat [bagian 4](#4-wilayah-opsional).
+4. Mengisi data contoh, tetapi hanya bila belum ada satu pun pengguna. Yang dibuat: 3 akun uji ([bagian 3](#3-akun-uji)), 3 kategori (ATK, SPR, TLS), 3 supplier, puluhan barang beserta lokasi rak, 5 departemen, 6 penerima, dan riwayat transaksi contoh (saldo awal, penerimaan, pengeluaran, penyesuaian). Sebagian barang punya batch kedaluwarsa.
+
+Pesan terakhir yang benar: `Instalasi selesai.`
+
+### Langkah 7. Bangun tampilan
+
+Folder `public/build` tidak ikut Git, jadi harus dibangun di mesin Anda.
+
+```powershell
+npm install --ignore-scripts
+```
+
+```powershell
+npm run build
+```
+
+### Langkah 8. Jalankan aplikasi
+
+**Dengan Herd:** daftarkan folder induk (tempat `sstock` berada) di Herd sebagai folder terdaftar (parked). Lalu buka:
+
+```
+http://sstock.test
+```
+
+**Tanpa Herd:** jalankan server bawaan PHP, dan biarkan terminal ini terbuka:
+
+```powershell
+php artisan serve
+```
+
+Lalu buka:
+
+```
+http://127.0.0.1:8000
+```
+
+Anda akan melihat halaman masuk. Masuk dengan salah satu akun di bagian berikut.
+
+### Jalan pintas
+
+Ada satu perintah yang menjalankan langkah 2, 3 (hanya bila `.env` belum ada), 5, 6, dan 7 sekaligus:
+
+```powershell
+composer setup
+```
+
+Perintah ini tidak bertanya apa pun. Ia memakai `DB_ADMIN_USERNAME` dan `DB_ADMIN_PASSWORD` dari `.env`. Jadi ia cocok hanya bila `root` MySQL Anda tanpa sandi, atau bila Anda sudah mengisi `.env` sebelum menjalankannya. Untuk pemula, ikuti langkah satu per satu di atas agar pesan galat mudah dibaca.
+
+## 3. Akun uji
+
+Seeder (`database/seeders/UserSeeder.php`) membuat tiga akun ini. Masuk dengan username (atau e-mail) dan password:
+
+| Peran | Username | E-mail | Password |
+|---|---|---|---|
+| Administrator | `admin` | `admin@sstock.test` | `admin` |
+| Supervisor | `supervisor` | `supervisor@sstock.test` | `1qa2ws3ed` |
+| Data Entry | `entry` | `entry@sstock.test` | `12345678` |
+
+Yang boleh dilakukan tiap peran:
+
+- **Data Entry**: Penerimaan dan Pengeluaran Barang, menambah barang baru, mengelola Supplier, Departemen, Penerima, dan melihat laporan (tanpa harga/nilai).
+- **Supervisor**: semua milik Data Entry, ditambah mengubah Barang, Satuan, Kategori, Lokasi, Saldo Awal, Penyesuaian Stok, menyetujui atau menolak, dan melihat harga serta nilai.
+- **Administrator**: semua milik Supervisor, ditambah menu Keamanan (Pengguna, Grup, Data Contoh, Daftar Modul).
+
+> **PERINGATAN.** Ketiga akun ini hanya untuk pengembangan dan pengujian di mesin Anda sendiri. Passwordnya lemah dan tertulis di kode. **Wajib diganti atau dihapus (dinonaktifkan) sebelum Stoku dipakai di server sungguhan.** Jangan pernah membuka Stoku ke internet dengan akun ini.
+
+## 4. Wilayah (opsional)
+
+Supplier punya isian Wilayah (kecamatan, kota, provinsi, negara, kode pos). Daftar wilayah ada di tabel `geo_country`, `geo_region`, `geo_city`, `geo_district`, `geo_village`. Isinya tidak ikut kode. Isinya disalin dari database proyek lain (`tm2mst`) milik Jo.
+
+Aturannya:
+
+- **Tabel wilayah kosong** (keadaan umum di mesin penguji): isian Wilayah di form Supplier tidak wajib. Supplier boleh disimpan tanpa wilayah. Kotak cari wilayah tidak menemukan apa pun, dan itu normal. Supplier contoh dibuat tanpa wilayah.
+- **Tabel wilayah berisi data**: Wilayah **wajib** dipilih (minimal sampai kota).
+
+Bila Anda punya akses ke database `tm2mst` di server MySQL yang sama, impor dengan:
+
+```powershell
+php artisan sstock:import-geo
+```
+
+Perintah ini membutuhkan akun admin MySQL dan database sumber bernama `tm2mst`. Nama sumber lain bisa diberikan lewat opsi `--source=nama_database` atau variabel `GEO_SOURCE_DB` di `.env`. Bila tabel sudah terisi, perintah dilewati. Untuk mengisi ulang dari awal, tambahkan `--fresh`. Penguji biasa **tidak perlu** melakukan ini.
+
+## 5. Mengatur ulang data
+
+> **PERINGATAN.** Semua cara di bawah **MENGHAPUS data** yang ada (barang, transaksi, supplier, akun). Datanya tidak bisa dikembalikan. Jalankan hanya di mesin uji Anda.
+
+**Cara 1 (disarankan): lewat layar Data Contoh.**
+
+1. Masuk sebagai `admin`.
+2. Buka menu Keamanan, lalu Data Contoh.
+3. Baca daftar isi database yang akan dihapus.
+4. Ketik `SEGARKAN` (huruf besar) di kotak konfirmasi, lalu tekan tombol Segarkan Data Contoh.
+5. Anda otomatis keluar. Masuk lagi dengan akun di bagian 3.
+
+Layar ini mengganti semua data dengan data contoh yang segar (tanggal kedaluwarsa dihitung ulang dari hari ini). Data wilayah dipertahankan.
+
+Layar ini aktif bila `APP_ENV` bukan `production` (pada `.env.example`, `APP_ENV=local`, jadi aktif). Bila `APP_ENV=production`, layar ini mati kecuali Anda menambahkan baris ini di `.env`:
+
+```dotenv
+SSTOCK_SAMPLE_REFRESH=true
+```
+
+**Cara 2: lewat terminal.**
+
+```powershell
+composer sample
+```
+
+Ini sama dengan `php artisan migrate:fresh --seed --force`. Ia menghapus **seluruh isi database `sstock`, termasuk tabel wilayah**, lalu mengisi ulang data contoh.
+
+## 6. Masalah umum
+
+| Yang terjadi | Penyebab | Solusi |
+|---|---|---|
+| `composer install` gagal karena paket `jo/devlib` atau folder `../devlib` tidak ditemukan | Folder `devlib` tidak berdampingan dengan `sstock`, atau belum di-clone | Pastikan ada `...\devlib` di sebelah `...\sstock`. Ulangi Langkah 1, lalu `composer install` lagi. |
+| `git clone` gagal atau meminta login, atau menolak akses | Repositori privat | Masuk dengan akun GitHub Anda. Minta Jo memberi akses ke kedua repositori. |
+| Halaman error "Vite manifest not found" atau tampilan polos tanpa gaya | Tampilan belum dibangun | Jalankan `npm install --ignore-scripts`, lalu `npm run build` di folder `sstock`. |
+| Error "No application encryption key has been generated" | Kunci belum dibuat | Jalankan `php artisan key:generate`. |
+| Pemasang menulis "Tidak bisa masuk ke MySQL sebagai 'root'" | MySQL belum jalan, atau akun/sandi admin salah | Pastikan layanan MySQL berjalan. Periksa `DB_HOST`, `DB_PORT`, `DB_ADMIN_USERNAME`, `DB_ADMIN_PASSWORD` di `.env`. Atau beri lewat opsi: `php artisan sstock:install --admin-user=root --admin-password=SANDI_ANDA`. |
+| Pemasang menulis "Set DB_CONNECTION=mysql di .env" atau "hanya boleh huruf, angka, dan garis bawah" | `.env` salah | Pastikan `DB_CONNECTION=mysql`. Nama database dan user hanya berisi huruf, angka, garis bawah. |
+| Pemasang menulis "Data wilayah belum disalin" | Database `tm2mst` tidak ada di mesin Anda | Normal. Wilayah opsional. Lihat [bagian 4](#4-wilayah-opsional). |
+| Setelah mengubah `.env`, perubahan tidak terasa | Pengaturan tersimpan di cache | Jalankan `php artisan config:clear`. |
+| Masuk gagal dengan pesan "Terlalu banyak percobaan. Coba lagi dalam ... detik." | Lebih dari 5 kali salah password | Tunggu sejumlah detik yang tertulis, lalu coba lagi dengan password yang benar. |
+| E-mail "lupa password" tidak sampai | `MAIL_MAILER=log`: e-mail tidak dikirim, hanya ditulis ke berkas log | Buka `storage/logs/laravel.log` dan cari tautan reset di sana. |
+| Layar Data Contoh menolak dengan pesan "dimatikan di lingkungan ini" (403) | `APP_ENV=production` | Ubah `APP_ENV=local`, atau tambahkan `SSTOCK_SAMPLE_REFRESH=true` di `.env`. |
+| Port 8000 dipakai program lain saat `php artisan serve` | Bentrok port | Pakai port lain: `php artisan serve --port=8001`, lalu sesuaikan `APP_URL`. |
+
+## 7. Menjalankan tes otomatis
+
+Tes otomatis untuk pengembang, bukan untuk penguji. Tes memakai SQLite di memori, jadi tidak menyentuh database MySQL Anda.
+
+```powershell
+php artisan test
+```
+
+## 8. Skenario uji dan bantuan di dalam aplikasi
+
+- **Skenario uji QC** (tabel kasus uji, cara melapor temuan, dan hal yang sengaja belum ada): [docs/QC-SKENARIO.md](docs/QC-SKENARIO.md).
+- **Bantuan di dalam aplikasi:** klik nama Anda di pojok layar untuk membuka menu profil, lalu pilih Bantuan & dukungan. Atau tekan F1 di layar mana pun. Ini membuka Panduan Pengguna (User's Guide, Bahasa Indonesia, untuk semua peran).
+- **Panduan Teknis** (Technical Guide, Bahasa Inggris): hanya untuk Administrator, ada sebagai tab di halaman Bantuan yang sama.

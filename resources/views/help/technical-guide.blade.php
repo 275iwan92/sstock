@@ -127,7 +127,7 @@
             <thead><tr><th>Table</th><th>Purpose</th><th>Key relations</th></tr></thead>
             <tbody>
                 <tr><td><code>categories</code>, <code>locations</code>, <code>units</code>, <code>unit_conversions</code></td><td>Item classification, storage places, units and conversion factors</td><td>items belong to a category; <code>items.location</code> stores the location <b>code</b></td></tr>
-                <tr><td><code>suppliers</code> (+ <code>geo_*</code>)</td><td>Vendors with contact and region (region tables copied from tmerp)</td><td>Receiving documents</td></tr>
+                <tr><td><code>suppliers</code> (+ <code>geo_*</code>)</td><td>Vendors with contact and region (region tables copied from tmerp; region is required only when <code>geo_city</code> has rows, see <code>GeoArea::available()</code>)</td><td>Receiving documents</td></tr>
                 <tr><td><code>departments</code>, <code>recipients</code></td><td>Who receives goods; a recipient has a default department</td><td>Documents copy the <b>names</b> so they stay readable if master data changes</td></tr>
                 <tr><td><code>products</code></td><td>Item master: stable code, parameters (price, reorder point/qty, lead time), <code>tracks_expiry</code>. The single source of the parameters</td><td>category; batches (<code>items</code>); re-order records</td></tr>
                 <tr><td><code>items</code></td><td>Batches: batch code, <code>expiry_date</code>, running balance <code>stock_qty</code> and <code>avg_cost</code> (cache of the ledger); name/unit/parameters are copies of the product for readers</td><td>product; lines; movements</td></tr>

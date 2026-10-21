@@ -242,7 +242,7 @@
             <li>Tekan <b>+ Data Baru</b>.</li>
             <li>Isi <b>Kode Supplier</b> (unik) dan <b>Nama Supplier</b>.</li>
             <li>Isi kontak bila ada: <b>Telepon Kantor (PSTN)</b>, <b>Nama Kontak</b>, <b>HP Kontak (smartphone)</b> (juga dipakai untuk WhatsApp), dan <b>Alamat Jalan</b>.</li>
-            <li>Pada <b>Kecamatan, Kota / Kabupaten, Provinsi, Negara</b> ketik kecamatan, kota, atau kode pos lalu pilih dari daftar; satu pilihan mengisi kecamatan, kota, provinsi, negara, dan kode pos. Wilayah wajib dipilih dari daftar (minimal sampai kota).</li>
+            <li>Pada <b>Kecamatan, Kota / Kabupaten, Provinsi, Negara</b> ketik kecamatan, kota, atau kode pos lalu pilih dari daftar; satu pilihan mengisi kecamatan, kota, provinsi, negara, dan kode pos. Wilayah wajib dipilih dari daftar (minimal sampai kota) bila data wilayah sudah ada; bila daftar wilayah masih kosong, isian ini boleh dikosongkan.</li>
             <li>Tekan <b>Simpan</b>.</li>
         </ol>
         @endif
