@@ -289,7 +289,7 @@ Ini sama dengan `php artisan migrate:fresh --seed --force`. Ia menghapus **selur
 | Masuk gagal dengan pesan "Terlalu banyak percobaan. Coba lagi dalam ... detik." | Lebih dari 5 kali salah password | Tunggu sejumlah detik yang tertulis, lalu coba lagi dengan password yang benar. |
 | E-mail "lupa password" tidak sampai | `MAIL_MAILER=log`: e-mail tidak dikirim, hanya ditulis ke berkas log | Buka `storage/logs/laravel.log` dan cari tautan reset di sana. |
 | Layar Data Contoh menolak dengan pesan "dimatikan di lingkungan ini" (403) | `SSTOCK_SAMPLE_REFRESH` bukan `true` | Isi `SSTOCK_SAMPLE_REFRESH=true` di `.env`, lalu `php artisan config:clear`. |
-| Tiba-tiba keluar sendiri ke halaman masuk | Sesi habis setelah 30 menit tanpa aktivitas (`SESSION_LIFETIME=30` di `.env.example`) | Masuk lagi. Untuk uji panjang, naikkan `SESSION_LIFETIME` di `.env`. |
+| Tiba-tiba keluar sendiri ke halaman masuk | Keluar otomatis setelah 30 menit tanpa aktivitas, dengan peringatan 2 menit sebelumnya (`SESSION_LIFETIME=30` di `.env.example`) | Masuk lagi. Untuk uji panjang, naikkan `SESSION_LIFETIME` di `.env`. |
 | Port 8000 dipakai program lain saat `php artisan serve` | Bentrok port | Pakai port lain: `php artisan serve --port=8001`, lalu sesuaikan `APP_URL`. |
 
 ## 7. Menjalankan tes otomatis

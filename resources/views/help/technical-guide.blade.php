@@ -113,7 +113,7 @@
             <li><b>Signed quantity:</b> Issuance is negative; Opening and Receiving positive; Adjustment carries its own sign. A zero difference is skipped.</li>
             <li><b>Guard:</b> a resulting balance below zero throws a validation error (insufficient stock).</li>
             <li><b>Cost:</b> additions from Receiving or Opening use the line cost; positive Adjustments use the current average cost (or the item price if there is none); removals use the average cost.</li>
-            <li><b>Moving average:</b> <code>(stock x avg + qty x cost) / new balance</code> on additions.</li>
+            <li><b>Moving average:</b> <code>(stock x avg + qty x cost) / new balance</code> on additions. Values (average cost, unit conversion, line and stock value) use exact <code>bcmath</code> arithmetic through <code>App\Support\Decimal</code> and are rounded once at the end; quantities keep their 3-decimal rounding.</li>
             <li><b>Write:</b> update the item and insert a <code>stock_movements</code> row with the balance after the movement. Products at or below the Reorder Point are returned and shown as an alert on the form. The reorder check is per <b>product</b> on the available stock (sum of batches with no expiry or expiry on/after today plus <code>sstock.reorder_exclude_days</code>), so expired batches never count as available.</li>
         </ol>
         <ul class="g-list">
@@ -165,6 +165,7 @@
         @include('help.diagram', ['name' => 'tg-access-flow', 'caption' => 'Login and per-request authorization.'])
         <ol class="g-steps">
             <li>A request must be authenticated (<code>auth</code>), otherwise it goes to Login.</li>
+            <li><code>EnsureActive</code> logs out a user who was deactivated during a live session (redirect to Login, or 403 JSON); deactivating also clears <code>remember_token</code> and the user's rows in <code>sessions</code>.</li>
             <li><code>EnsureModuleAccess</code> maps the route to a module code with <code>Modules::forRoute</code>. Access needs <b>both</b> a sufficient role and the module granted by the user's group.</li>
             <li>A module with RO access refuses every non-GET request.</li>
             <li>The controller or form request then checks per-document-type rights.</li>
@@ -174,6 +175,8 @@
             <li><code>App\Support\Modules</code> is the single module list; it feeds the menu, the group settings, the module list screen and the route guard. A new module is one new row there.</li>
             <li>Extra middleware: <code>supervisor</code> (edit items, units, categories, locations, adjustment report) and <code>administrator</code> (users, groups, modules, this guide).</li>
             <li>Print: <code>docs.print</code> (<code>StockDocumentPrint</code> on DevLib <code>x-dl::print-doc</code>) is available in every status and prints the MODE (stamp + watermark for non-valid modes). Approve and Reject are Supervisor only. Password reset uses an e-mail link (throttled to 5 per minute, valid 60 minutes, single use).</li>
+            <li>Unit conversion factors are global. A user without write access to <code>UOM</code> may only create a new pair from the Receiving / Issuance dialog (<code>StockDocumentController</code>); changing an existing factor (either direction) answers 403 and is left to a Supervisor. <code>created_by</code> / <code>updated_by</code> are recorded.</li>
+            <li>Session: there is no "remember me" (the checkbox is removed and the input is ignored). <code>SESSION_LIFETIME=30</code> minutes. <code>x-dl::idle-logout</code> is mounted once in <code>layout.blade.php</code> for logged-in pages only, with <code>minutes</code> = <code>config('session.lifetime')</code>: a warning with a countdown and a <b>Stay signed in</b> button shows 2 minutes before the end, then it POSTs <code>logout</code> and goes to Login. Activity pings <code>GET session/ping</code> (route <code>session.ping</code>, 204, behind <code>auth</code> and <code>active</code>, no module code), which extends the server session.</li>
             <li>Known gaps: no segregation of duties (the creator of an Adjustment may approve it); the Save button still shows on RO modules (the server rejects it).</li>
         </ul>
 
@@ -259,6 +262,7 @@ npm run build      # required after editing resources/css/app.css</pre>
         <table class="g-table">
             <thead><tr><th>Key</th><th>Meaning</th></tr></thead>
             <tbody>
+                <tr><td><code>SESSION_LIFETIME=30</code></td><td>Server session minutes; also the idle-logout time in the browser</td></tr>
                 <tr><td><code>APP_LOCALE=id</code></td><td>Indonesian screens (dictionary active only for <code>id</code>)</td></tr>
                 <tr><td><code>DB_*</code>, <code>DB_ADMIN_*</code></td><td>Application MySQL account; admin account used only by the installer and <code>sstock:import-geo</code></td></tr>
                 <tr><td><code>MAIL_*</code></td><td><code>MAIL_MAILER=log</code> in development (reset links only appear in <code>storage/logs/laravel.log</code>); production needs SMTP</td></tr>

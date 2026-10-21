@@ -84,7 +84,8 @@
             <li>Lupa password? Tekan <b>Lupa password?</b>, isi username atau e-mail, lalu tekan <b>Kirim tautan reset</b>. Tautan dikirim ke e-mail Anda, berlaku 60 menit, dan hanya bisa dipakai sekali. Pilih password baru (minimal 8 karakter), lalu <b>Simpan password baru</b>.</li>
         </ol>
         @include('help.diagram', ['name' => 'ug-masuk', 'caption' => 'Masuk, lupa password, dan membuka menu.'])
-        <p class="g-note">Akun yang dinonaktifkan tidak bisa masuk. Percobaan masuk yang salah berulang akan ditahan sementara.</p>
+        <p class="g-note">Akun yang dinonaktifkan tidak bisa masuk, dan bila dinonaktifkan saat sedang memakai Stoku akun itu langsung keluar pada klik berikutnya. Percobaan masuk yang salah berulang akan ditahan sementara.</p>
+        <p class="g-note">Tidak ada pilihan &quot;ingat saya&quot;: Anda harus masuk lagi setelah menutup browser atau bila sesi habis. Bila tidak ada aktivitas selama <b>30 menit</b>, Stoku keluar otomatis. Dua menit sebelumnya muncul peringatan di pojok kanan bawah dengan hitung mundur; tekan <b>Tetap masuk</b> untuk melanjutkan, atau <b>Keluar sekarang</b>. Mengetik, menggerakkan mouse, dan menggulir dihitung sebagai aktivitas.</p>
 
         <h3>Beranda</h3>
         <p>Setelah masuk Anda melihat <b>Beranda</b>: kata motivasi, deretan kotak ringkasan, dan peringatan.</p>
@@ -267,6 +268,7 @@
             <li>Tekan <b>Simpan</b>.</li>
         </ol>
         <p class="g-note">Konversi dipakai di Penerimaan dan Pengeluaran Barang: Anda boleh memakai satuan lain (mis. box) dan sistem mengubahnya ke satuan stok barang. Bila konversinya belum ada, muncul jendela <b>Konversi satuan belum ada</b> di form itu (lihat bagian Penerimaan Barang), sehingga tidak perlu membuka master Satuan lebih dulu.</p>
+        <p class="g-note">Faktor konversi berlaku untuk semua orang. Pengguna tanpa akses RW ke Satuan hanya bisa membuat pasangan <b>baru</b> lewat jendela itu; mengubah faktor yang sudah ada hanya bisa dilakukan Supervisor (bila ditolak, hubungi Supervisor).</p>
         @endif
 
         @if ($can('CAT'))
@@ -442,6 +444,8 @@
                 <tr><td>Pembatalan ditolak: stok tidak cukup</td><td>Dokumen itu tidak bisa ditarik kembali karena akan membuat stok minus. Koreksi lewat Penyesuaian Stok.</td></tr>
                 <tr><td>Kode barang tidak bisa diubah</td><td>Memang terkunci supaya riwayat tidak rusak. Bila salah, nonaktifkan barangnya lalu buat barang baru.</td></tr>
                 <tr><td>Barang tidak muncul di pilihan dokumen</td><td>Barang atau data master itu nonaktif, atau belum ada. Aktifkan lewat grid master (Supervisor).</td></tr>
+                <tr><td>Tiba-tiba keluar ke halaman masuk</td><td>Tidak ada aktivitas 30 menit (Stoku keluar otomatis), atau akun Anda dinonaktifkan. Masuk lagi; data yang belum disimpan tidak tersimpan otomatis.</td></tr>
+                <tr><td>Nilai persediaan dan harga rata-rata</td><td>Dihitung presisi (bukan angka pecahan komputer), dibulatkan sekali di akhir, sehingga jumlah di laporan konsisten dengan Kartu Stok.</td></tr>
                 <tr><td>Takut menyimpan dua kali</td><td>Tombol hanya bereaksi sekali; data tidak akan ganda.</td></tr>
             </tbody>
         </table>

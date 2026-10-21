@@ -81,4 +81,14 @@ class HelpTest extends TestCase
             $this->actingAs($factory->create())->get(route('home'))->assertSee('data-dl-help="'.e($url).'"', false);
         }
     }
+
+    public function test_help_covers_session_idle_logout_and_conversion_rules(): void
+    {
+        $ug = $this->actingAs(User::factory()->administrator()->create())->get(route('help.user-guide'))->assertOk();
+        $ug->assertSee('langsung keluar')->assertSee('Tidak ada pilihan &quot;ingat saya&quot;', false)->assertSee('Tetap masuk')->assertSee('30 menit')
+            ->assertSee('hanya bisa dilakukan Supervisor')->assertSee('Dihitung presisi');
+
+        $this->get(route('help.technical-guide'))->assertOk()->assertSee('x-dl::idle-logout')->assertSee('session.ping')->assertSee('SESSION_LIFETIME=30')
+            ->assertSee('EnsureActive')->assertSee('bcmath')->assertSee('global');
+    }
 }
