@@ -6,8 +6,12 @@ use App\Http\Requests\ProductRequest;
 use App\Models\Category;
 use App\Models\Location;
 use App\Models\Product;
+use App\Models\ProductUnit;
 use App\Models\Unit;
+use App\Models\User;
+use App\Services\ProductUnits;
 use App\Support\Palette;
+use Devlib\Locale;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -53,12 +57,25 @@ class ProductController extends Controller
         return view('products.form', ['product' => new Product(['unit' => 'pcs']), 'batches' => collect(), 'categories' => $this->categories(), 'units' => $this->units(), 'locations' => $this->locations(), 'nextCodes' => $this->nextCodes()]);
     }
 
-    public function show(Product $product)
+    public function show(Request $request, Product $product)
     {
         return view('products.form', [
             'product' => $product, 'batches' => $product->items()->orderByRaw('expiry_date is null')->orderBy('expiry_date')->get(), 'categories' => $this->categories(false),
             'units' => $this->units($product->unit), 'locations' => $this->locations($product->location), 'nextCodes' => [],
-        ]);
+        ] + $this->packUnitData($product, $request->user()));
+    }
+
+    // Tambah / perbaiki satuan masuk barang (JSON dari dialog di form barang). Aturan siapa boleh mengubah faktor yang sudah dipakai: ProductUnits::save.
+    public function saveUnit(Request $request, Product $product): JsonResponse
+    {
+        $data = $request->validate([
+            'unit' => ['required', 'exists:units,code'],
+            'factor' => ['required', 'numeric', 'gt:0', 'max:999999999'],
+        ], ['factor.gt' => 'Faktor harus lebih dari 0.', 'factor.required' => 'Isi faktor satuan.']);
+        ProductUnits::save($product, $data['unit'], $data['factor'], $request->user());
+        session()->flash('status', 'Satuan masuk disimpan.');
+
+        return response()->json(['ok' => true]);
     }
 
     public function store(ProductRequest $request): RedirectResponse
@@ -104,6 +121,24 @@ class ProductController extends Controller
             $product->update(['is_active' => $active]);
             $product->propagate();
         });
+    }
+
+    // Bagian "Satuan masuk" di form barang: baris tabel + pilihan satuan untuk dialog. Faktor yang sudah dipakai di dokumen hanya bisa diubah pemegang hak UOM, jadi pengguna lain tidak diberi tautan Ubah.
+    private function packUnitData(Product $product, User $user): array
+    {
+        $used = ProductUnits::usage($product);
+        $canUom = $user->canWrite('UOM');
+        $packs = $product->packUnits()->with(['unitMaster', 'updater'])->get();
+
+        return [
+            'packRows' => $packs->map(fn (ProductUnit $u) => [
+                'unit' => "{$u->unit} · {$u->unitMaster->name}", 'factor' => Locale::decimal($u->factor, 6), 'used' => ($used[$u->unit] ?? 0) ? ($used[$u->unit].' dokumen') : 'Belum dipakai',
+                'by' => ($u->updater?->name ?? '—').' · '.Locale::stamp($u->updated_at),
+                'act' => ! ($used[$u->unit] ?? 0) || $canUom ? ['href' => '#ubah-'.$u->unit, 'text' => 'Ubah'] : 'Hubungi Supervisor',
+            ])->all(),
+            'packJs' => $packs->mapWithKeys(fn (ProductUnit $u) => [$u->unit => ['factor' => rtrim(rtrim((string) $u->factor, '0'), '.'), 'used' => $used[$u->unit] ?? 0]])->all(),
+            'packChoices' => Unit::query()->where('is_active', true)->where('code', '!=', $product->unit)->orderBy('code')->get()->mapWithKeys(fn (Unit $u) => [$u->code => "{$u->code} · {$u->name}"])->all(),
+        ];
     }
 
     // Kategori aktif untuk barang baru; barang yang sudah ada menampilkan kategorinya sendiri (terkunci, kode memakai awalannya).

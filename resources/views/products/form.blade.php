@@ -92,8 +92,54 @@
             @if ($product->tracks_expiry)
                 <p class="dl-note">Batch baru dibuat otomatis saat Penerimaan atau Saldo Awal mencatat tanggal kedaluwarsa yang belum ada. Pengeluaran mengambil batch yang kedaluwarsanya paling cepat lebih dulu.</p>
             @endif
+            <x-dl::divider label="Satuan masuk" />
+            <p class="dl-note">Kemasan yang sah saat barang ini DITERIMA, mis. 1 dus = 12 {{ $product->unit }}. Penerimaan menawarkan satuan stok ({{ $product->unit }}) dan satuan di bawah ini; stok selalu dalam {{ $product->unit }}. Pengeluaran dan Penyesuaian selalu dalam {{ $product->unit }}.</p>
+            <x-dl::table :columns="['unit' => 'Satuan masuk', 'factor' => 'Faktor ke '.$product->unit, 'used' => 'Dipakai', 'by' => 'Diubah oleh', 'act' => '']" :rows="$packRows" empty="Belum ada satuan masuk: barang diterima dalam satuan stok atau satuan yang punya konversi umum." />
+            <x-dl::button type="button" variant="secondary" size="sm" icon="new" label="Tambah Satuan Masuk" data-dl-open="pack-unit" />
         @endunless
     </x-dl::form>
+    @unless ($isNew)
+        <x-dl::modal id="pack-unit" title="Satuan masuk" icon="fa-boxes-packing" size="sm">
+            <x-dl::field.select name="pack_unit" label="Satuan" :options="$packChoices" required />
+            <x-dl::field.text name="pack_factor" :label="'Faktor ke '.$product->unit" placeholder="Contoh: 12" required :hint="'1 satuan ini = berapa '.$product->unit" />
+            <p class="dl-note" data-pack-used hidden>Faktor ini sudah dipakai di dokumen. Perubahan hanya berlaku untuk penerimaan berikutnya, dokumen lama tidak berubah.</p>
+            <p class="sstock-quickadd__err" data-pack-error hidden></p>
+            <x-slot:footer><x-dl::button type="button" icon="save" label="Simpan" data-pack-save /></x-slot:footer>
+        </x-dl::modal>
+        <script>
+            // Dialog dipindah ke <body> (di luar <form> barang): isiannya tidak ikut tersimpan bersama data barang.
+            (() => {
+                const layer = document.querySelector('[data-dl-modal-id="pack-unit"]');
+                document.body.append(layer);
+                const rows = @json($packJs), url = @json(route('products.units.save', $product)), token = @json(csrf_token());
+                const select = layer.querySelector('[data-dl-select]'), factor = layer.querySelector('[name="pack_factor"]'), used = layer.querySelector('[data-pack-used]'), err = layer.querySelector('[data-pack-error]');
+                const open = unit => {
+                    const row = unit ? rows[unit] : null;
+                    err.hidden = true;
+                    used.hidden = !(row && row.used > 0);
+                    factor.value = row ? row.factor : '';
+                    select.querySelector(`[data-dl-dd-list] [data-value="${unit || ''}"]`)?.click();
+                    select.querySelector('[data-dl-dd-toggle]').disabled = !!unit;   // Ubah: satuannya tetap, hanya faktor yang berubah
+                    layer.classList.add('is-on');
+                };
+                document.addEventListener('click', e => {
+                    const a = e.target.closest('a[href^="#ubah-"]');
+                    if (!a) return;
+                    e.preventDefault();
+                    open(a.getAttribute('href').slice(6));
+                });
+                document.querySelector('[data-dl-open="pack-unit"]').addEventListener('click', () => { select.querySelector('[data-dl-dd-toggle]').disabled = false; used.hidden = true; factor.value = ''; err.hidden = true; });
+                layer.querySelector('[data-pack-save]').addEventListener('click', async () => {
+                    err.hidden = true;
+                    const body = {unit: select.querySelector('[name="pack_unit"]').value, factor: parseFloat(factor.value.includes(',') ? factor.value.replace(/\./g, '').replace(',', '.') : factor.value)};
+                    if (!body.unit || !(body.factor > 0)) { err.textContent = 'Pilih satuan dan isi faktor dengan angka lebih dari 0.'; err.hidden = false; return; }
+                    const res = await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': token}, body: JSON.stringify(body)});
+                    if (!res.ok) { const d = await res.json(); err.textContent = d.errors ? Object.values(d.errors)[0][0] : (d.message || 'Gagal menyimpan.'); err.hidden = false; return; }
+                    location.reload();
+                });
+            })();
+        </script>
+    @endunless
     @if ($isNew)
         <script>
             // Pratinjau kode barang: awalan kategori + urutan berikutnya (rumus yang sama dengan Product::nextCode).

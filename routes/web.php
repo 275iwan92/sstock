@@ -72,6 +72,8 @@ Route::middleware(['auth', 'active', 'module'])->group(function () {
     // Master Barang: semua boleh melihat dan menambah barang baru; ubah parameter dan aktif / nonaktif hanya Supervisor (dicek ProductRequest dan grup di bawah).
     Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
     Route::post('products', [ProductController::class, 'store'])->name('products.store');
+    // Satuan masuk barang: siapa pun yang boleh menulis modul Barang (aturan ubah faktor yang sudah dipakai ada di ProductUnits::save).
+    Route::post('products/{product}/units', [ProductController::class, 'saveUnit'])->name('products.units.save');
     Route::middleware('supervisor')->group(function () {
         Route::put('products/{product}', [ProductController::class, 'update'])->name('products.update');
         Route::post('products/{product}/toggle', [ProductController::class, 'toggle'])->name('products.toggle');
