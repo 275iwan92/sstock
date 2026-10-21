@@ -2,7 +2,7 @@
  Tujuan       : Peringatan item yang stoknya menyentuh / di bawah Reorder Point: kartu alert + tabel ringkas (nama, jumlah pesan ulang, stok saat ini) di dashboard, tanpa popup.
  Sumber hulu  : HomeController ($below = Product::belowReorderPoint, stok tersedia = batch belum kedaluwarsa).
  Input        : below.
- Output       : x-dl::alert, x-dl::table (termasuk status pesanan), x-dl::button menuju Receiving, modal catat pemesanan.
+ Output       : x-dl::alert, x-dl::table (termasuk status pesanan + keterangan: tanggal, ref, oleh, diterima sejak dipesan), x-dl::button menuju Receiving, modal catat pemesanan.
  Dipakai oleh : home.blade.php (slot dashboard).
  Status       : Aktif.
 --}}
@@ -42,6 +42,7 @@
                         <td>
                             @if ($i->openOrder)
                                 <x-dl::badge tone="success" icon="fa-circle-check" :label="'Dipesan '.$i->openOrder->ordered_at->format('d/m/Y').' · '.$i->openOrder->ref_no" />
+                                <div class="dl-note">{{ $i->openOrder->note() }}</div>
                             @else
                                 <x-dl::badge tone="danger" icon="fa-triangle-exclamation" label="Belum dipesan" />
                             @endif

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\StockDocumentType;
 use App\Models\Category;
 use App\Models\Item;
+use App\Models\ReorderOrder;
 use App\Models\StockDocumentLine;
 use App\Models\StockMovement;
 use App\Models\Supplier;
@@ -75,17 +76,20 @@ class ReportController extends Controller
             }
         }
 
-        $rows = $items->map(function (Item $i) use ($opening, $closing, $moves, $sup, $available) {
+        $orders = ReorderOrder::query()->whereNull('closed_at')->with('creator', 'product')->orderBy('id')->get()->keyBy('product_id');   // pesanan terbuka terbaru per produk
+
+        $rows = $items->map(function (Item $i) use ($opening, $closing, $moves, $sup, $available, $orders) {
             $m = ($moves[$i->id] ?? collect())->pluck('total', 'type');
             $end = $closing[$i->id]->balance_qty ?? 0.0;
             $cost = $closing[$i->id]->balance_avg_cost ?? 0.0;
+            $status = $i->is_active && $i->reorder_point > 0 && ($available[$i->product_id ?? 'i'.$i->id] ?? 0) <= $i->reorder_point ? 'PESAN ULANG' : 'AMAN';
 
             return [
                 'code' => $i->code, 'name' => $i->name, 'loc' => $i->location, 'cat' => $i->category->name, 'unit' => $i->unit,
                 'open' => $opening[$i->id]->balance_qty ?? 0.0,
                 'in' => (float) ($m['IN'] ?? 0) + (float) ($m['OPENING'] ?? 0), 'out' => abs((float) ($m['OUT'] ?? 0)), 'adj' => (float) ($m['ADJ'] ?? 0),
                 'end' => $end, 'rop' => $i->reorder_point, 'roq' => $i->reorder_qty, 'lead' => $i->lead_time_days,
-                'status' => $i->is_active && $i->reorder_point > 0 && ($available[$i->product_id ?? 'i'.$i->id] ?? 0) <= $i->reorder_point ? 'PESAN ULANG' : 'AMAN',
+                'status' => $status, 'order' => $status === 'PESAN ULANG' ? ($orders[$i->product_id ?? 0] ?? null)?->note() : null,
                 'cost' => $sup ? $cost : null, 'value' => $sup ? Decimal::amount($end, $cost) : null,
             ];
         });

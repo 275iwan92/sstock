@@ -22,7 +22,7 @@ class HomeController extends Controller
     public function __invoke(Request $request)
     {
         $user = $request->user();
-        $below = Product::query()->belowReorderPoint()->withAvailable()->with('category', 'openOrder')->orderByRaw(Product::availableSql().' / products.reorder_point', [Item::usableFrom()])->get();
+        $below = Product::query()->belowReorderPoint()->withAvailable()->with('category', 'openOrder.creator')->orderByRaw(Product::availableSql().' / products.reorder_point', [Item::usableFrom()])->get();
 
         return view('home', [
             'modules' => Menu::modules($user),

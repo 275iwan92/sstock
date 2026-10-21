@@ -31,6 +31,9 @@
                     <x-dl::stat-box label="Stock value" :value="Locale::money($batches->sum(fn ($b) => $b->stockValue()), 'IDR', 0)" tone="success" sub="Stok x biaya rata-rata per batch" />
                 @endif
             </x-dl::kpi-row>
+            @if ($below && $product->openOrder)
+                <x-dl::alert tone="info" :message="raw($product->openOrder->note())" />
+            @endif
         @endunless
         <x-dl::divider label="Item" />
         <x-dl::form.row :cols="1">
