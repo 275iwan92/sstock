@@ -41,6 +41,17 @@ class HelpTest extends TestCase
         $this->actingAs(User::factory()->administrator()->create())->get(route('help.user-guide'))->assertOk()->assertSee('id="keamanan"', false);
     }
 
+    public function test_guides_describe_incoming_units_per_item_and_the_reorder_note(): void
+    {
+        $this->actingAs(User::factory()->supervisor()->create())->get(route('help.user-guide'))->assertOk()
+            ->assertSee('Satuan masuk (kemasan saat barang diterima)', false)->assertSee('Faktor satuan belum ada', false)
+            ->assertSee('Diterima sejak dipesan', false)->assertSee('selalu dalam satuan stok barang', false)
+            ->assertSee('Faktor ini sudah dipakai di dokumen; hubungi Supervisor untuk mengubahnya.', false);
+
+        $this->actingAs(User::factory()->administrator()->create())->get(route('help.technical-guide'))->assertOk()
+            ->assertSee('product_units', false)->assertSee('ProductUnits::save', false)->assertSee('ReorderOrder::note()', false);
+    }
+
     public function test_only_administrators_open_the_technical_guide(): void
     {
         $this->actingAs(User::factory()->create())->get(route('help.technical-guide'))->assertForbidden();
@@ -86,7 +97,7 @@ class HelpTest extends TestCase
     {
         $ug = $this->actingAs(User::factory()->administrator()->create())->get(route('help.user-guide'))->assertOk();
         $ug->assertSee('langsung keluar')->assertSee('Tidak ada pilihan &quot;ingat saya&quot;', false)->assertSee('Tetap masuk')->assertSee('30 menit')
-            ->assertSee('hanya bisa dilakukan Supervisor')->assertSee('Dihitung presisi');
+            ->assertSee('hanya bisa diubah Supervisor')->assertSee('Dihitung presisi');
 
         $this->get(route('help.technical-guide'))->assertOk()->assertSee('x-dl::idle-logout')->assertSee('session.ping')->assertSee('SESSION_LIFETIME=30')
             ->assertSee('EnsureActive')->assertSee('bcmath')->assertSee('global');

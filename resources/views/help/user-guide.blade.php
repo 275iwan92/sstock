@@ -91,7 +91,7 @@
         <p>Setelah masuk Anda melihat <b>Beranda</b>: kata motivasi, deretan kotak ringkasan, dan peringatan.</p>
         <ul class="g-list">
             <li><b>Kotak ringkasan</b> (bisa diklik, membuka menu terkait): Barang aktif, Di / bawah titik pesan ulang, Hampir kedaluwarsa / kedaluwarsa, Penerimaan hari ini, Pengeluaran hari ini. <span class="g-role">hanya Supervisor</span> Nilai stok dan Dokumen menunggu persetujuan.</li>
-            <li><b>Peringatan titik pesan ulang:</b> daftar barang yang <b>stok tersedia</b>-nya (jumlah semua batch yang belum kedaluwarsa) sama dengan atau di bawah <b>Titik Pesan Ulang</b>, dengan kolom <b>Status Pesanan</b>: merah <b>Belum dipesan</b>, hijau <b>Dipesan tanggal · nomor PO</b>.
+            <li><b>Peringatan titik pesan ulang:</b> daftar barang yang <b>stok tersedia</b>-nya (jumlah semua batch yang belum kedaluwarsa) sama dengan atau di bawah <b>Titik Pesan Ulang</b>, dengan kolom <b>Status Pesanan</b>: merah <b>Belum dipesan</b>, hijau <b>Dipesan tanggal · nomor PO</b>. Di bawah lencana hijau ada keterangan: <i>Sudah dicatat dipesan pada {tanggal}, ref {nomor PO} oleh {nama}. Diterima sejak dipesan: {jumlah} {satuan stok}.</i> Angka "diterima sejak dipesan" adalah jumlah Penerimaan Barang yang sudah dikonfirmasi (yang dibatalkan tidak dihitung) untuk barang itu sejak tanggal pesan. Ini hanya informasi: jumlah yang dipesan tidak dicatat, dan pesanan tetap tertutup oleh penerimaan apa pun. Keterangan yang sama tampil di laporan <b>Ringkasan Stok</b> (kolom <b>Info Pemesanan</b>) dan di form barang.
                 <ol class="g-steps">
                     <li>Setelah memesan ke supplier, tekan <b>Catat Pemesanan</b>.</li>
                     <li>Pilih barang, isi <b>Tanggal Pesan</b> dan <b>No. Referensi Pemesanan (PO)</b>, lalu <b>Simpan</b>.</li>
@@ -177,7 +177,7 @@
         <ol class="g-steps">
             <li>Tekan <span class="g-btn">+ Tambah Barang</span> untuk menambah baris.</li>
             <li>Pada kolom <b>Barang</b>, ketik sebagian kode atau nama lalu pilih dari daftar. Satu barang hanya boleh muncul sekali dalam satu dokumen.</li>
-            <li>Isi kolom lain pada baris itu. Kolom abu-abu (<b>Satuan</b>, <b>Tersedia</b>, <b>Jml Sistem</b>, <b>Subtotal</b>, <b>Selisih</b>) dihitung otomatis. Baris <b>Jumlah</b> di bawah tabel menjumlahkan kolom tertentu.</li>
+            <li>Isi kolom lain pada baris itu. Kolom abu-abu (<b>Satuan</b>, kecuali di Penerimaan Barang yang satuannya dipilih; <b>Tersedia</b>, <b>Jml Sistem</b>, <b>Subtotal</b>, <b>Selisih</b>) dihitung otomatis. Pengeluaran Barang dan Penyesuaian Stok <b>selalu dalam satuan stok barang</b>: tidak ada pilihan satuan di sana. Baris <b>Jumlah</b> di bawah tabel menjumlahkan kolom tertentu.</li>
             <li>Setiap baris punya dua keadaan. <b>Baru diisi</b>: di ujung baris ada ikon <b>Simpan baris</b> (disket) dan <b>Batalkan isian baris</b> (panah putar). Simpan menuntaskan baris (baris terkunci); Batalkan membuang baris baru. <b>Sudah ditulis</b>: ikon <b>Ubah baris</b> (pensil) dan <b>Hapus baris</b> (tong sampah). Ubah membuka baris lagi (Batalkan mengembalikan isi sebelumnya). Setelah dokumen <b>Terkonfirmasi</b> ikon-ikon ini hilang karena baris tidak bisa diubah; selama <b>Draf</b> ikon selalu ada.</li>
             <li>Formulir baru sudah berisi satu baris (jumlah 1); dokumen wajib punya minimal satu baris terisi. Menekan <b>Simpan</b> / <b>Konfirmasi</b> di atas form juga ikut menyimpan baris yang sedang terbuka dan sudah lengkap.</li>
         </ol>
@@ -226,6 +226,14 @@
             <li>Tekan <b>Simpan</b>.</li>
         </ol>
         <p>Mengubah barang yang sudah ada, mengaktifkan, atau menonaktifkannya hanya untuk Supervisor; Data Entry melihat form terkunci.</p>
+        <h4>Satuan masuk (kemasan saat barang diterima)</h4>
+        <p>Di bagian <b>Satuan masuk</b> pada form barang (barang yang sudah disimpan) tercatat kemasan yang sah saat barang itu <b>diterima</b>, beserta faktornya ke satuan stok barang, mis. 1 dus = 12 pcs. Tabelnya menunjukkan <b>Satuan masuk</b>, <b>Faktor ke {satuan stok}</b>, <b>Dipakai</b> (jumlah dokumen Penerimaan terkonfirmasi yang memakainya), dan <b>Diubah oleh</b> (nama dan waktu).</p>
+        <ol class="g-steps">
+            <li>Tekan <b>Tambah Satuan Masuk</b>, pilih <b>Satuan</b>, isi <b>Faktor</b> (berapa satuan stok dalam 1 satuan ini), lalu <b>Simpan</b>. Data Entry maupun Supervisor boleh menambah.</li>
+            <li>Salah ketik? Tekan <b>Ubah</b> pada barisnya. Faktor yang <b>belum pernah dipakai</b> di dokumen terkonfirmasi boleh diperbaiki siapa pun.</li>
+            <li>Faktor yang <b>sudah dipakai</b> hanya bisa diubah Supervisor. Data Entry tidak melihat tombol Ubah; bila tetap ditolak, muncul pesan <i>Faktor ini sudah dipakai di dokumen; hubungi Supervisor untuk mengubahnya.</i></li>
+        </ol>
+        <p class="g-note">Perubahan faktor hanya berlaku untuk penerimaan berikutnya, dokumen lama tidak berubah (dokumen menyimpan jumlah yang diketik dan hasil konversinya). Satuan stok barang tidak bisa diganti selama barang itu masih punya satuan masuk.</p>
         <ul class="g-list">
             <li><b>Kode Barang dibuat otomatis:</b> <code>AWALAN-URUTAN</code> (mis. <code>ATK-0001</code>), tanpa tanggal. Awalan diambil dari Kategori. Kode, Kategori, dan tanda <b>berkedaluwarsa</b> <b>terkunci</b> setelah disimpan.</li>
             <li><b>Barang berkedaluwarsa dipecah menjadi batch.</b> Satu tanggal kedaluwarsa = satu batch dengan kode <code>KODEBARANG-TTBBHH</code> (mis. <code>ATK-0008-261101</code> = kedaluwarsa 01 November 2026). Batch dibuat otomatis saat Penerimaan Barang atau Saldo Awal memakai tanggal yang belum ada; tanggal yang sama menambah stok batch yang sama. Daftar batch (kode, tanggal, stok, status) tampil di bagian <b>Batch</b> pada form barang.</li>
@@ -267,8 +275,8 @@
             <li>Untuk konversi, tekan <b>+ Tambah Konversi</b>, pilih satuan tujuan dan isi <b>Faktor</b> (mis. 1 box = 12 pcs: faktor 12). Arah sebaliknya dihitung otomatis; isi tiap pasangan satu kali saja.</li>
             <li>Tekan <b>Simpan</b>.</li>
         </ol>
-        <p class="g-note">Konversi dipakai di Penerimaan dan Pengeluaran Barang: Anda boleh memakai satuan lain (mis. box) dan sistem mengubahnya ke satuan stok barang. Bila konversinya belum ada, muncul jendela <b>Konversi satuan belum ada</b> di form itu (lihat bagian Penerimaan Barang), sehingga tidak perlu membuka master Satuan lebih dulu.</p>
-        <p class="g-note">Faktor konversi berlaku untuk semua orang. Pengguna tanpa akses RW ke Satuan hanya bisa membuat pasangan <b>baru</b> lewat jendela itu; mengubah faktor yang sudah ada hanya bisa dilakukan Supervisor (bila ditolak, hubungi Supervisor).</p>
+        <p class="g-note">Konversi di sini berlaku umum untuk semua barang dan hanya dipakai di Penerimaan Barang sebagai <b>cadangan</b>: bila barang belum punya faktor sendiri (bagian <b>Satuan masuk</b> di form barang) untuk satuan yang dipilih, sistem memakai pasangan di sini. Faktor milik barang selalu didahulukan.</p>
+        <p class="g-note">Pengguna tanpa akses RW ke Satuan tidak mengubah konversi umum ini. Faktor per barang dibuat dari form barang atau dari jendela <b>Faktor satuan belum ada</b> di Penerimaan Barang (aturan ubahnya ada di bagian Barang).</p>
         @endif
 
         @if ($can('CAT'))
@@ -312,7 +320,7 @@
         <ol class="g-steps">
             <li>Buka <b>Penerimaan Barang</b>, tekan <b>+ Data Baru</b>.</li>
             <li>Pilih <b>Supplier</b> (wajib). Isi <b>No. Referensi (surat jalan / PO / faktur)</b> bila ada. <b>Penerima</b> dan <b>Departemen</b> opsional.</li>
-            <li>Tekan <b>+ Tambah Barang</b>, pilih barang, lalu isi <b>Tanggal Kedaluwarsa</b> (wajib untuk barang berkedaluwarsa; barang lain mengabaikannya), <b>Jml</b>, <b>Satuan</b>, dan <b>Harga Beli / Satuan</b>. Satu kedatangan biasanya satu tanggal, jadi cukup satu baris. Kolom <b>Subtotal</b> dan <b>= Dalam satuan stok</b> terisi otomatis. Satuan boleh berbeda dari satuan stok barang. Bila konversinya belum ada, saat <b>Simpan</b> / <b>Konfirmasi</b> muncul jendela <b>Konversi satuan belum ada</b>: isi angka pada "1 pak = ... pcs" untuk tiap pasangan, tekan <b>Simpan Konversi</b>, lalu tekan Simpan / Konfirmasi lagi. Konversi tersimpan di master Satuan dan berlaku untuk semua barang; stok tetap dicatat dalam satuan stok.</li>
+            <li>Tekan <b>+ Tambah Barang</b>, pilih barang, lalu isi <b>Tanggal Kedaluwarsa</b> (wajib untuk barang berkedaluwarsa; barang lain mengabaikannya), <b>Jml</b>, <b>Satuan</b>, dan <b>Harga Beli / Satuan</b>. Satu kedatangan biasanya satu tanggal, jadi cukup satu baris. Kolom <b>Satuan</b> menawarkan satuan stok barang itu dan <b>Satuan masuk</b>-nya (mis. dus = 12); satuan lain ada di grup <b>Satuan lain</b>. Setelah mengisi Jml dan Satuan, kolom <b>= Dalam satuan stok</b> langsung menghitung hasilnya (mis. 5 dus = 60 pcs) sebelum Konfirmasi; <b>Subtotal</b> juga terisi otomatis. Yang Anda ketik (jumlah, satuan, harga per satuan) tercatat di dokumen, sedangkan stok dan biaya rata-rata memakai satuan stok. Bila satuan yang dipilih belum punya faktor (tidak ada di Satuan masuk barang itu maupun di konversi umum), saat <b>Simpan</b> / <b>Konfirmasi</b> muncul jendela <b>Faktor satuan belum ada</b>: isi angka pada "1 dus = ... pcs" untuk tiap barang, tekan <b>Simpan Faktor</b>, lalu tekan Simpan / Konfirmasi lagi. Faktor itu tersimpan sebagai Satuan masuk milik <b>barang tersebut</b> saja.</li>
             <li>Isi <b>Catatan</b> bila perlu, tekan <b>Simpan</b> (menjadi Draf), periksa, lalu <b>Konfirmasi</b>.</li>
         </ol>
         <ul class="g-list">
@@ -327,7 +335,7 @@
         <ol class="g-steps">
             <li>Buka <b>Pengeluaran Barang</b>, tekan <b>+ Data Baru</b>.</li>
             <li>Pilih <b>Penerima</b> (wajib), <b>Departemen</b> (opsional; kosong = departemen bawaan penerima), dan isi <b>Keperluan (maintenance / ATK ...)</b>.</li>
-            <li>Tekan <b>+ Tambah Barang</b>, pilih barang. Barang berkedaluwarsa muncul per batch, dengan yang <b>kedaluwarsanya paling cepat di atas</b> (FEFO); kolom <b>Tersedia</b> menunjukkan stok batch itu. Isi <b>Jml</b> dan <b>Satuan</b> (bawaan = satuan stok; satuan lain dikonversi otomatis, kolom <b>= Dalam satuan stok</b> menunjukkan hasilnya, dan jendela <b>Konversi satuan belum ada</b> muncul bila konversinya belum ada). Bila melebihi stok batch yang dipilih, sisanya otomatis diambil dari batch berikutnya (kedaluwarsa paling cepat dulu). Batch yang sudah kedaluwarsa tidak ditawarkan.</li>
+            <li>Tekan <b>+ Tambah Barang</b>, pilih barang. Barang berkedaluwarsa muncul per batch, dengan yang <b>kedaluwarsanya paling cepat di atas</b> (FEFO); kolom <b>Tersedia</b> menunjukkan stok batch itu. Isi <b>Jml</b>; satuannya selalu satuan stok barang (ditampilkan di kolom <b>Satuan</b>, tidak bisa dipilih). Bila melebihi stok batch yang dipilih, sisanya otomatis diambil dari batch berikutnya (kedaluwarsa paling cepat dulu). Batch yang sudah kedaluwarsa tidak ditawarkan.</li>
             <li>Bila Anda memilih batch yang kedaluwarsanya lebih jauh padahal ada batch lebih cepat yang masih punya stok, form menampilkan <b>peringatan kuning</b> (hanya peringatan, tidak memblokir).</li>
             <li><b>Simpan</b>, periksa, lalu <b>Konfirmasi</b>. Stok berkurang pada nilai biaya rata-rata.</li>
         </ol>

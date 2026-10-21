@@ -221,8 +221,8 @@ Seeder (`database/seeders/UserSeeder.php`) membuat tiga akun ini. Masuk dengan u
 
 Yang boleh dilakukan tiap peran:
 
-- **Data Entry**: Penerimaan dan Pengeluaran Barang, menambah barang baru, mengelola Supplier, Departemen, Penerima, dan melihat laporan (tanpa harga/nilai).
-- **Supervisor**: semua milik Data Entry, ditambah mengubah Barang, Satuan, Kategori, Lokasi, Saldo Awal, Penyesuaian Stok, menyetujui atau menolak, dan melihat harga serta nilai.
+- **Data Entry**: Penerimaan dan Pengeluaran Barang, menambah barang baru dan Satuan masuk-nya (kemasan saat diterima, mis. 1 dus = 12 pcs; memperbaiki faktor yang belum pernah dipakai di dokumen), mengelola Supplier, Departemen, Penerima, dan melihat laporan (tanpa harga/nilai).
+- **Supervisor**: semua milik Data Entry, ditambah mengubah Barang, Satuan (termasuk faktor Satuan masuk yang sudah dipakai di dokumen), Kategori, Lokasi, Saldo Awal, Penyesuaian Stok, menyetujui atau menolak, dan melihat harga serta nilai. Pengeluaran dan Penyesuaian selalu dalam satuan stok barang; hanya Penerimaan yang memakai satuan masuk.
 - **Administrator**: semua milik Supervisor, ditambah menu Keamanan (Pengguna, Grup, Data Contoh, Daftar Modul).
 
 > **PERINGATAN.** Ketiga akun ini hanya untuk pengembangan dan pengujian di mesin Anda sendiri. Passwordnya lemah dan tertulis di kode. **Wajib diganti atau dihapus (dinonaktifkan) sebelum Stoku dipakai di server sungguhan.** Jangan pernah membuka Stoku ke internet dengan akun ini.
