@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 
 /* REMARK
- * Tujuan       : Login / logout. Username atau e-mail + password; akun nonaktif ditolak; percobaan dibatasi per login + IP.
+ * Tujuan       : Login / logout. Username atau e-mail + password (tanpa "ingat saya": sesi habis sesuai SESSION_LIFETIME); akun nonaktif ditolak; percobaan dibatasi per login + IP.
  * Output       : redirect sesuai peran: Supervisor ke dashboard, Data Entry ke layar Receiving.
  * Dipakai oleh : routes/web.php; tampilan: resources/views/login.blade.php.
  * Status       : Aktif.
@@ -37,7 +37,7 @@ class AuthController extends Controller
         }
 
         $field = filter_var($data['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
-        if (! Auth::attempt([$field => $data['login'], 'password' => $data['password'], 'is_active' => true], $request->boolean('remember'))) {
+        if (! Auth::attempt([$field => $data['login'], 'password' => $data['password'], 'is_active' => true])) {
             RateLimiter::hit($key);
 
             return $this->fail($request, 'Username/e-mail atau password salah, atau akun tidak aktif.');
