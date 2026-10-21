@@ -221,7 +221,7 @@ Yang dibatalkan hanya dokumen yang sudah Terkonfirmasi/Disetujui. Draf tidak dib
 |---|---|---|---|---|
 | ROP-01 | Sebagai `supervisor`, lihat Beranda. | Kotak "Di / bawah titik pesan ulang" menunjukkan jumlah. Tabel peringatan menampilkan barang dengan stok tersedia <= titik, dengan kolom Status Pesanan. | | |
 | ROP-02 | Klik kotak "Di / bawah titik pesan ulang". | Membuka tab menu terkait. | | |
-| ROP-03 | Pada Beranda tekan Catat Pemesanan. Pilih barang yang ada di tabel peringatan, isi Tanggal Pesan dan No. Referensi `PO-QC-1`. Simpan. | Baris barang itu berubah dari merah "Belum dipesan" menjadi hijau "Dipesan tgl ... - PO-QC-1". | | |
+| ROP-03 | Pada Beranda tekan Catat Pemesanan. Pilih barang yang ada di tabel peringatan, isi Tanggal Pesan dan No. Referensi `REF-QC-1`. Simpan. | Baris barang itu berubah dari merah "Belum dipesan" menjadi hijau "Dipesan tgl ... - REF-QC-1". | | |
 | ROP-04 | Terima barang itu lewat Penerimaan Barang, Konfirmasi. Lihat Beranda. | Catatan pesanan tertutup otomatis. Bila stok masih di/bawah titik, barang tetap di tabel, dengan status kembali "Belum dipesan" (merah). | | |
 | ROP-05 | Buat barang dengan Titik Pesan Ulang `0` dan stok 0. | Tidak ada peringatan untuk barang itu (0 = tanpa peringatan). | | |
 | ROP-06 | Pada barang berkedaluwarsa yang punya batch sudah lewat (Cairan Pembersih Mesin 5L), bandingkan Stok dan Stok Tersedia. | Stok tersedia tidak menghitung batch yang sudah kedaluwarsa. Status PESAN ULANG dihitung dari stok tersedia, jadi barang bisa PESAN ULANG walau rak masih berisi stok kedaluwarsa. | | |
@@ -292,16 +292,25 @@ Kasus ini **menghapus semua data**. Kerjakan terakhir. Layar Data Contoh hanya b
 
 ## Hal yang sengaja belum ada
 
-Fitur berikut **memang belum dibuat**. Jangan dilaporkan sebagai bug.
+Fitur berikut **memang belum dibuat** (mungkin ditambah nanti). Jangan dilaporkan sebagai bug.
 
 - **Transfer antar lokasi/gudang.** Lokasi hanya keterangan rak di barang. Memindahkan stok antar rak belum ada.
 - **Retur** (retur ke supplier atau retur dari penerima). Koreksi dilakukan lewat Penyesuaian Stok atau pembatalan dokumen.
-- **Dokumen Purchase Order (PO).** Yang ada hanya catatan satu klik "Catat Pemesanan" di Beranda, bukan dokumen PO lengkap dengan nomor, baris, dan siklus persetujuan.
 - **Nomor lot/batch milik pemasok.** Batch di Stoku hanya menurut tanggal kedaluwarsa (kode `KODEBARANG-YYMMDD`).
 - **Ekspor dan impor data** selain yang ada: tombol Export CSV pada grid dan Cetak pada laporan dan dokumen. Belum ada impor barang/transaksi dari Excel atau CSV.
 - **Barcode** (membaca atau mencetak barcode/QR).
 - **Notifikasi otomatis** lewat e-mail, WhatsApp, atau push. Peringatan hanya tampil di Beranda dan di form. E-mail (mis. lupa password) hanya ditulis ke `storage/logs/laravel.log` di mesin uji.
-- **Persetujuan bertingkat** di modul stok. Persetujuan hanya satu tingkat (Supervisor).
-- **Pemisahan tugas.** Pembuat Penyesuaian Stok masih boleh menyetujuinya sendiri.
-- **Data wilayah bawaan.** Daftar wilayah tidak ikut aplikasi dan bisa kosong (lihat README). Wilayah supplier wajib hanya bila daftar wilayah berisi data.
-- **Akun uji lemah.** Password akun contoh sengaja sederhana untuk uji. Itu bukan temuan keamanan untuk laporan ini.
+
+## Di luar cakupan Stoku
+
+Stoku hanya mencatat **pemasukan dan pengeluaran stok**. Hal berikut bukan bagian Stoku dan tidak perlu dilaporkan:
+
+- Pembelian: tidak ada dokumen pesanan pembelian (PO) dan tidak ada satuan beli. Penerimaan Barang adalah pemasukan stok tanpa dokumen pembelian. "Catat Pemesanan" di Beranda hanya catatan satu klik bahwa barang sudah dipesan di luar Stoku.
+
+## Kondisi yang sudah diketahui
+
+Ini keadaan saat ini, bukan temuan baru:
+
+- Persetujuan di modul stok hanya satu tingkat (Supervisor), dan pembuat Penyesuaian Stok masih boleh menyetujuinya sendiri.
+- Daftar wilayah tidak ikut aplikasi dan bisa kosong (lihat README). Wilayah supplier wajib hanya bila daftar wilayah berisi data.
+- Password akun contoh sengaja sederhana untuk uji; itu bukan temuan keamanan untuk laporan ini.
