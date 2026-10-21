@@ -80,7 +80,8 @@ class Product extends Model
         // whereDate: tanggal tersimpan bisa berbentuk 'Y-m-d' atau 'Y-m-d 00:00:00' menurut basis data.
         $batch = $this->items()->when($expiry, fn ($q) => $q->whereDate('expiry_date', $expiry), fn ($q) => $q->whereNull('expiry_date'))->first();
 
-        return $batch ?? $this->items()->create($this->only(self::BATCH_COPY) + ['code' => $code, 'expiry_date' => $expiry]);
+        // createOrFirst: dua penyimpan bersamaan untuk batch baru yang sama -> yang kalah di kolom unik code mengambil batch yang sudah dibuat, bukan galat 500.
+        return $batch ?? $this->items()->createOrFirst(['code' => $code], $this->only(self::BATCH_COPY) + ['expiry_date' => $expiry]);
     }
 
     // Parameter produk diteruskan ke semua batch-nya.

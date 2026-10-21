@@ -12,6 +12,7 @@ use App\Models\StockDocument;
 use App\Models\StockMovement;
 use App\Models\User;
 use App\Support\UnitConverter;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -38,9 +39,8 @@ final class StockDocuments
         $header = $this->withNames($type, $header);
 
         return DB::transaction(function () use ($type, $header, $lines, $user) {
-            $doc = StockDocument::create([
+            $doc = $this->createNumbered($type, [
                 ...$header,
-                'doc_no' => $this->nextNumber($type),
                 'type' => $type,
                 'doc_at' => $type === StockDocumentType::Opening ? $header['doc_at'] : now(),
                 'status' => 'draft',
@@ -180,8 +180,8 @@ final class StockDocuments
         if (! $moves) {
             return;
         }
-        $adj = StockDocument::create([
-            'doc_no' => $this->nextNumber(StockDocumentType::Adjustment), 'type' => StockDocumentType::Adjustment, 'doc_at' => now(), 'status' => 'approved',
+        $adj = $this->createNumbered(StockDocumentType::Adjustment, [
+            'type' => StockDocumentType::Adjustment, 'doc_at' => now(), 'status' => 'approved',
             'reason' => 'Pembalik otomatis pembatalan '.$original->doc_no, 'note' => $reason, 'created_by' => $by->id, 'confirmed_by' => $by->id, 'confirmed_at' => now(),
             'approved_by' => $by->id, 'approved_at' => now(), 'reversal_of_document_id' => $original->id,
         ]);
@@ -427,6 +427,21 @@ final class StockDocuments
     }
 
     // PREFIX-YYMM-NNNN, urut per jenis per bulan; kolom doc_no unik menjaga dari nomor ganda.
+    // Dua penyimpan bersamaan bisa membaca nomor terakhir yang sama: kolom unik menolak yang kalah, lalu nomor berikutnya diambil lagi.
+    private function createNumbered(StockDocumentType $type, array $attributes): StockDocument
+    {
+        for ($try = 1; ; $try++) {
+            $number = $this->nextNumber($type);
+            try {
+                return DB::transaction(fn () => StockDocument::create($attributes + ['doc_no' => $number]));
+            } catch (UniqueConstraintViolationException $e) {
+                if ($try >= 5) {
+                    throw $e;
+                }
+            }
+        }
+    }
+
     private function nextNumber(StockDocumentType $type): string
     {
         $stem = $type->prefix().'-'.now()->format('ym').'-';
