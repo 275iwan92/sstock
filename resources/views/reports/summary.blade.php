@@ -35,15 +35,15 @@
             ['key' => 'out', 'label' => 'Out', 'type' => 'number'],
             ['key' => 'adj', 'label' => 'Adjustment', 'type' => 'number', 'signed' => true],
             ['key' => 'end', 'label' => 'Closing', 'type' => 'number', 'bold' => true],
-            ['key' => 'rop', 'label' => 'Reorder Point', 'type' => 'number'],
-            ['key' => 'lead', 'label' => 'Lead Time (d)', 'type' => 'number'],
-            ['key' => 'lead_auto', 'label' => 'Lead Time Otomatis (d)', 'type' => 'number'],
+            ['key' => 'rop', 'label' => 'Reorder Point', 'wrap' => true, 'type' => 'number'],
+            ['key' => 'lead', 'label' => 'Lead Time (d)', 'wrap' => true, 'type' => 'number'],
+            ['key' => 'lead_auto', 'label' => 'Lead Time Otomatis (d)', 'wrap' => true, 'type' => 'number'],
             $sup ? ['key' => 'cost', 'label' => 'Avg Cost', 'type' => 'money'] : null,
             $sup ? ['key' => 'value', 'label' => 'Stock Value', 'type' => 'money', 'sum' => true, 'bold' => true] : null,
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['AMAN' => 'success', 'PESAN ULANG' => 'danger'], 'rowTones' => ['PESAN ULANG' => 'danger']],
-            ['key' => 'order_supplier', 'label' => 'Supplier Pesanan'],
-            ['key' => 'order_qty', 'label' => 'Jumlah Dipesan'],
-            ['key' => 'order', 'label' => 'Info Pemesanan'],
+            ['key' => 'order_supplier', 'label' => 'Supplier Pesanan', 'wrap' => true],
+            ['key' => 'order_qty', 'label' => 'Jumlah Dipesan', 'wrap' => true],
+            ['key' => 'order', 'label' => 'Info Pemesanan', 'wrap' => true],
         ]))"
         :rows="$rows" :signatures="[['Prepared by', 'Warehouse'], ['Checked by', 'Supervisor']]" source="items, stock_movements" />
 @endsection
