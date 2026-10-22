@@ -77,7 +77,7 @@
 <h4>Masalah umum</h4>
 <ul class="g-list">
     <li><b>Barang tidak tampil.</b> Barangnya nonaktif. Centang <b>Termasuk barang nonaktif</b>.</li>
-    <li><b>Angka tidak cocok dengan hitungan di rak.</b> Lakukan <a href="#t-so">Stok Opname</a> atau Penyesuaian Stok.</li>
+    <li><b>Angka tidak cocok dengan hitungan di rak.</b> Lakukan @if ($can('SO'))<a href="#t-so">Stok Opname</a>@else Stok Opname @endif atau Penyesuaian Stok.</li>
 </ul>
 @endif
 

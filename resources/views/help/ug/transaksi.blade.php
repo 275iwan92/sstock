@@ -18,7 +18,7 @@
         @if ($can('SO'))<tr><td><a href="#t-so">Stok Opname</a></td><td>Hitung fisik rutin untuk banyak barang sekaligus</td><td>Data Entry (mengisi hasil), Supervisor (memulai, menyetujui)</td></tr>@endif
     </tbody>
 </table>
-<p class="g-note">Sebuah Stok Opname yang berjalan dengan kunci transaksi menolak Konfirmasi dan Setujui. Lihat <a href="#t-so">Stok Opname</a>.</p>
+<p class="g-note">Sebuah Stok Opname yang berjalan dengan kunci transaksi menolak Konfirmasi dan Setujui.@if ($can('SO')) Lihat <a href="#t-so">Stok Opname</a>.@endif</p>
 
 @if ($can('OPN'))
 <h3 id="t-opn">Saldo Awal <span class="g-role">hanya Supervisor</span></h3>
@@ -122,7 +122,7 @@
 @if ($can('ADJ'))
 <h3 id="t-adj">Penyesuaian Stok <span class="g-role">hanya Supervisor</span></h3>
 <h4>Untuk apa</h4>
-<p>Mengoreksi stok barang per barang, untuk temuan di luar jadwal. Contohnya barang rusak, salah catat, atau stok kedaluwarsa yang dibuang. Untuk hitung fisik rutin banyak barang, pakai <a href="#t-so">Stok Opname</a>. Penyesuaian <b>tidak langsung mengubah stok</b>. Ia harus disetujui lebih dulu.</p>
+<p>Mengoreksi stok barang per barang, untuk temuan di luar jadwal. Contohnya barang rusak, salah catat, atau stok kedaluwarsa yang dibuang. Untuk hitung fisik rutin banyak barang, pakai @if ($can('SO'))<a href="#t-so">Stok Opname</a>@else Stok Opname @endif. Penyesuaian <b>tidak langsung mengubah stok</b>. Ia harus disetujui lebih dulu.</p>
 <h4>Siapa yang bisa</h4>
 <p>Hanya Supervisor.</p>
 <h4>Langkah</h4>

@@ -75,6 +75,15 @@
     <li>Baca kolom <b>Peran Minimal</b> dan <b>Grup yang Punya Akses</b>.</li>
     <li>Ingin mengubah akses? Lakukan di <b>Grup</b>.</li>
 </ol>
+<h4>Yang perlu diperhatikan</h4>
+<ul class="g-list">
+    <li>Setiap baris menunjukkan nama modul dengan kodenya kecil di bawahnya (mis. ITM untuk Barang), kelompok menu di kolom <b>Menu</b>, <b>Peran Minimal</b>, dan <b>Grup yang Punya Akses</b>.</li>
+    <li>Kotak <b>Cari</b> mencari kode atau nama modul.</li>
+</ul>
+<h4>Masalah umum</h4>
+<ul class="g-list">
+    <li><b>Grup tidak muncul di kolom Grup yang Punya Akses.</b> Grup itu belum diberi akses ke modul tersebut. Atur di <b>Grup</b>.</li>
+</ul>
 @endif
 
 @if ($can('SMP'))
