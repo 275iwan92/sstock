@@ -3,18 +3,161 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Models\UserGroup;
+use App\Support\Modules;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /* REMARK
  * Tujuan       : Menjaga HELP: User's Guide (Indonesia) terbuka untuk semua yang login dan hanya menampilkan modul yang boleh dibuka pengguna itu;
  *                Technical Guide (English) hanya Administrator (403 untuk URL langsung, tautan tab tidak dirender untuk peran lain); item Help ada di menu semua peran.
+ *                Daftar modul (Modules::all) dicocokkan dengan anchor bantuan: modul baru wajib punya bagian bantuan. Tiap bagian modul memakai pola tetap, tiap tautan daftar isi menuju anchor yang ada,
+ *                glosarium memuat istilah kunci, dan tiap diagram di resources/help/diagrams terpasang.
  * Dipakai oleh : php artisan test.
  * Status       : Aktif.
  */
 class HelpTest extends TestCase
 {
     use RefreshDatabase;
+
+    // Kode modul => anchor bagian bantuannya di Panduan Pengguna.
+    private const ANCHORS = [
+        'ITM' => 'm-itm', 'SUP' => 'm-sup', 'DEP' => 'm-dep', 'RCP' => 'm-rcp', 'UOM' => 'm-uom', 'CAT' => 'm-cat', 'LOC' => 'm-loc',
+        'OPN' => 't-opn', 'RCV' => 't-rcv', 'ISS' => 't-iss', 'ADJ' => 't-adj', 'SO' => 't-so',
+        'R-CARD' => 'r-card', 'R-SUM' => 'r-sum', 'R-IN' => 'r-in', 'R-OUT' => 'r-out', 'R-EXP' => 'r-exp', 'R-ADJ' => 'r-adj',
+        'USR' => 'sec-usr', 'GRP' => 'sec-grp', 'SMP' => 'sec-smp', 'MOD' => 'sec-mod',
+    ];
+
+    private function guide(User $user, ?string $route = null): string
+    {
+        return $this->actingAs($user)->get(route($route ?? 'help.user-guide'))->assertOk()->getContent();
+    }
+
+    /** @return array{0: array<int, string>, 1: array<int, string>} id dan tautan #anchor di dalam halaman bantuan */
+    private function anchors(string $html): array
+    {
+        $html = substr($html, (int) strpos($html, 'class="sstock-guide"'));
+        preg_match_all('/\sid="([^"]+)"/', $html, $ids);
+        preg_match_all('/href="#([^"]+)"/', $html, $links);
+
+        return [$ids[1], $links[1]];
+    }
+
+    private function section(string $html, string $id): string
+    {
+        $from = strpos($html, 'id="'.$id.'"');
+        $this->assertNotFalse($from, "anchor {$id} tidak ada");
+        preg_match('/<h[23]\b/', $html, $m, PREG_OFFSET_CAPTURE, $from + 10);
+
+        return substr($html, $from, isset($m[0]) ? $m[0][1] - $from : null);
+    }
+
+    public function test_every_module_has_a_help_section_and_a_toc_link(): void
+    {
+        $this->assertEqualsCanonicalizing(array_keys(Modules::all()), array_keys(self::ANCHORS), 'Modul baru wajib punya bagian bantuan: tambahkan anchor-nya di HelpTest::ANCHORS dan di help/ug.');
+
+        $html = $this->guide(User::factory()->administrator()->create());
+        foreach (self::ANCHORS as $anchor) {
+            $this->assertStringContainsString('id="'.$anchor.'"', $html);
+            $this->assertStringContainsString('href="#'.$anchor.'"', $html);
+        }
+    }
+
+    public function test_module_sections_follow_the_role_access_exactly(): void
+    {
+        $group = UserGroup::create(['code' => 'GD', 'name' => 'Gudang']);
+        $group->syncAccess(['ISS' => 'rw']);
+
+        foreach ([User::factory()->create(), User::factory()->supervisor()->create(), User::factory()->administrator()->create(), User::factory()->create(['group_id' => $group->id])] as $user) {
+            $html = $this->guide($user);
+            foreach (self::ANCHORS as $code => $anchor) {
+                $user->canAccess($code) ? $this->assertStringContainsString('id="'.$anchor.'"', $html, "{$user->role} harus melihat {$anchor}") : $this->assertStringNotContainsString('id="'.$anchor.'"', $html, "{$user->role} tidak boleh melihat {$anchor}");
+            }
+        }
+    }
+
+    public function test_every_toc_and_inline_link_points_to_an_existing_unique_anchor(): void
+    {
+        $group = UserGroup::create(['code' => 'GD', 'name' => 'Gudang']);
+        $group->syncAccess(['ISS' => 'rw']);
+
+        foreach ([User::factory()->create(), User::factory()->supervisor()->create(), User::factory()->administrator()->create(), User::factory()->create(['group_id' => $group->id])] as $user) {
+            [$ids, $links] = $this->anchors($this->guide($user));
+            $this->assertSame([], array_values(array_diff($links, $ids)), 'Tautan ke anchor yang tidak ada');
+            $this->assertSame([], array_keys(array_filter(array_count_values($ids), fn ($n) => $n > 1)), 'Anchor ganda');
+        }
+
+        [$ids, $links] = $this->anchors($this->guide(User::factory()->administrator()->create(), 'help.technical-guide'));
+        $this->assertSame([], array_values(array_diff($links, $ids)), 'Tautan Technical Guide ke anchor yang tidak ada');
+    }
+
+    public function test_every_module_section_uses_the_fixed_pattern(): void
+    {
+        $html = $this->guide(User::factory()->administrator()->create());
+
+        foreach ([...array_values(self::ANCHORS), 'catat-pemesanan', 't-batal'] as $anchor) {
+            $section = $this->section($html, $anchor);
+            foreach (['<h4>Untuk apa</h4>', '<h4>Siapa yang bisa</h4>', '<h4>Langkah', '<h4>Yang perlu diperhatikan</h4>', '<h4>Masalah umum</h4>'] as $heading) {
+                $this->assertStringContainsString($heading, $section, "Bagian {$anchor} tidak memuat {$heading}");
+            }
+        }
+    }
+
+    public function test_start_here_roles_glossary_and_faq_are_present(): void
+    {
+        $html = $this->guide(User::factory()->create());
+        foreach (['id="mulai"', 'id="hari-pertama"', 'id="saldo-awal-beda"', 'id="peran"', 'id="istilah"', 'id="tanya"', 'id="tombol-plus"', 'id="keluar-otomatis"', 'id="beranda"', 'id="menu"', 'id="siklus"'] as $anchor) {
+            $this->assertStringContainsString($anchor, $html, $anchor);
+        }
+        $this->assertStringContainsString('Penerimaan pertama <b>tidak</b> otomatis menjadi Saldo Awal', $html);
+
+        $glossary = $this->section($html, 'istilah');
+        foreach (['Batch', 'FEFO', 'Saldo Awal', 'Penerimaan', 'Pengeluaran', 'Penyesuaian', 'Stok Opname', 'Selisih', 'Titik Pesan Ulang', 'Lead time', 'Satuan masuk', 'Kontan', 'Draf', 'Konfirmasi, Terkonfirmasi', 'Cut-off (titik acuan stok)', 'Stok sistem', 'Hitung buta', 'Kunci transaksi'] as $term) {
+            $this->assertStringContainsString('<td>'.$term.'</td>', $glossary, "Istilah {$term} belum ada di glosarium");
+        }
+
+        $faq = $this->section($html, 'tanya');
+        foreach (['Laporan kosong padahal', 'Saldo Awal ditolak', 'Tiba-tiba keluar', 'stok tidak cukup', 'Barang tidak muncul', 'transaksi dikunci', 'Bagaimana memakai tombol plus'] as $question) {
+            $this->assertStringContainsString($question, $faq, "FAQ {$question}");
+        }
+    }
+
+    public function test_kartu_stok_help_explains_opening_balance_by_from_date_and_reports_use_confirmed_documents(): void
+    {
+        $html = $this->guide(User::factory()->supervisor()->create());
+
+        $this->assertStringContainsString('Membaca Saldo Awal di Kartu Stok', $html);
+        $this->assertStringContainsString('baris <b>AWAL</b> tampil di daftar', $html);
+        $this->assertStringContainsString('hanya memakai dokumen yang sudah <b>Terkonfirmasi</b>', $html);
+        $this->assertStringContainsString('Bawaannya awal bulan ini sampai hari ini', $html);
+        $this->assertStringContainsString('menampilkan Penyesuaian dengan <b>semua status</b>', $this->section($html, 'r-adj'));
+        $this->assertStringNotContainsString('Konversi satuan belum ada', $html);
+    }
+
+    public function test_every_help_diagram_file_is_installed_in_its_guide(): void
+    {
+        $ug = $this->guide(User::factory()->administrator()->create());
+        $tg = $this->get(route('help.technical-guide'))->assertOk()->getContent();
+
+        foreach (glob(resource_path('help/diagrams/*.svg')) as $file) {
+            $name = basename($file, '.svg');
+            $this->assertStringContainsString('id="'.$name.'-t"', str_starts_with($name, 'ug-') ? $ug : $tg, "Diagram {$name} tidak dipasang");
+            $this->assertNotFalse(simplexml_load_file($file), "{$name} bukan XML yang sah");
+        }
+
+        foreach (['ug-hari-pertama', 'ug-saldo-awal-vs-penerimaan', 'ug-kartu-stok-saldo-awal', 'ug-opname-langkah', 'ug-satuan-masuk', 'ug-keluar-otomatis', 'ug-pesan-ulang', 'ug-stok-opname'] as $name) {
+            $this->assertFileExists(resource_path('help/diagrams/'.$name.'.svg'));
+        }
+    }
+
+    public function test_technical_guide_covers_the_architecture_topics(): void
+    {
+        $tg = $this->guide(User::factory()->administrator()->create(), 'help.technical-guide');
+
+        foreach (['lockAndAssert', 'createNumbered', 'unreversed()', 'bcmath', 'FEFO', 'product_units', 'ReorderOrders::reconcile', 'Devlib\Engine\LeadTime', 'App\Support\QuickAdd', 'x-dl::field.select', 'x-dl::idle-logout', 'SESSION_LIFETIME', 'App\Support\Constants', 'stock_counts', 'StockLedger::assertNotLocked()', 'Install steps', 'id="testing"', 'composer setup', 'php artisan test'] as $needle) {
+            $this->assertStringContainsString($needle, $tg, "TG tidak memuat {$needle}");
+        }
+    }
 
     public function test_guests_are_sent_to_login(): void
     {
