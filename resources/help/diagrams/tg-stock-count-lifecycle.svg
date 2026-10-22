@@ -1,0 +1,32 @@
+<svg class="g-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 290" role="img" aria-labelledby="tg-stock-count-lifecycle-t tg-stock-count-lifecycle-d">
+<title id="tg-stock-count-lifecycle-t">Stock count (Stok Opname) lifecycle</title>
+<desc id="tg-stock-count-lifecycle-d">start() snapshots stock into stock_count_lines and sets status counting. finish() moves it to review. approve() sets done first (releasing the transaction lock) and then posts one approved ADJ document through StockLedger in the same database transaction. reject() returns to counting. cancel() ends it from counting or review.</desc>
+<defs><marker id="m-tg-stock-count-lifecycle" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="n n-gray"  x="20" y="40" width="130" height="54" rx="9"/>
+<text class="t b" x="85" y="63" text-anchor="middle">start()</text>
+<text class="t s" x="85" y="79" text-anchor="middle">snapshot lines</text>
+<rect class="n n-warn"  x="220" y="40" width="170" height="54" rx="9"/>
+<text class="t b" x="305" y="63" text-anchor="middle">counting</text>
+<text class="t s" x="305" y="79" text-anchor="middle">lock on (if enabled)</text>
+<rect class="n n-warn"  x="480" y="40" width="150" height="54" rx="9"/>
+<text class="t b" x="555" y="63" text-anchor="middle">review</text>
+<text class="t s" x="555" y="79" text-anchor="middle">lock on (if enabled)</text>
+<rect class="n n-ok"  x="720" y="40" width="150" height="54" rx="9"/>
+<text class="t b" x="795" y="63" text-anchor="middle">done</text>
+<text class="t s" x="795" y="79" text-anchor="middle">one ADJ posted</text>
+<rect class="n n-bad"  x="350" y="170" width="200" height="54" rx="9"/>
+<text class="t b" x="450" y="193" text-anchor="middle">cancelled</text>
+<text class="t s" x="450" y="209" text-anchor="middle">lock released, no stock change</text>
+<path class="e" d="M150,67 L220,67" marker-end="url(#m-tg-stock-count-lifecycle)"/>
+<path class="e" d="M390,67 L480,67" marker-end="url(#m-tg-stock-count-lifecycle)"/>
+<text class="el" x="404" y="58" text-anchor="start">finish()</text>
+<path class="e" d="M630,67 L720,67" marker-end="url(#m-tg-stock-count-lifecycle)"/>
+<text class="el" x="650" y="58" text-anchor="start">approve()</text>
+<path class="e" d="M510,94 L510,130 L350,130 L350,94" marker-end="url(#m-tg-stock-count-lifecycle)"/>
+<text class="el" x="388" y="122" text-anchor="start">reject() / refresh</text>
+<path class="e" d="M260,94 L260,197 L350,197" marker-end="url(#m-tg-stock-count-lifecycle)"/>
+<path class="e" d="M600,94 L600,197 L550,197" marker-end="url(#m-tg-stock-count-lifecycle)"/>
+<text class="el" x="606" y="150" text-anchor="start">cancel()</text>
+<text class="t s" x="20" y="256" text-anchor="start">approve(): lock row, check lines + reasons + stock moved since cut-off, set status done, then StockDocuments::recordCountAdjustment() posts via StockLedger.</text>
+<text class="t s" x="20" y="274" text-anchor="start">Any failure rolls back the whole approval. The transaction lock is one guard inside StockLedger::post() and reverse() (StockCount::lockingNow()).</text>
+</svg>

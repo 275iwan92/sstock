@@ -1,6 +1,15 @@
 # Stoku
 
-Stoku adalah aplikasi stok barang untuk gudang. Setiap barang punya batch (satu batch = satu tanggal kedaluwarsa). Barang yang paling cepat kedaluwarsa dikeluarkan lebih dulu (FEFO). Aplikasi memberi peringatan saat stok sampai titik pesan ulang dan saat batch hampir kedaluwarsa. Semua perubahan stok dicatat lewat dokumen: Saldo Awal, Penerimaan Barang, Pengeluaran Barang, dan Penyesuaian Stok. Hak akses dibagi tiga peran (Data Entry, Supervisor, Administrator) dan bisa diatur lagi per grup.
+Stoku adalah aplikasi stok barang untuk gudang. Setiap barang punya batch (satu batch = satu tanggal kedaluwarsa). Barang yang paling cepat kedaluwarsa dikeluarkan lebih dulu (FEFO). Aplikasi memberi peringatan saat stok sampai titik pesan ulang dan saat batch hampir kedaluwarsa. Semua perubahan stok dicatat lewat dokumen: Saldo Awal, Penerimaan Barang, Pengeluaran Barang, dan Penyesuaian Stok. Penghitungan fisik rutin dilakukan lewat **Stok Opname** (banyak barang sekaligus; selisihnya menjadi satu Penyesuaian otomatis). Hak akses dibagi tiga peran (Data Entry, Supervisor, Administrator) dan bisa diatur lagi per grup.
+
+Fitur utama:
+
+- Master: Barang (produk dan batch per tanggal kedaluwarsa), Supplier (termasuk Kontan), Satuan dan satuan masuk per barang, Kategori, Lokasi, Departemen, Penerima. Tombol plus untuk menambah master langsung dari dropdown.
+- Transaksi: Saldo Awal, Penerimaan Barang, Pengeluaran Barang (FEFO), Penyesuaian Stok (persetujuan Supervisor), pembatalan dengan dokumen pembalik otomatis.
+- **Stok Opname**: mulai (snapshot stok per batch, per cakupan Semua / Kategori / Lokasi), cetak Lembar Hitung, input hasil hitung massal dengan simpan otomatis, hitung buta, kunci transaksi selama opname, tinjau selisih (jumlah, persen, nilai, alasan wajib di atas ambang), setujui (satu Penyesuaian otomatis), dan cetak Berita Acara.
+- Pesan ulang: titik pesan ulang per produk, Catat Pemesanan, lead time.
+- Laporan: Kartu Stok, Ringkasan Stok, Penerimaan, Pengeluaran, Kedaluwarsa, Opname & Penyesuaian. Harga dan nilai hanya untuk Supervisor.
+- Keamanan: peran, grup dengan akses RW / RO per modul, bantuan di dalam aplikasi (Panduan Pengguna dan Panduan Teknis).
 
 Dokumen ini ditulis untuk penguji (QC) pemula. Ikuti langkahnya satu per satu, dari atas ke bawah.
 

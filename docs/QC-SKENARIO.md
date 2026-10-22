@@ -290,6 +290,36 @@ Kasus ini **menghapus semua data**. Kerjakan terakhir. Layar Data Contoh hanya b
 
 ---
 
+## 15. Stok Opname (OPS)
+
+Peran: Supervisor memulai, meninjau, dan menyetujui. Data Entry mengisi hasil hitung dan mencetak lembar. Pakai barang uji dari `BRG-02` yang sudah punya stok (mis. dari `PNM`); catat **stok sebelum**.
+
+| No | Langkah | Hasil yang diharapkan | Lulus/Gagal | Catatan |
+|---|---|---|---|---|
+| OPS-01 | Sebagai `entry`, buka menu Transaksi > Stok Opname. | Daftar tampil. Tombol **Mulai Opname** tidak ada. Mengetik alamat `/stock-counts/create` langsung: ditolak. | | |
+| OPS-02 | Sebagai `supervisor`, tekan Mulai Opname. Biarkan Cakupan Semua barang, Hitung buta Ya, Kunci transaksi Ya, Ambang 5. Simpan. | Opname baru bernomor `SO-YYMM-0001`, status **Sedang dihitung**. Lembar berisi satu baris per batch yang punya stok. Stok barang **belum berubah**. | | |
+| OPS-03 | Coba Mulai Opname lagi selagi opname tadi berjalan. | Ditolak dengan pesan: hanya satu opname boleh berjalan, sebut nomor yang masih berjalan. | | |
+| OPS-04 | Tekan **Cetak Lembar Hitung**. | Lembar A4 terbuka: dikelompokkan per Lokasi lalu kode; kolom Hasil Hitung, Penghitung, Catatan kosong. **Tidak ada** kolom Stok Sistem (hitung buta). | | |
+| OPS-05 | Sebagai `entry`, buka opname itu. Pada barang uji isi **Hasil Hitung** = 0, lalu isi Penghitung `Budi`, lalu pindah sel. | Tersimpan otomatis. Baris terhitung terisi (0 dianggap terisi). Kotak Terisi bertambah, Belum diisi berkurang. Layar tidak menampilkan stok sistem. | | |
+| OPS-06 | Kosongkan lagi Hasil Hitung baris itu. | Baris kembali Belum diisi (kosong = belum dihitung, bukan nol). | | |
+| OPS-07 | Pada satu baris lain, centang **Tidak dihitung** tanpa Catatan, lalu tekan **Selesai Hitung**. | Selesai Hitung ditolak; pesan menyebut kode barang yang belum terisi / belum lengkap. | | |
+| OPS-08 | Isi Catatan baris itu. Isi semua baris lain (barang uji: isi Jml sistem dikurangi 2 bila Anda tahu stoknya). Tekan **Selesai Hitung**. | Status **Tinjau**. Isian terkunci. | | |
+| OPS-09 | Selagi opname berjalan, di Penerimaan Barang buat draf lalu tekan Konfirmasi. | Draf tersimpan, tetapi Konfirmasi ditolak: "Stok Opname SO-... sedang berjalan, transaksi dikunci. Hubungi Supervisor." Stok tidak berubah. | | |
+| OPS-10 | Sebagai `supervisor`, buka opname (Tinjau). | Layar tinjau: Stok Sistem, Fisik, Selisih, Persen, Nilai, kolom Besar. Ringkasan nilai lebih dan kurang. Sebagai `entry` layar ini tidak ada dan tidak ada nilai. | | |
+| OPS-11 | Pada baris selisih di atas 5 persen, biarkan Alasan kosong. Tekan **Setujui Opname**. | Ditolak: Alasan wajib; pesan menyebut kode barangnya. Stok tidak berubah. | | |
+| OPS-12 | Isi Alasan `Rusak`. Pada satu baris isi **Hitung Ulang** dengan angka lain. | Selisih baris itu dihitung ulang memakai angka hitung ulang; halaman dimuat ulang dan ringkasan ikut berubah. | | |
+| OPS-13 | Tekan **Pratinjau Berita Acara**. | Terbuka dengan tulisan PRATINJAU, ringkasan, daftar penghitung, baris selisih beserta alasan, dan tiga kotak tanda tangan (Penghitung, Supervisor, Penanggung Jawab Gudang). | | |
+| OPS-14 | Tekan **Setujui Opname** lalu OK. | Status **Selesai**. Muncul satu Penyesuaian Stok baru berstatus Disetujui dengan alasan "Stok Opname SO-...". Stok barang uji sama dengan hasil hitung fisik. Kunci transaksi lepas. | | |
+| OPS-15 | Buka Kartu Stok barang uji. | Ada baris jenis Penyesuaian dengan keterangan "Stok Opname SO-...". | | |
+| OPS-16 | Ulangi Mulai Opname, isi semua baris sama dengan stok sistem, Selesai Hitung, Setujui. | Selesai tanpa membuat Penyesuaian (tidak ada selisih). | | |
+| OPS-17 | Mulai opname baru dengan Kunci transaksi **Tidak**. Sebelum Setujui, buat dan Konfirmasi satu Penerimaan barang uji. Selesai Hitung lalu coba Setujui. | Setujui ditolak: stok bergeser sejak cut-off, daftar barisnya disebut. Tombol **Perbarui Baris Bergeser** mengosongkan baris itu dan mengembalikan opname ke Sedang dihitung. | | |
+| OPS-18 | Pada opname yang berjalan, tekan **Kembalikan ke Penghitungan** tanpa catatan, lalu dengan catatan. | Tanpa catatan ditolak. Dengan catatan: status Sedang dihitung dan catatan tampil. | | |
+| OPS-19 | Pada opname yang berjalan dengan kunci aktif, tekan **Buka Kunci**. | Kunci terbuka (tercatat siapa dan kapan di kepala layar). Konfirmasi Penerimaan kini berhasil. | | |
+| OPS-20 | Tekan **Batalkan Opname**. | Status Dibatalkan. Kunci lepas. Stok tidak berubah. | | |
+| OPS-21 | Sebagai `entry`, buka opname yang berstatus Sedang dihitung atau Tinjau. | Tombol Buka Kunci, Batalkan Opname, Setujui Opname, dan Kembalikan ke Penghitungan **tidak tampil**. Layar tinjau dan Berita Acara tidak bisa dibuka (ditolak bila alamatnya diketik). | | |
+
+---
+
 ## Hal yang sengaja belum ada
 
 Fitur berikut **memang belum dibuat** (mungkin ditambah nanti). Jangan dilaporkan sebagai bug.
@@ -299,6 +329,7 @@ Fitur berikut **memang belum dibuat** (mungkin ditambah nanti). Jangan dilaporka
 - **Nomor lot/batch milik pemasok.** Batch di Stoku hanya menurut tanggal kedaluwarsa (kode `KODEBARANG-YYMMDD`).
 - **Ekspor dan impor data** selain yang ada: tombol Export CSV pada grid dan Cetak pada laporan dan dokumen. Belum ada impor barang/transaksi dari Excel atau CSV.
 - **Barcode** (membaca atau mencetak barcode/QR).
+- **Pengingat Stok Opname bulanan di Beranda.** Jadwal opname belum diingatkan otomatis. Baris selisih besar ditandai kolom Besar dan kotak penyaring, belum diberi warna baris.
 - **Notifikasi otomatis** lewat e-mail, WhatsApp, atau push. Peringatan hanya tampil di Beranda dan di form. E-mail (mis. lupa password) hanya ditulis ke `storage/logs/laravel.log` di mesin uji.
 
 ## Di luar cakupan Stoku

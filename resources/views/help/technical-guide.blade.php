@@ -94,6 +94,29 @@
             </tbody>
         </table>
 
+        <h3>Stock count (Stok Opname)</h3>
+        @include('help.diagram', ['name' => 'tg-stock-count-lifecycle', 'caption' => 'State diagram of a Stok Opname (stock count).'])
+        <p>A routine physical count of many batches at once. It is separate from the ad-hoc Adjustment above and does not change it. Module <code>SO</code> (group Transaksi, minimum role Data Entry, guarded route prefix <code>stock-counts.</code>). Logic: <code>App\Services\StockCounts</code>; screens: <code>StockCountController</code>, views <code>stock-counts/*</code>; print data: <code>App\Support\StockCountPrint</code> (<code>x-dl::print-sheet</code>, A4 landscape).</p>
+        <table class="g-table">
+            <thead><tr><th>From</th><th>Action (who)</th><th>To</th><th>Stock effect</th></tr></thead>
+            <tbody>
+                <tr><td>(new)</td><td><code>start()</code> (Supervisor)</td><td><span class="g-st g-yellow">counting</span></td><td>None. Snapshot: one <code>stock_count_lines</code> row per active batch with stock &gt; 0 in scope (<code>system_qty</code>, <code>unit_cost</code> = average cost at <code>cutoff_at</code>). Only ONE count may be counting / review at a time</td></tr>
+                <tr><td>counting</td><td><code>saveLine()</code> (module RW), <code>addItem()</code></td><td>counting</td><td>None. <code>counted_qty</code> null = not counted yet, 0 = empty; <code>skipped</code> needs a note. Blind count: <code>system_qty</code> is never sent to the browser (lookup <code>item_count</code> also omits stock)</td></tr>
+                <tr><td>counting</td><td><code>finish()</code> (module RW)</td><td><span class="g-st g-yellow">review</span></td><td>None. Refused while any line is empty or skipped without a note</td></tr>
+                <tr><td>review</td><td><code>reviewLine()</code> (Supervisor): <code>recount_qty</code>, <code>reason</code></td><td>review</td><td>None. Final result = <code>recount_qty</code> if set, else <code>counted_qty</code></td></tr>
+                <tr><td>review</td><td><code>approve()</code> (Supervisor)</td><td><span class="g-st g-green">done</span></td><td>One approved ADJ document (<code>reason</code> = "Stok Opname SO-..."), posted by <code>StockLedger::post</code>; none if no line differs</td></tr>
+                <tr><td>review</td><td><code>reject()</code> with note, <code>refreshMoved()</code> (Supervisor)</td><td><span class="g-st g-yellow">counting</span></td><td>None. Refresh sets <code>system_qty</code> to current stock and clears the line</td></tr>
+                <tr><td>counting, review</td><td><code>cancel()</code> (Supervisor)</td><td><span class="g-st g-red">cancelled</span></td><td>None; lock released</td></tr>
+            </tbody>
+        </table>
+        <ul class="g-list">
+            <li><b>Approval checks</b> (one DB transaction, count row and item rows locked): every line final; a reason on every line whose |difference| exceeds <code>threshold_pct</code> of <code>system_qty</code> (compared without rounding with bcmath; <code>system_qty</code> 0 and any difference always exceeds); for every line with a difference the item's current <code>stock_qty</code> must still equal <code>system_qty</code>, otherwise the approval is refused with the list and "Refresh moved lines" is needed. Then status <code>done</code> is written FIRST (so the lock is gone), then <code>StockDocuments::recordCountAdjustment()</code> creates the ADJ document and posts it; any failure rolls everything back.</li>
+            <li><b>Transaction lock:</b> a single guard, <code>StockLedger::assertNotLocked()</code>, at the top of <code>post()</code> and <code>reverse()</code>, reads <code>StockCount::lockingNow()</code> (status counting / review and <code>lock_transactions</code>). So Confirm (Receiving, Issuance, Opening), Approve (Adjustment) and Cancel of a processed document are all refused while locked; drafts and submitting an Adjustment for approval do not post and stay allowed. <code>unlock()</code> sets <code>lock_transactions</code> false and records <code>unlocked_by/at</code>.</li>
+            <li><b>Numbering:</b> <code>SO-YYMM-NNNN</code> per month; <code>doc_no</code> is unique and the creator retries on a collision, like document numbers.</li>
+            <li><b>Screens:</b> the entry and review sheets are <code>x-dl::lookup-grid</code> in auto-save mode; each cell edit POSTs <code>{changed}</code> to <code>stock-counts.lines</code> / <code>stock-counts.review</code> and gets all rows back. The review screen reloads after a save (<code>resources/js/app.js</code>, attribute <code>data-reload-on-save</code>) so the server-calculated summary stays right; this needs <code>npm run build</code>.</li>
+            <li><b>Rights:</b> view, fill in, print the count sheet = module <code>SO</code> (RW to write); start, review, approve, return, cancel, unlock, minutes (Berita Acara) and every value = <code>supervisor</code> middleware. Values (difference x average cost) are shown to Supervisors only.</li>
+        </ul>
+
         <h3>Rules that apply to every document</h3>
         <ul class="g-list">
             <li><b>Draft</b> never touches stock. Only a draft can be edited or deleted. Confirm needs at least one line.</li>
@@ -136,6 +159,7 @@
                 <tr><td><code>stock_document_lines</code></td><td>Item, quantity, cost; Adjustment keeps <code>system_qty</code> and <code>counted_qty</code>; <code>entered_qty/unit/unit_cost</code> keep what was typed when the unit differs</td><td>document, item</td></tr>
                 <tr><td><code>stock_documents.reversal_of_document_id</code></td><td>Set on the auto-created reversing ADJUSTMENT document (status approved) when a processed document is cancelled (<code>StockDocuments::recordReversal()</code>); its lines carry the ledger delta, system and resulting quantity. The ledger rows stay <code>reversal_of</code> on the original document, so the Stock Card is unchanged. The reversing document cannot be cancelled.</td><td>self</td></tr>
                 <tr><td><code>stock_movements</code></td><td>The ledger: quantity, cost, balance after, user, <code>reversal_of</code></td><td>item, document, itself (reversal)</td></tr>
+                <tr><td><code>stock_counts</code>, <code>stock_count_lines</code></td><td>Stok Opname: header (scope, blind, lock, threshold, cut-off, status, submitted / approved / unlocked / cancelled by and at, <code>adjustment_document_id</code>) and one snapshot line per batch (<code>system_qty</code>, <code>unit_cost</code>, <code>counted_qty</code> null = not counted, <code>recount_qty</code>, <code>counted_by</code>, <code>skipped</code>, <code>reason</code>, <code>note</code>, <code>added_manually</code>; unique <code>stock_count_id + item_id</code>)</td><td>users; items; the ADJ document created on approval</td></tr>
                 <tr><td><code>reorder_orders</code></td><td>Re-order log per product; closed when confirmed Receiving quantities reach <code>qty</code> (<code>receiving_id</code> = the completing document), or manually</td><td>product, receiving document</td></tr>
                 <tr><td><code>users</code>, <code>user_groups</code> (<code>is_active</code>: groups are deactivated, never deleted), <code>user_group_modules</code></td><td>Accounts, groups, and per-module access (none / RO / RW)</td><td>user belongs to a group</td></tr>
             </tbody>
@@ -162,6 +186,7 @@
                 <tr><td><code>add_supplier_qty_note_to_reorder_orders</code></td><td><code>reorder_orders.supplier_id</code> (FK, null on delete), <code>qty</code> decimal(15,3) null, <code>note</code> null: simple order record (nullable columns only; old rows unchanged)</td></tr>
                 <tr><td><code>add_receipt_progress_to_reorder_orders</code></td><td><code>reorder_orders.received_qty</code> decimal(15,3) default 0, <code>first_received_at</code> null, <code>close_reason</code> null ('received' | 'manual'); closed rows are backfilled (columns only, nothing deleted)</td></tr>
                 <tr><td><code>create_product_units_table</code></td><td><code>product_units</code>: incoming units per product with factor to the stock unit (adds a table only; no existing data is changed; CHECK factor &gt; 0 on MySQL / MariaDB)</td></tr>
+                <tr><td><code>create_stock_counts_tables</code>, <code>give_stock_count_to_groups</code></td><td>Stok Opname tables (new tables only; no existing data changed); data migration that grants module <code>SO</code> (RW) to every group that has RW on ADJ or RCV (idempotent)</td></tr>
                 <tr><td><code>create_products_and_batches</code></td><td>Two-level item model: <code>products</code>, <code>items.product_id</code> (batches), <code>reorder_orders.product_id</code>; old items are merged into products</td></tr>
             </tbody>
         </table>
@@ -195,6 +220,7 @@
                 <tr><td>SUP, DEP, RCP</td><td>Suppliers, Departemen, Penerima</td><td>Data Master</td><td>Data Entry</td><td><code>suppliers.</code>, <code>departments.</code>, <code>recipients.</code></td></tr>
                 <tr><td>UOM, CAT, LOC</td><td>Satuan, Kategori, Lokasi Penyimpanan</td><td>Data Master</td><td>Supervisor</td><td><code>units.</code>, <code>categories.</code>, <code>locations.</code></td></tr>
                 <tr><td>OPN, ADJ</td><td>Saldo Awal, Penyesuaian Stok</td><td>Transaksi</td><td>Supervisor</td><td><code>docs.*</code> with <code>{type}</code> = opening / adjustment</td></tr>
+                <tr><td>SO</td><td>Stok Opname</td><td>Transaksi</td><td>Data Entry</td><td><code>stock-counts.</code> (start, review, approve, return, cancel, unlock, minutes: Supervisor middleware on the route)</td></tr>
                 <tr><td>RCV, ISS</td><td>Penerimaan Barang, Pengeluaran Barang</td><td>Transaksi</td><td>Data Entry</td><td><code>docs.*</code> with <code>{type}</code> = receiving / issuance</td></tr>
                 <tr><td>R-CARD, R-SUM, R-IN, R-OUT, R-EXP</td><td>Kartu Stok, Ringkasan Stok, Laporan Penerimaan / Pengeluaran / Kedaluwarsa</td><td>Laporan</td><td>Data Entry</td><td><code>reports.*</code></td></tr>
                 <tr><td>R-ADJ</td><td>Laporan Opname &amp; Penyesuaian</td><td>Laporan</td><td>Supervisor</td><td><code>reports.adjustment</code></td></tr>
@@ -296,6 +322,7 @@ npm run build      # required after editing resources/css/app.css</pre>
                 <tr><td>Ledger rows are never edited; Cancel adds reversal rows (<code>reversal_of</code>)</td><td>Full history and an honest Stock Card; the original posting stays visible</td></tr>
                 <tr><td>Save creates a draft; stock moves on Confirm</td><td>Typing mistakes cost nothing until the user commits; a confirmed document is locked</td></tr>
                 <tr><td>Cancel needs a reason, a reversibility check, and a Supervisor for non-Supervisors</td><td>Control without blocking daily work; stock must never go negative, so an impossible cancel is refused and corrected with an Adjustment</td></tr>
+                <tr><td>Stok Opname is a separate module that ends in ONE auto-approved ADJ document, and the transaction lock sits in <code>StockLedger</code></td><td>The routine count is a different job from an ad-hoc Adjustment, so the Adjustment is untouched; the ledger stays the single writer of stock and the single place that can refuse a posting while a count runs</td></tr>
                 <tr><td>Adjustment needs approval and a stale-count check</td><td>Opname differences move value; the approver must be sure the count still matches the system</td></tr>
                 <tr><td>Moving average cost</td><td>Simple, no cost layers; the weekly value chart reads <code>balance_qty x balance_avg_cost</code> from the ledger</td></tr>
                 <tr><td>Access = module list x role x group, with RO</td><td>One row in <code>Modules</code> adds a screen to menu, groups and route guard at once</td></tr>

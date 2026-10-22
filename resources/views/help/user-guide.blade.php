@@ -13,7 +13,7 @@
     $can = fn (string $code) => $user->canAccess($code);
     $sup = $user->isSupervisor();
     $anyMaster = collect(['ITM', 'SUP', 'DEP', 'RCP', 'UOM', 'CAT', 'LOC'])->contains($can);
-    $anyTrx = collect(['OPN', 'RCV', 'ISS', 'ADJ'])->contains($can);
+    $anyTrx = collect(['OPN', 'RCV', 'ISS', 'ADJ', 'SO'])->contains($can);
     $anyRpt = collect(['R-CARD', 'R-SUM', 'R-IN', 'R-OUT', 'R-EXP', 'R-ADJ'])->contains($can);
     $anySec = collect(['USR', 'GRP', 'SMP', 'MOD'])->contains($can);
 @endphp
@@ -40,6 +40,7 @@
             @if ($can('RCV'))<a class="g-toc-sub" href="#t-rcv">Penerimaan Barang</a>@endif
             @if ($can('ISS'))<a class="g-toc-sub" href="#t-iss">Pengeluaran Barang</a>@endif
             @if ($can('ADJ'))<a class="g-toc-sub" href="#t-adj">Penyesuaian Stok</a>@endif
+            @if ($can('SO'))<a class="g-toc-sub" href="#t-so">Stok Opname</a>@endif
             <a class="g-toc-sub" href="#t-batal">Membatalkan dokumen</a>
         @endif
         @if ($anyRpt)
@@ -60,7 +61,7 @@
         <p>Stoku adalah aplikasi persediaan barang. Urutan kerjanya sederhana:</p>
         <ol class="g-steps">
             <li><b>Data Master</b> diisi sekali: barang, supplier, satuan, kategori, lokasi, departemen, penerima.</li>
-            <li><b>Transaksi</b> mencatat setiap perubahan stok: Saldo Awal, Penerimaan Barang, Pengeluaran Barang, Penyesuaian Stok. Stok baru berubah setelah dokumen <b>Konfirmasi</b>.</li>
+            <li><b>Transaksi</b> mencatat setiap perubahan stok: Saldo Awal, Penerimaan Barang, Pengeluaran Barang, Penyesuaian Stok, dan Stok Opname (penghitungan fisik rutin). Stok baru berubah setelah dokumen <b>Konfirmasi</b> (Stok Opname: setelah <b>Setujui</b>).</li>
             <li><b>Laporan</b> dan <b>Beranda</b> membaca hasilnya: stok sekarang, riwayat, barang yang harus dipesan ulang, barang hampir kedaluwarsa.</li>
         </ol>
         @include('help.diagram', ['name' => 'ug-alur-kerja', 'caption' => 'Alur kerja Stoku: dari Data Master sampai Laporan.'])
@@ -68,8 +69,8 @@
         <table class="g-table">
             <thead><tr><th>Peran</th><th>Bisa mengerjakan</th></tr></thead>
             <tbody>
-                <tr><td>Data Entry</td><td>Penerimaan Barang dan Pengeluaran Barang; mengelola Supplier, Departemen, Penerima; menambah Barang baru dan melihat Barang, serta kebanyakan laporan. Tidak melihat harga dan nilai stok.</td></tr>
-                <tr><td>Supervisor</td><td>Semua fungsi stok: mengubah Barang, Satuan, Kategori, Lokasi; Saldo Awal; Penyesuaian Stok; <b>Setujui</b> / <b>Tolak</b>; melihat harga, nilai, dan semua laporan.</td></tr>
+                <tr><td>Data Entry</td><td>Penerimaan Barang dan Pengeluaran Barang; mengisi hasil hitung Stok Opname; mengelola Supplier, Departemen, Penerima; menambah Barang baru dan melihat Barang, serta kebanyakan laporan. Tidak melihat harga dan nilai stok.</td></tr>
+                <tr><td>Supervisor</td><td>Semua fungsi stok: mengubah Barang, Satuan, Kategori, Lokasi; Saldo Awal; Penyesuaian Stok; memulai, meninjau, dan menyetujui Stok Opname; <b>Setujui</b> / <b>Tolak</b>; melihat harga, nilai, dan semua laporan.</td></tr>
                 <tr><td>Administrator</td><td>Semua yang bisa dikerjakan Supervisor, ditambah menu <b>Keamanan</b> (pengguna, grup, data contoh) dan Technical Guide.</td></tr>
             </tbody>
         </table>
@@ -295,7 +296,7 @@
         @if ($anyTrx)
         {{-- 6 --}}
         <h2 id="transaksi">6. Transaksi</h2>
-        <p>Semua perubahan stok dicatat sebagai dokumen. Setiap dokumen punya nomor otomatis berawalan jenisnya (OPN, RCV, ISS, ADJ) lalu tahun-bulan dan urutan, serta mengikuti siklus <b>Draf &gt; Konfirmasi</b> (bagian 4). Stok tidak bisa menjadi minus.</p>
+        <p>Semua perubahan stok dicatat sebagai dokumen. Setiap dokumen punya nomor otomatis berawalan jenisnya (OPN, RCV, ISS, ADJ; Stok Opname SO) lalu tahun-bulan dan urutan, serta mengikuti siklus <b>Draf &gt; Konfirmasi</b> (bagian 4). Stok tidak bisa menjadi minus.</p>
         <table class="g-table">
             <thead><tr><th>Modul</th><th>Dipakai untuk</th><th>Siapa</th></tr></thead>
             <tbody>
@@ -303,6 +304,7 @@
                 @if ($can('RCV'))<tr><td><a href="#t-rcv">Penerimaan Barang</a></td><td>Barang masuk dari supplier</td><td>Data Entry, Supervisor</td></tr>@endif
                 @if ($can('ISS'))<tr><td><a href="#t-iss">Pengeluaran Barang</a></td><td>Barang keluar ke penerima</td><td>Data Entry, Supervisor</td></tr>@endif
                 @if ($can('ADJ'))<tr><td><a href="#t-adj">Penyesuaian Stok</a></td><td>Mencocokkan stok sistem dengan hitungan fisik (opname)</td><td><span class="g-role">hanya Supervisor</span></td></tr>@endif
+                @if ($can('SO'))<tr><td><a href="#t-so">Stok Opname</a></td><td>Penghitungan fisik rutin untuk banyak barang sekaligus; selisihnya menjadi Penyesuaian otomatis</td><td>Data Entry (mengisi hasil), Supervisor (memulai, menyetujui)</td></tr>@endif
             </tbody>
         </table>
 
@@ -356,6 +358,25 @@
         @include('help.diagram', ['name' => 'ug-penyesuaian', 'caption' => 'Alur Penyesuaian Stok.'])
         <div class="g-warn"><b>Setujui ditolak bila stok barang berubah</b> sejak dihitung (ada penerimaan / pengeluaran baru). Tolak dokumennya lalu hitung ulang di dokumen baru.</div>
         <p class="g-note">Di grid tersedia kotak <b>Menunggu persetujuan</b> dan <b>Draf</b> untuk menyaring cepat.</p>
+        @endif
+
+        @if ($can('SO'))
+        <h3 id="t-so">Stok Opname</h3>
+        <p>Stok Opname adalah <b>penghitungan fisik rutin</b> (mingguan, normalnya bulanan). Pada hari itu kegiatan gudang berhenti sejenak, beberapa orang menghitung barang dengan <b>kertas dan alat tulis</b>, lalu hasilnya <b>diinput sekaligus</b> untuk banyak barang. Mesin menghitung selisihnya dan, setelah Supervisor menyetujui, membuat <b>satu Penyesuaian Stok otomatis</b>. Ini berbeda dengan <b>Penyesuaian Stok</b> yang dipakai untuk temuan tidak rutin, barang per barang. Penghitungan dilakukan <b>per batch</b> (satu tanggal kedaluwarsa = satu baris).</p>
+        @include('help.diagram', ['name' => 'ug-stok-opname', 'caption' => 'Alur Stok Opname.'])
+        <ol class="g-steps">
+            <li><b>Mulai</b> <span class="g-role">hanya Supervisor</span>: di <b>Stok Opname</b> tekan <b>Mulai Opname</b>. Pilih <b>Tanggal Opname</b>, <b>Cakupan</b> (Semua barang, Per Kategori, atau Per Lokasi), <b>Hitung buta</b> (stok sistem disembunyikan; bawaan Ya), <b>Kunci transaksi selama opname</b> (bawaan Ya) dan <b>Ambang Selisih</b> (bawaan 5 persen). Simpan = mulai: sistem mengambil <b>snapshot</b> stok sistem dan biaya rata-rata tiap batch berstok pada saat itu (cut-off). Nomornya berawalan <b>SO</b>, mis. SO-2611-0001.</li>
+            <li><b>Cetak Lembar Hitung</b>: tombol <b>Cetak Lembar Hitung</b> membuat lembar A4 yang dikelompokkan per Lokasi lalu kode. Kolom <b>Hasil Hitung</b>, <b>Penghitung</b>, dan <b>Catatan</b> dikosongkan untuk ditulis tangan. Stok sistem hanya tercetak bila opname tidak buta. Boleh dibuka dan dicetak oleh Data Entry maupun Supervisor.</li>
+            <li><b>Hitung di gudang</b> memakai lembar itu. Tulis <b>0</b> bila barang memang kosong; <b>kosongkan</b> bila belum dihitung.</li>
+            <li><b>Input hasil hitung</b> (Data Entry atau Supervisor): buka opname dari daftar. Setiap baris satu batch. Isi <b>Hasil Hitung</b> (angka 0 atau lebih, sampai 3 desimal, dalam satuan stok) dan <b>Penghitung</b> (nama terakhir diingat untuk baris berikutnya). Setiap perubahan <b>tersimpan otomatis</b> begitu Anda pindah sel; beberapa orang boleh mengisi baris yang berbeda sekaligus. Kotak <b>Terisi</b> dan <b>Belum diisi</b> di atas lembar menghitung kemajuan langsung; klik <b>Belum diisi</b> untuk menyaring baris yang tersisa; kotak <b>Cari</b> mencari kode atau nama.</li>
+            <li>Barang tidak ketemu atau tidak bisa dihitung? Isi <b>Catatan</b> lebih dulu, lalu centang <b>Tidak dihitung</b> (catatan wajib; baris itu tidak menghasilkan selisih). Barang yang ditemukan fisik tetapi tidak ada di lembar: tombol <b>Tambah Barang</b>, pilih barang / batch dari master; stok sistemnya diambil saat itu.</li>
+            <li><b>Selesai Hitung</b>: hanya bisa bila semua baris terisi atau Tidak dihitung dengan catatan. Bila belum, pesan menyebut kode barang yang tersisa. Sesudahnya isian terkunci dan opname masuk <b>Tinjau</b>.</li>
+            <li><b>Tinjau</b> <span class="g-role">hanya Supervisor</span>: layar menampilkan stok sistem, hasil fisik, <b>selisih</b> (jumlah, persen, dan nilai = selisih x biaya rata-rata saat cut-off), serta ringkasan nilai lebih dan kurang. Saring dengan kotak <b>Hanya selisih</b> atau <b>Selisih besar</b>. Isi <b>Hitung Ulang</b> bila perlu (bila ada, itu yang dipakai) dan <b>Alasan</b> tiap selisih; alasan <b>wajib</b> bila selisihnya melewati ambang (kolom <b>Besar</b>). Bagian ini juga bisa dilihat sebagai <b>Pratinjau Berita Acara</b>.</li>
+            <li><b>Setujui Opname</b> <span class="g-role">hanya Supervisor</span>: sistem memeriksa semua baris sudah final, alasan terisi, dan stok barang bersangkutan belum bergeser sejak cut-off. Bila valid, mesin membuat <b>satu dokumen Penyesuaian Stok</b> (status Disetujui, alasan &quot;Stok Opname SO-...&quot;) berisi baris yang selisihnya tidak nol, memostingnya ke stok, dan melepas kunci. Tanpa selisih sama sekali, opname selesai tanpa Penyesuaian. <b>Kembalikan ke Penghitungan</b> (dengan catatan) mengembalikan opname agar diperbaiki; stok tidak berubah.</li>
+            <li><b>Berita Acara Stok Opname</b>: tombol <b>Cetak Berita Acara</b> (sesudah Selesai; sebelum itu <b>Pratinjau Berita Acara</b>) memuat nomor, tanggal, cakupan, daftar penghitung, ringkasan, baris selisih beserta alasannya, nomor Penyesuaian yang dibuat, dan tiga kotak tanda tangan: Penghitung, Supervisor, Penanggung Jawab Gudang.</li>
+        </ol>
+        <div class="g-warn"><b>Kunci transaksi.</b> Selama opname Sedang dihitung atau Tinjau dengan kunci aktif, <b>Konfirmasi</b> Penerimaan, Pengeluaran, Saldo Awal, dan <b>Setujui</b> Penyesuaian, juga pembatalan dokumen yang sudah diproses, ditolak dengan pesan &quot;Stok Opname SO-... sedang berjalan, transaksi dikunci. Hubungi Supervisor.&quot; Menyimpan <b>Draf</b> tetap boleh. Kunci lepas saat opname Selesai atau Dibatalkan. Supervisor bisa menekan <b>Buka Kunci</b> (tercatat siapa dan kapan) bila gudang harus jalan lagi; transaksi yang menggeser stok sesudah cut-off membuat persetujuan ditolak sampai barisnya <b>Perbarui Baris Bergeser</b> dan dihitung ulang.</div>
+        <p class="g-note">Hanya <b>satu</b> opname boleh berjalan pada satu waktu (Sedang dihitung atau Tinjau); selesaikan atau <b>Batalkan Opname</b> dulu sebelum memulai yang baru. Membatalkan melepas kunci dan tidak mengubah stok. Hasil opname terlihat di <b>Kartu Stok</b> sebagai Penyesuaian dengan keterangan &quot;Stok Opname SO-...&quot;. Siapa boleh apa: <b>Data Entry</b> mengisi hasil hitung dan mencetak lembar; <span class="g-role">hanya Supervisor</span> memulai, meninjau, menyetujui, mengembalikan, membatalkan, membuka kunci, dan melihat nilai.</p>
         @endif
 
         <h3 id="t-batal">Membatalkan dokumen yang sudah dikonfirmasi</h3>
@@ -450,6 +471,8 @@
                 <tr><td>Menu atau tombol tidak ada</td><td>Peran atau Grup Anda belum diberi akses. Contoh: mengubah Barang hanya untuk Supervisor. Hubungi Administrator.</td></tr>
                 <tr><td>Muncul pesan &quot;akses hanya-baca (RO)&quot;</td><td>Grup Anda hanya boleh membuka modul itu tanpa mengubah. Minta Administrator memberi RW.</td></tr>
                 <tr><td>Stok tidak berkurang / bertambah setelah Simpan</td><td>Simpan hanya membuat Draf. Tekan <b>Konfirmasi</b> agar diproses ke stok (Penyesuaian: tunggu <b>Setujui</b> Supervisor).</td></tr>
+                <tr><td>Penerimaan / Pengeluaran ditolak: &quot;Stok Opname ... sedang berjalan, transaksi dikunci&quot;</td><td>Ada Stok Opname yang berjalan dengan kunci transaksi. Draf boleh disimpan; tunggu opname selesai atau minta Supervisor menekan <b>Buka Kunci</b>.</td></tr>
+                <tr><td>Selesai Hitung ditolak</td><td>Masih ada baris yang kosong, atau Tidak dihitung tanpa catatan. Pesan menyebut kode barangnya.</td></tr>
                 <tr><td>Pengeluaran ditolak: stok tidak cukup</td><td>Jumlah melebihi stok. Periksa kolom <b>Tersedia</b>; bila stok fisik memang ada, lakukan Penerimaan atau Penyesuaian Stok lebih dulu.</td></tr>
                 <tr><td>Pembatalan ditolak: stok tidak cukup</td><td>Dokumen itu tidak bisa ditarik kembali karena akan membuat stok minus. Koreksi lewat Penyesuaian Stok.</td></tr>
                 <tr><td>Kode barang tidak bisa diubah</td><td>Memang terkunci supaya riwayat tidak rusak. Bila salah, nonaktifkan barangnya lalu buat barang baru.</td></tr>

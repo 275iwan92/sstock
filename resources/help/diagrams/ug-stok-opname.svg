@@ -1,0 +1,31 @@
+<svg class="g-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 260" role="img" aria-labelledby="ug-stok-opname-t ug-stok-opname-d">
+<title id="ug-stok-opname-t">Alur Stok Opname</title>
+<desc id="ug-stok-opname-d">Supervisor memulai opname dan sistem mengambil snapshot stok. Opname berstatus Sedang dihitung sampai semua baris terisi, lalu Selesai hitung membawanya ke Tinjau. Supervisor menyetujui (stok berubah lewat satu Penyesuaian otomatis) atau mengembalikan ke penghitungan. Opname yang belum selesai bisa dibatalkan.</desc>
+<defs><marker id="m-ug-stok-opname" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="n n-gray"  x="20" y="40" width="130" height="54" rx="9"/>
+<text class="t b" x="85" y="63" text-anchor="middle">Mulai Opname</text>
+<text class="t s" x="85" y="79" text-anchor="middle">snapshot stok</text>
+<rect class="n n-warn"  x="220" y="40" width="170" height="54" rx="9"/>
+<text class="t b" x="305" y="63" text-anchor="middle">Sedang dihitung</text>
+<text class="t s" x="305" y="79" text-anchor="middle">stok belum berubah</text>
+<rect class="n n-warn"  x="480" y="40" width="150" height="54" rx="9"/>
+<text class="t b" x="555" y="63" text-anchor="middle">Tinjau</text>
+<text class="t s" x="555" y="79" text-anchor="middle">stok belum berubah</text>
+<rect class="n n-ok"  x="720" y="40" width="150" height="54" rx="9"/>
+<text class="t b" x="795" y="63" text-anchor="middle">Selesai</text>
+<text class="t s" x="795" y="79" text-anchor="middle">stok mengikuti fisik</text>
+<rect class="n n-bad"  x="350" y="170" width="200" height="54" rx="9"/>
+<text class="t b" x="450" y="193" text-anchor="middle">Dibatalkan</text>
+<text class="t s" x="450" y="209" text-anchor="middle">kunci lepas, stok tidak berubah</text>
+<path class="e" d="M150,67 L220,67" marker-end="url(#m-ug-stok-opname)"/>
+<path class="e" d="M390,67 L480,67" marker-end="url(#m-ug-stok-opname)"/>
+<text class="el" x="394" y="58" text-anchor="start">Selesai hitung</text>
+<path class="e" d="M630,67 L720,67" marker-end="url(#m-ug-stok-opname)"/>
+<text class="el" x="650" y="58" text-anchor="start">Setujui</text>
+<path class="e" d="M510,94 L510,130 L350,130 L350,94" marker-end="url(#m-ug-stok-opname)"/>
+<text class="el" x="372" y="122" text-anchor="start">Kembalikan</text>
+<path class="e" d="M260,94 L260,197 L350,197" marker-end="url(#m-ug-stok-opname)"/>
+<path class="e" d="M600,94 L600,197 L550,197" marker-end="url(#m-ug-stok-opname)"/>
+<text class="el" x="606" y="150" text-anchor="start">Batalkan</text>
+<text class="t s" x="20" y="250" text-anchor="start">Selama berjalan, Confirm / Approve transaksi stok dikunci. Setujui membuat satu Penyesuaian otomatis dan melepas kunci.</text>
+</svg>
