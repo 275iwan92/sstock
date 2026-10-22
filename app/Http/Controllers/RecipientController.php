@@ -40,7 +40,7 @@ class RecipientController extends Controller
     {
         $recipient = Recipient::create($request->validated());
         if ($request->expectsJson()) {
-            return response()->json($recipient->only(['id', 'name', 'department_id']), 201);
+            return response()->json($recipient->only(['id', 'name']), 201);
         }
 
         return redirect()->route('recipients.show', $recipient)->with('status', 'Penerima disimpan.');

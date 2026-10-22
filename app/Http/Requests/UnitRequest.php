@@ -27,7 +27,7 @@ class UnitRequest extends FormRequest
 
         return [
             'code' => ['required', 'string', 'max:20', 'regex:/^[a-z0-9._\/-]+$/', Rule::unique('units', 'code')->ignore($this->route('unit'))],
-            'name' => ['required', 'string', 'max:100'],
+            'name' => ['required', 'string', 'max:100', ...($this->expectsJson() ? [Rule::unique('units', 'name')] : [])],
             'kind' => ['nullable', Rule::in(array_keys(Unit::KINDS))],
             'conversions' => ['nullable', 'array', 'max:50'],
             'conversions.*.to_unit' => ['required', 'distinct', Rule::notIn([$own]), Rule::exists('units', 'code')],

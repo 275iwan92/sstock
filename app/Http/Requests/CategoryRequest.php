@@ -25,7 +25,7 @@ class CategoryRequest extends FormRequest
 
         return [
             'code' => ['required', 'regex:/^[A-Z0-9]{3}$/', Rule::unique('categories', 'code')->ignore($this->route('category'))],
-            'name' => ['required', 'string', 'max:100'],
+            'name' => ['required', 'string', 'max:100', ...($this->expectsJson() ? [Rule::unique('categories', 'name')] : [])],
         ];
     }
 

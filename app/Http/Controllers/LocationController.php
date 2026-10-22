@@ -36,9 +36,12 @@ class LocationController extends Controller
         return view('locations.form', ['location' => $location->loadCount('products')]);
     }
 
-    public function store(LocationRequest $request): RedirectResponse
+    public function store(LocationRequest $request): RedirectResponse|JsonResponse
     {
         $location = Location::create($request->validated());
+        if ($request->expectsJson()) {   // tambah cepat dari dropdown; id = kode (kunci dropdown), name = label dropdown
+            return response()->json(['id' => $location->code, 'name' => $location->label()], 201);
+        }
 
         return redirect()->route('locations.show', $location)->with('status', 'Lokasi disimpan.');
     }

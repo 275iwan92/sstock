@@ -22,6 +22,14 @@ class SupplierRequest extends FormRequest
 
     public function rules(): array
     {
+        if ($this->expectsJson()) {   // tambah cepat dari dropdown: kode otomatis, alamat / wilayah tidak ditanyakan
+            return [
+                'name' => ['required', 'string', 'max:150', Rule::unique('suppliers', 'name')],
+                'phone' => ['nullable', 'string', 'max:40'],
+                'contact_name' => ['nullable', 'string', 'max:100'],
+            ];
+        }
+
         $system = $this->route('supplier')?->is_system ? $this->route('supplier') : null;
         $locked = fn (string $field) => fn ($attr, $value, $fail) => $system && $value !== $system->{$field} ? $fail(Supplier::SYSTEM_MESSAGE) : null;
 

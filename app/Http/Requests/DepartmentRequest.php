@@ -25,7 +25,7 @@ class DepartmentRequest extends FormRequest
 
         return [
             'code' => [$this->expectsJson() ? 'nullable' : 'required', 'string', 'max:20', Rule::unique('departments', 'code')->ignore($this->route('department'))],
-            'name' => ['required', 'string', 'max:100'],
+            'name' => ['required', 'string', 'max:100', ...($this->expectsJson() ? [Rule::unique('departments', 'name')] : [])],
         ];
     }
 

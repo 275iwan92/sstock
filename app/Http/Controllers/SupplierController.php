@@ -39,8 +39,12 @@ class SupplierController extends Controller
         return view('suppliers.form', ['supplier' => $supplier]);
     }
 
-    public function store(SupplierRequest $request): RedirectResponse
+    public function store(SupplierRequest $request): RedirectResponse|JsonResponse
     {
+        if ($request->expectsJson()) {   // tambah cepat dari dropdown (x-dl::field.select add)
+            return response()->json(Supplier::createQuick($request->validated())->only(['id', 'name']), 201);
+        }
+
         $supplier = Supplier::create($request->validated());
 
         return redirect()->route('suppliers.show', $supplier)->with('status', 'Supplier disimpan.');

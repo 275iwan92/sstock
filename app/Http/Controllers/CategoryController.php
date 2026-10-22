@@ -37,9 +37,12 @@ class CategoryController extends Controller
         return view('categories.form', ['category' => $category->loadCount('products')]);
     }
 
-    public function store(CategoryRequest $request): RedirectResponse
+    public function store(CategoryRequest $request): RedirectResponse|JsonResponse
     {
         $category = Category::create($request->validated());
+        if ($request->expectsJson()) {   // tambah cepat dari dropdown; id = kunci dropdown kategori
+            return response()->json($category->only(['id', 'name']), 201);
+        }
 
         return redirect()->route('categories.show', $category)->with('status', 'Kategori disimpan.');
     }

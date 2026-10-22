@@ -334,11 +334,11 @@ class StockFlowTest extends TestCase
         $this->actingAs($this->entry);
         $dept = $this->postJson(route('departments.store'), ['name' => 'Quality Control'])->assertCreated()->json();
         $this->assertSame('QUALITYCONTR', Department::find($dept['id'])->code);
-        $this->postJson(route('departments.store'), ['name' => 'Quality Control'])->assertCreated();                       // kode kembar -> diberi angka
-        $this->assertSame(2, Department::where('name', 'Quality Control')->count());
+        $this->postJson(route('departments.store'), ['name' => 'Quality-Control'])->assertCreated();                       // kode kembar -> diberi angka
+        $this->assertSame(['QUALITYCONTR', 'QUALITYCONTR2'], Department::whereIn('name', ['Quality Control', 'Quality-Control'])->orderBy('id')->pluck('code')->all());
 
         $rec = $this->postJson(route('recipients.store'), ['name' => 'Rina', 'department_id' => $dept['id']])->assertCreated()->json();
-        $this->assertSame($dept['id'], $rec['department_id']);
+        $this->assertSame(['id', 'name'], array_keys($rec));
         $this->postJson(route('recipients.store'), ['name' => ''])->assertStatus(422);
 
         $this->get(route('docs.create', 'issuance'))->assertOk()->assertSee('qa-recipient', false)->assertSee('Penerima baru', false);

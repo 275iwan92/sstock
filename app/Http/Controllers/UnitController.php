@@ -40,7 +40,7 @@ class UnitController extends Controller
         return view('units.form', ['unit' => $unit->loadCount('products')] + $this->formData($unit));
     }
 
-    public function store(UnitRequest $request): RedirectResponse
+    public function store(UnitRequest $request): RedirectResponse|JsonResponse
     {
         $unit = DB::transaction(function () use ($request) {
             $unit = Unit::create($request->safe()->only(['code', 'name', 'kind']));
@@ -48,6 +48,10 @@ class UnitController extends Controller
 
             return $unit;
         });
+
+        if ($request->expectsJson()) {   // tambah cepat dari dropdown; id = kode (kunci dropdown), name = label dropdown
+            return response()->json(['id' => $unit->code, 'name' => "{$unit->code} · {$unit->name}"], 201);
+        }
 
         return redirect()->route('units.show', $unit)->with('status', 'Satuan disimpan.');
     }
