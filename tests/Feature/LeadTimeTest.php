@@ -170,7 +170,10 @@ class LeadTimeTest extends TestCase
 
         $html = $this->get(route('products.show', $this->item->product))->assertOk()->getContent();
         $this->assertStringContainsString('Lead time otomatis: 5 hari (rata-rata dari 3 pemesanan)', $html);
-        $this->assertStringContainsString('Saran Titik Pesan Ulang: 3 pcs (pemakaian rata-rata 0,6/hari × lead time 5 hari)', $html);
+        $this->assertStringContainsString('pemakaian rata-rata 0,6 pcs/hari (90 hari terakhir) · lead time 5 hari', $html);
+        $this->assertMatchesRegularExpression('/Titik Pesan Ulang: <strong><span data-advice-rop>8<\/span> pcs/', $html);   // 0,6 x (5 + 7 hari pengaman) = 7,2 -> 8
+        $this->assertMatchesRegularExpression('/Jml Pesan Ulang: <strong><span data-advice-qty>18<\/span> pcs/', $html);   // 0,6 x 30 hari cakupan = 18
+        $this->assertStringContainsString('data-advice-apply', $html);   // Supervisor boleh memakai saran
         $this->assertSame($before, $this->item->product->fresh()->only(['reorder_point', 'lead_time_days']));   // hanya saran
     }
 

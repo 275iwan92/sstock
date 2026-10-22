@@ -66,9 +66,7 @@
                 @if ($leadTime->source() === 'data')
                     <x-dl::hint>Lead time otomatis: {{ $leadTime->effective() }} hari (rata-rata dari {{ $leadTime->basis() }} pemesanan). Isian Lead Time di atas tetap manual dan tidak berubah sendiri.</x-dl::hint>
                 @endif
-                @if ($leadTime->effective() !== null && $dailyUsage > 0)
-                    <x-dl::hint>Saran Titik Pesan Ulang: {{ Locale::decimal($leadTime->suggestReorderPoint($dailyUsage), 2) }} {{ $product->unit }} (pemakaian rata-rata {{ Locale::decimal($dailyUsage, 2) }}/hari × lead time {{ $leadTime->effective() }} hari). Hanya saran; Titik Pesan Ulang tidak berubah sendiri.</x-dl::hint>
-                @endif
+                @include('products._reorder-advice', ['advice' => \App\Services\ReorderAdvice::advise($leadTime->effective(), $dailyUsage), 'unit' => $product->unit, 'canApply' => $sup])
             @endunless
             <p class="dl-note">Peringatan muncul bila stok tersedia (batch yang belum kedaluwarsa) sama dengan atau di bawah titik pesan ulang (0 = tanpa peringatan). Harga satuan hanya acuan; valuasi memakai rata-rata bergerak harga pembelian.</p>
         @else
