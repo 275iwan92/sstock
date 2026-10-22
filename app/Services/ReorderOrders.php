@@ -85,6 +85,52 @@ final class ReorderOrders
         });
     }
 
+    /**
+     * Penerimaan yang dialokasikan ke satu pesanan, untuk layar Riwayat Pemesanan (HANYA BACA, tidak menulis apa pun). Aturannya sama dengan reconcile: FIFO menurut tanggal pesan,
+     * hanya penerimaan pada / sesudah tanggal pesan, pesanan yang ditutup manual tidak ikut dialokasikan (daftarnya kosong), pesanan lama tanpa jumlah memakai penerimaan pertama sejak tanggal pesan.
+     * Tes menjaga agar jumlahnya sama dengan received_qty hasil reconcile.
+     *
+     * @return list<array{doc_id: int, doc_no: string, at: \Illuminate\Support\Carbon, qty: float}>
+     */
+    public function allocations(ReorderOrder $order): array
+    {
+        if ($order->close_reason === 'manual') {
+            return [];
+        }
+        $receipts = self::receipts($order->product_id)->map(fn ($m) => ['at' => $m->moved_at, 'doc' => $m->stock_document_id, 'left' => (float) $m->qty])->all();
+        $orders = ReorderOrder::query()->where('product_id', $order->product_id)->where(fn ($q) => $q->whereNull('close_reason')->orWhere('close_reason', '!=', 'manual'))->orderBy('ordered_at')->orderBy('id')->get();
+
+        $mine = [];
+        foreach ($orders as $o) {
+            $from = $o->ordered_at->copy()->startOfDay();
+            $got = 0.0;
+            if ($o->qty === null) {
+                $first = collect($receipts)->first(fn ($r) => $r['at'] >= $from);
+                if ($o->id === $order->id && $first) {
+                    $mine[] = ['doc' => $first['doc'], 'at' => $first['at'], 'qty' => $first['left']];
+                }
+
+                continue;
+            }
+            foreach ($receipts as &$r) {
+                $take = min($r['left'], round($o->qty - $got, 3));
+                if ($r['at'] < $from || $take <= 0) {
+                    continue;
+                }
+                $r['left'] = round($r['left'] - $take, 3);
+                $got = round($got + $take, 3);
+                if ($o->id === $order->id) {
+                    $mine[] = ['doc' => $r['doc'], 'at' => $r['at'], 'qty' => $take];
+                }
+            }
+            unset($r);
+        }
+
+        $numbers = StockDocument::query()->whereIn('id', collect($mine)->pluck('doc'))->pluck('doc_no', 'id');
+
+        return collect($mine)->groupBy('doc')->map(fn ($rows, $doc) => ['doc_id' => (int) $doc, 'doc_no' => (string) ($numbers[$doc] ?? '-'), 'at' => $rows->min('at'), 'qty' => round($rows->sum('qty'), 3)])->sortBy('at')->values()->all();
+    }
+
     /** Tutup manual pesanan yang tidak akan dipenuhi penuh: tidak menghapus apa pun; alasan opsional ditambahkan ke catatan. */
     public function closeManually(ReorderOrder $order, ?string $reason): void
     {
