@@ -140,6 +140,10 @@ final class Indonesian
         'Category (for scope per Category)' => 'Kategori (untuk cakupan per Kategori)', 'Location (for scope per Location)' => 'Lokasi (untuk cakupan per Lokasi)',
         'Blind count' => 'Hitung buta', 'Lock transactions during count' => 'Kunci transaksi selama opname', 'Yes' => 'Ya', 'No' => 'Tidak', 'Unlock' => 'Buka Kunci', 'Cancel Count' => 'Batalkan Opname', 'Transaction Lock' => 'Kunci Transaksi',
 
+        // Stok Opname (lembar input hasil hitung)
+        'Not filled' => 'Belum diisi', 'System Stock' => 'Stok Sistem', 'Count Result' => 'Hasil Hitung', 'Counter' => 'Penghitung', 'Not counted' => 'Tidak dihitung', 'Note' => 'Catatan',
+        'Add Item' => 'Tambah Barang', 'Finish Count' => 'Selesai Hitung',
+
         // Login / umum
         'Supervisor Gudang' => 'Supervisor Gudang',
     ];

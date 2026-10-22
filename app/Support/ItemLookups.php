@@ -7,13 +7,14 @@ use App\Models\Product;
 use App\Services\ProductUnits;
 use Devlib\Locale;
 use Devlib\Lookup;
+use Illuminate\Support\Arr;
 
 /* REMARK
  * Tujuan       : Pilihan barang di baris dokumen (x-dl::lines) dicari ke server; memilih mengisi kolom satuan, stok tersedia, selisih sistem, dan harga acuan di baris itu.
  *                Penerimaan dan Saldo Awal memilih PRODUK (batch menurut tanggal kedaluwarsa dibuat otomatis). Pengeluaran dan Penyesuaian memilih BATCH (barang):
  *                daftar Pengeluaran hanya batch ber-stok yang belum kedaluwarsa, dengan kedaluwarsa paling cepat di atas (FEFO).
  * Sumber hulu  : products, items (hanya yang aktif). Harga acuan hanya untuk Supervisor.
- * Output       : Lookup product_in (Receiving), product_opn (Opening Balance), item_out (Issuance), item_adj (Stock Adjustment).
+ * Output       : Lookup product_in (Receiving), product_opn (Opening Balance), item_out (Issuance), item_adj (Stock Adjustment), item_count (Stok Opname: tambah barang, tanpa stok).
  * Dipakai oleh : AppServiceProvider::boot; rute /_devlib-lookup/{name} milik DevLib.
  * Status       : Aktif.
  */
@@ -46,6 +47,13 @@ final class ItemLookups
                 'find' => fn ($id) => ($i = Item::query()->find($id)) ? self::itemRow($i) : null,
             ]);
         }
+        // Stok Opname "Tambah barang": batch aktif apa pun, TANPA stok sistem (hitung buta tidak boleh bocor lewat pilihan ini).
+        Lookup::define('item_count', [
+            'key' => 'id', 'label' => 'label', 'source' => 'items (is_active = 1)', 'columns' => ['name' => 'Item', 'code' => 'Code', 'expiry' => 'Expiry'],
+            'search' => fn (string $q) => Item::query()->where('is_active', true)->where(fn ($w) => $w->where('name', 'like', "%{$q}%")->orWhere('code', 'like', "%{$q}%"))
+                ->orderBy('name')->orderByRaw('expiry_date is null')->orderBy('expiry_date')->orderBy('id')->limit(50)->get()->map(fn (Item $i) => Arr::except(self::itemRow($i), 'stock')),
+            'find' => fn ($id) => ($i = Item::query()->find($id)) ? Arr::except(self::itemRow($i), 'stock') : null,
+        ]);
     }
 
     private static function productRow(Product $p, bool $withPacks = false): array

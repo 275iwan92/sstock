@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Item;
 use App\Models\Location;
 use App\Models\StockCount;
 use App\Services\StockCounts;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -66,7 +68,41 @@ class StockCountController extends Controller
 
     public function show(Request $request, StockCount $count)
     {
-        return view('stock-counts.show', ['count' => $count->load(['creator', 'unlocker', 'adjustmentDocument']), 'sup' => $request->user()->isSupervisor(), 'summary' => $this->counts->summary($count)]);
+        return view('stock-counts.show', [
+            'count' => $count->load(['creator', 'unlocker', 'adjustmentDocument']), 'sup' => $request->user()->isSupervisor(), 'summary' => $this->counts->summary($count),
+            'entryRows' => $this->counts->entryRows($count),
+        ]);
+    }
+
+    // Simpan per sel dari lembar input (x-dl::lookup-grid auto-save): {changed: [baris]} -> {rows: seluruh baris}. Nama penghitung terakhir diingat per sesi dan mengisi baris berikutnya yang namanya kosong.
+    public function saveLines(Request $request, StockCount $count): JsonResponse
+    {
+        $key = "stock-count.{$count->id}.counter";
+        foreach ((array) $request->input('changed', []) as $row) {
+            $line = $this->counts->saveLine($count, (int) ($row['id'] ?? 0), (array) $row, session($key));
+            if ($line->counted_by !== null) {
+                session([$key => $line->counted_by]);
+            }
+        }
+
+        return response()->json(['rows' => $this->counts->entryRows($count)]);
+    }
+
+    // Tambah barang / batch yang ditemukan fisik tetapi tidak ada di lembar.
+    public function addItem(Request $request, StockCount $count): RedirectResponse
+    {
+        $data = $request->validate(['item_id' => ['required', 'exists:items,id']], ['item_id.required' => 'Pilih barang / batch yang ditemukan.'], ['item_id' => 'barang']);
+        $line = $this->counts->addItem($count, Item::query()->findOrFail($data['item_id']));
+
+        return redirect()->route('stock-counts.show', $count)->with('status', "{$line->item->code} ditambahkan ke lembar hitung (stok sistem saat ini). Isi hasil hitungnya.");
+    }
+
+    // Selesai hitung: semua baris harus terisi atau ditandai Tidak dihitung dengan catatan.
+    public function finish(Request $request, StockCount $count): RedirectResponse
+    {
+        $this->counts->finish($count, $request->user());
+
+        return redirect()->route('stock-counts.show', $count)->with('status', "Penghitungan {$count->doc_no} selesai. Menunggu tinjauan Supervisor; stok belum berubah.");
     }
 
     public function cancel(StockCount $count): RedirectResponse

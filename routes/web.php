@@ -137,6 +137,9 @@ Route::middleware(['auth', 'active', 'module'])->group(function () {
             Route::post('{count}/unlock', 'unlock')->name('stock-counts.unlock');
         });
         Route::get('{count}', 'show')->name('stock-counts.show');
+        Route::post('{count}/lines', 'saveLines')->name('stock-counts.lines');
+        Route::post('{count}/items', 'addItem')->name('stock-counts.items');
+        Route::post('{count}/finish', 'finish')->name('stock-counts.finish');
     });
 
     Route::prefix('reports')->controller(ReportController::class)->group(function () {

@@ -21,7 +21,10 @@
 <x-dl::kpi-row>
     <x-dl::stat-box label="Count Date" :value="Locale::d($count->count_date)" tone="neutral" />
     <x-dl::stat-box label="Scope" :value="$count->scopeLabel()" tone="neutral" :sub="'Cut-off '.Locale::stamp($count->cutoff_at)" />
-    <x-dl::stat-box label="Filled" :value="$summary['filled'].' / '.$summary['lines']" :tone="$summary['filled'] === $summary['lines'] ? 'success' : 'accent'" :sub="'Oleh '.$count->creator->name" />
+    {{-- Sedang dihitung: jumlah terisi tampil hidup di kotak Terisi / Belum diisi pada lembar, bukan angka beku di sini. --}}
+    @if ($count->status !== 'counting')
+        <x-dl::stat-box label="Filled" :value="$summary['filled'].' / '.$summary['lines']" :tone="$summary['filled'] === $summary['lines'] ? 'success' : 'accent'" :sub="'Oleh '.$count->creator->name" />
+    @endif
     <x-dl::stat-box label="Difference Threshold" :value="Locale::number($count->threshold_pct, 2).' %'" tone="neutral" :sub="$count->blind ? 'Hitung buta: ya' : 'Hitung buta: tidak'" />
     <x-dl::stat-box label="Transaction Lock" :value="$lockText" :tone="$running && $count->lock_transactions ? 'danger' : 'neutral'" :sub="$count->unlocked_at ? 'Dibuka '.$count->unlocker?->name.' · '.Locale::stamp($count->unlocked_at) : null" />
 </x-dl::kpi-row>
