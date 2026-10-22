@@ -156,6 +156,10 @@ final class Indonesian
         'Open Stok Opname' => 'Buka Stok Opname', 'Opname Frequency' => 'Frekuensi Opname', 'Weekday (weekly)' => 'Hari (mingguan)', 'Day of Month (monthly)' => 'Tanggal (bulanan)', 'Save Schedule' => 'Simpan Jadwal', 'Lock' => 'Kunci',
         'Entered By' => 'Diinput oleh',
 
+        // Riwayat Pemesanan
+        'Order History' => 'Riwayat Pemesanan', 'Ordered Qty' => 'Jumlah Dipesan', 'Received' => 'Diterima', 'Remaining' => 'Sisa', 'First Received' => 'Pertama Diterima', 'Recorded by' => 'Dicatat oleh',
+        'Open' => 'Terbuka', 'Closed manually' => 'Ditutup manual', 'Search item, supplier, reference...' => 'Cari barang, supplier, referensi...',
+
         // Perusahaan (kop cetakan)
         'Company' => 'Perusahaan', 'Company Name' => 'Nama Perusahaan', 'Legal Entity Name' => 'Nama PT / CV', 'Tax ID (NPWP)' => 'NPWP', 'Phone' => 'Telepon', 'Company Address' => 'Alamat', 'Print Header Style' => 'Tampilan kop',
 

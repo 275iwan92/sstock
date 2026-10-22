@@ -45,6 +45,9 @@ Route::get('company/logo', [CompanyController::class, 'logo'])->name('company.lo
 Route::middleware(['auth', 'active', 'module'])->group(function () {
     Route::get('/', HomeController::class)->name('home');
     Route::post('reorder-orders', [ReorderOrderController::class, 'store'])->name('reorder-orders.store');
+    // Riwayat Pemesanan (modul ORD): daftar semua status dan detail; Catat Pemesanan dan Tutup Pesanan tetap tanpa modul (dari Beranda).
+    Route::get('reorder-orders', [ReorderOrderController::class, 'index'])->name('reorder-orders.index');
+    Route::get('reorder-orders/{order}', [ReorderOrderController::class, 'show'])->name('reorder-orders.show');
     Route::post('reorder-orders/{order}/close', [ReorderOrderController::class, 'close'])->name('reorder-orders.close');
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
     // Ping x-dl::idle-logout: permintaan ini memperpanjang sesi; ikut EnsureActive (akun nonaktif ditolak), tanpa kode modul.
