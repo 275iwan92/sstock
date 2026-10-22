@@ -7,6 +7,7 @@ use App\Models\Department;
 use App\Models\Item;
 use App\Models\Product;
 use App\Models\Recipient;
+use App\Models\StockCount;
 use App\Models\StockDocument;
 use App\Models\StockMovement;
 use App\Models\User;
@@ -182,6 +183,28 @@ final class StockDocuments
         foreach ($moves as $m) {
             $adj->lines()->create(['item_id' => $m->item_id, 'qty' => $m->qty, 'unit_cost' => $m->unit_cost, 'system_qty' => round($m->balance_qty - $m->qty, 3), 'counted_qty' => $m->balance_qty]);
         }
+    }
+
+    /**
+     * Penyesuaian OTOMATIS hasil Stok Opname: satu dokumen ADJUSTMENT langsung berstatus approved (reason "Stok Opname SO-..."), diposting lewat buku besar yang sama
+     * (kunci baris item dan pemeriksaan saldo ikut). Dipanggil dalam transaksi persetujuan opname; kegagalan posting membatalkan seluruh persetujuan.
+     *
+     * @param  array<int, array{item_id: int, qty: float, system_qty: float, counted_qty: float, unit_cost: float}>  $rows  hanya baris selisih
+     */
+    public function recordCountAdjustment(StockCount $count, array $rows, User $by): StockDocument
+    {
+        return DB::transaction(function () use ($count, $rows, $by) {
+            $adj = $this->createNumbered(StockDocumentType::Adjustment, [
+                'type' => StockDocumentType::Adjustment, 'doc_at' => now(), 'status' => 'approved', 'reason' => 'Stok Opname '.$count->doc_no, 'note' => $count->note,
+                'created_by' => $by->id, 'confirmed_by' => $by->id, 'confirmed_at' => now(), 'approved_by' => $by->id, 'approved_at' => now(),
+            ]);
+            foreach ($rows as $row) {
+                $adj->lines()->create($row);
+            }
+            $this->ledger->post($adj, $by, now());
+
+            return $adj;
+        });
     }
 
     // Semua jenis dokumen: departemen kosong -> departemen bawaan penerima. Nama master disalin ke kolom teks dokumen (tetap terbaca bila master diubah).

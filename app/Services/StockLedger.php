@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\StockDocumentType;
 use App\Models\Item;
 use App\Models\Product;
+use App\Models\StockCount;
 use App\Models\StockDocument;
 use App\Models\StockMovement;
 use App\Models\User;
@@ -16,7 +17,7 @@ use Illuminate\Validation\ValidationException;
  * Tujuan       : Satu-satunya pintu yang mengubah saldo stok: memposting baris dokumen ke buku besar stock_movements dan memperbarui items.stock_qty / avg_cost (moving average).
  * Sumber hulu  : stock_documents + stock_document_lines (qty, unit_cost, selisih penyesuaian).
  * Output       : baris stock_movements (dengan saldo sesudah transaksi); daftar item yang menyentuh Reorder Point.
- * Dipakai oleh : StockDocuments (masuk, keluar, saldo awal, persetujuan penyesuaian).
+ * Dipakai oleh : StockDocuments (masuk, keluar, saldo awal, persetujuan penyesuaian, pembatalan); penjaga kunci Stok Opname (StockCount::lockingNow) ada di sini.
  * Status       : Aktif.
  */
 final class StockLedger
@@ -32,6 +33,7 @@ final class StockLedger
         $touched = [];
 
         DB::transaction(function () use ($doc, $user, $movedAt, &$touched) {
+            $this->assertNotLocked();
             $this->lockItems($doc);
             foreach ($doc->lines()->orderBy('id')->get() as $line) {
                 $item = Item::query()->lockForUpdate()->findOrFail($line->item_id);
@@ -92,6 +94,7 @@ final class StockLedger
     {
         return DB::transaction(function () use ($doc, $user) {
             $made = [];
+            $this->assertNotLocked();
             $this->lockItems($doc);
             $moves = $this->unreversed($doc)->get();
             foreach ($moves as $m) {
@@ -145,6 +148,15 @@ final class StockLedger
     {
         return StockMovement::query()->where('stock_document_id', $doc->id)->whereNull('reversal_of')
             ->whereNotExists(fn ($q) => $q->from('stock_movements as r')->whereColumn('r.reversal_of', 'stock_movements.id'))->orderByDesc('id');
+    }
+
+    // Satu-satunya penjaga kunci Stok Opname: selama opname berjalan dengan kunci aktif, tidak ada dokumen yang boleh memposting atau membalik stok (draf tetap boleh disimpan).
+    // Persetujuan opname sendiri melepas kunci (status Selesai) di transaksi yang sama SEBELUM memposting Penyesuaiannya.
+    private function assertNotLocked(): void
+    {
+        if ($count = StockCount::lockingNow()) {
+            throw ValidationException::withMessages(['lines' => "Stok Opname {$count->doc_no} sedang berjalan, transaksi dikunci. Hubungi Supervisor."]);
+        }
     }
 
     // Semua item dokumen dikunci sekaligus urut id: dokumen yang bersamaan memegang item yang sama dalam urutan sama, jadi tidak saling menunggu melingkar.
