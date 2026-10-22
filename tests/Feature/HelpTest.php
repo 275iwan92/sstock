@@ -22,7 +22,7 @@ class HelpTest extends TestCase
 
     // Kode modul => anchor bagian bantuannya di Panduan Pengguna.
     private const ANCHORS = [
-        'ITM' => 'm-itm', 'SUP' => 'm-sup', 'DEP' => 'm-dep', 'RCP' => 'm-rcp', 'UOM' => 'm-uom', 'CAT' => 'm-cat', 'LOC' => 'm-loc',
+        'ITM' => 'm-itm', 'SUP' => 'm-sup', 'DEP' => 'm-dep', 'RCP' => 'm-rcp', 'UOM' => 'm-uom', 'CAT' => 'm-cat', 'LOC' => 'm-loc', 'CMP' => 'm-cmp',
         'OPN' => 't-opn', 'RCV' => 't-rcv', 'ISS' => 't-iss', 'ADJ' => 't-adj', 'SO' => 't-so',
         'R-CARD' => 'r-card', 'R-SUM' => 'r-sum', 'R-IN' => 'r-in', 'R-OUT' => 'r-out', 'R-EXP' => 'r-exp', 'R-ADJ' => 'r-adj',
         'USR' => 'sec-usr', 'GRP' => 'sec-grp', 'SMP' => 'sec-smp', 'MOD' => 'sec-mod',
@@ -112,7 +112,7 @@ class HelpTest extends TestCase
         $this->assertStringContainsString('Penerimaan pertama <b>tidak</b> otomatis menjadi Saldo Awal', $html);
 
         $glossary = $this->section($html, 'istilah');
-        foreach (['Batch', 'FEFO', 'Saldo Awal', 'Penerimaan', 'Pengeluaran', 'Penyesuaian', 'Stok Opname', 'Selisih', 'Titik Pesan Ulang', 'Lead time', 'Satuan masuk', 'Kontan', 'Draf', 'Konfirmasi, Terkonfirmasi', 'Cut-off (titik acuan stok)', 'Stok sistem', 'Hitung buta', 'Kunci transaksi'] as $term) {
+        foreach (['Batch', 'FEFO', 'Saldo Awal', 'Penerimaan', 'Pengeluaran', 'Penyesuaian', 'Stok Opname', 'Selisih', 'Titik Pesan Ulang', 'Lead time', 'Satuan masuk', 'Kontan', 'Draf', 'Konfirmasi, Terkonfirmasi', 'Cut-off (titik acuan stok)', 'Stok sistem', 'Hitung buta', 'Kunci transaksi', 'Kop'] as $term) {
             $this->assertStringContainsString('<td>'.$term.'</td>', $glossary, "Istilah {$term} belum ada di glosarium");
         }
 

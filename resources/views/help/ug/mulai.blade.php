@@ -20,6 +20,7 @@
         @if ($can('RCP'))<tr><td><a href="#m-rcp">Penerima</a></td><td>Orang yang menerima barang keluar</td><td>Ada penerima baru</td></tr>@endif
         @if ($can('UOM'))<tr><td><a href="#m-uom">Satuan</a></td><td>pcs, box, kg, dan hitungan antar satuan</td><td>Perlu satuan baru</td></tr>@endif
         @if ($can('CAT'))<tr><td><a href="#m-cat">Kategori</a></td><td>Kelompok barang dan awalan kode barang</td><td>Perlu kelompok baru</td></tr>@endif
+        @if ($can('CMP'))<tr><td><a href="#m-cmp">Perusahaan</a></td><td>Nama, alamat, dan logo untuk kop semua cetakan</td><td>Sekali di awal, lalu bila datanya berubah</td></tr>@endif
         @if ($can('LOC'))<tr><td><a href="#m-loc">Lokasi Penyimpanan</a></td><td>Rak atau gudang tempat barang disimpan</td><td>Ada rak atau gudang baru</td></tr>@endif
         @if ($can('OPN'))<tr><td><a href="#t-opn">Saldo Awal</a></td><td>Memasukkan stok yang sudah ada saat mulai memakai Stoku</td><td>Sekali di awal, bila Anda memerlukannya</td></tr>@endif
         @if ($can('RCV'))<tr><td><a href="#t-rcv">Penerimaan Barang</a></td><td>Mencatat barang yang datang dari supplier</td><td>Setiap barang datang</td></tr>@endif
@@ -36,7 +37,7 @@
 @include('help.diagram', ['name' => 'ug-hari-pertama', 'caption' => 'Urutan hari pertama: masuk, Data Master, stok awal, Pengeluaran, Laporan, Stok Opname.'])
 <ol class="g-steps">
     <li><b>Masuk.</b> Buka alamat Stoku di browser. Isi username atau e-mail dan password. Data Entry langsung melihat tab Penerimaan Barang. <a href="#masuk">Lihat Masuk</a>.</li>
-    <li><b>Siapkan Data Master.</b> Data Master adalah data acuan yang dipilih di dokumen. Isi dengan urutan ini: Kategori, Lokasi Penyimpanan, Satuan, Supplier, Departemen, Penerima, lalu Barang. Data Entry bisa menambah Supplier, Departemen, Penerima, dan Barang. Kategori, Lokasi Penyimpanan, dan Satuan diisi Supervisor.@if ($anyMaster) Lihat <a href="#master">Data Master</a>.@endif</li>
+    <li><b>Siapkan Data Master.</b> Data Master adalah data acuan yang dipilih di dokumen. Isi dengan urutan ini: Kategori, Lokasi Penyimpanan, Satuan, Supplier, Departemen, Penerima, lalu Barang. Data Entry bisa menambah Supplier, Departemen, Penerima, dan Barang. Kategori, Lokasi Penyimpanan, dan Satuan diisi Supervisor. Supervisor juga mengisi data Perusahaan agar kop cetakan benar.@if ($anyMaster) Lihat <a href="#master">Data Master</a>.@endif</li>
     <li><b>Isi stok awal.</b> Ada dua cara untuk satu barang. Stok yang sudah ada di rak dan belum pernah dicatat: Supervisor membuat <b>Saldo Awal</b>. Barang yang baru datang dari supplier: buat <b>Penerimaan Barang</b>. Saldo Awal tidak wajib. Penerimaan pertama <b>tidak</b> otomatis menjadi Saldo Awal. Lihat penjelasannya di bawah.</li>
     <li><b>Catat Pengeluaran Barang</b> setiap barang keluar ke penerima. Stok tidak boleh menjadi minus.</li>
     <li><b>Periksa Laporan.</b> Ringkasan Stok menunjukkan sisa semua barang. Kartu Stok menunjukkan riwayat satu barang. Laporan kosong? Mungkin dokumennya masih Draf.</li>
@@ -84,6 +85,7 @@
                 <ul class="g-list">
                     <li>Semua yang bisa dikerjakan Data Entry.</li>
                     <li>Mengubah Barang, Satuan, Kategori, dan Lokasi Penyimpanan.</li>
+                    <li>Mengisi data Perusahaan (kop cetakan).</li>
                     <li>Membuat Saldo Awal dan Penyesuaian Stok.</li>
                     <li>Memulai, meninjau, dan menyetujui Stok Opname.</li>
                     <li>Menekan <b>Setujui</b> atau <b>Tolak</b> untuk Penyesuaian Stok dan pengajuan pembatalan.</li>

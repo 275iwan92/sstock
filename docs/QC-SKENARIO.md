@@ -345,6 +345,24 @@ Bantuan adalah Panduan Pengguna (Bahasa Indonesia). Bagian per modulnya hanya ta
 | HLP-04 | Buka bagian Mulai di sini, Catat Pemesanan, dan Stok Opname. Lihat gambar (diagram) di dalamnya. | Gambar tampil di dalam halaman, tidak terpotong, tulisannya terbaca. Gambar mengikuti tema terang atau gelap. | | |
 | HLP-05 | Ikuti satu bagian panduan di layar nyata (mis. Catat Pemesanan atau Mulai Opname). Bandingkan nama tombol dan isian. | Nama tombol dan isian di panduan sama dengan di layar. Bila beda, laporkan nama bagian dan tulisan yang berbeda. | | |
 
+## 17. Perusahaan dan kop cetak (CMP)
+
+Peran: Supervisor mengisi. Kop (bagian atas kertas) semua cetakan mengikuti menu **Data Master > Perusahaan**. Nama aplikasi (halaman masuk, menu, judul) tetap Stoku. Siapkan satu berkas logo PNG (bukan SVG) di bawah 1 MB.
+
+| No | Langkah | Hasil yang diharapkan | Lulus/Gagal | Catatan |
+|---|---|---|---|---|
+| CMP-01 | Sebagai `supervisor`, buka Data Master > Perusahaan. Lalu sebagai `entry`, cari menu itu dan ketik alamat `/company`. | Supervisor melihat satu formulir (Nama Perusahaan, Nama PT / CV, NPWP, Telepon, Email, Alamat, Logo, Tampilan kop) dan Pratinjau kop. Data Entry tidak punya menu itu dan alamat `/company` ditolak. | | |
+| CMP-02 | Kosongkan Nama Perusahaan lalu Simpan. Lalu isi Nama `Maju Jaya`, Nama PT / CV `PT Maju Jaya Abadi`, NPWP, Telepon, Email, Alamat dua baris, Tampilan kop **Nama saja**. Simpan. | Tanpa nama: ditolak dengan pesan merah. Dengan nama: pesan hijau "Data perusahaan disimpan". Pratinjau kop berubah langsung saat Anda mengetik. | | |
+| CMP-03 | Cetak satu Penerimaan Barang (tombol Cetak). Lihat kop. Lalu buka halaman masuk. | Kop memuat **Maju Jaya** tebal dan "PT Maju Jaya Abadi" kecil, tanpa logo dan tanpa alamat. NPWP tercetak. Halaman masuk dan menu tetap bernama Stoku. | | |
+| CMP-04 | Unggah logo PNG, pilih **Logo + Nama + Alamat**, lihat pratinjau, Simpan. Cetak dokumen tadi lagi. | Pratinjau menampilkan logo sebelum disimpan. Cetakan: logo di kiri, nama, nama PT, dan alamat. | | |
+| CMP-05 | Pilih **Logo + Nama**, Simpan, cetak. | Logo dan nama tampil, alamat tidak. | | |
+| CMP-06 | Ubah Nama PT / CV menjadi `maju  JAYA` (huruf dan spasi berbeda), Simpan, cetak. | Nama PT tidak dicetak, karena sama dengan nama perusahaan (nama tidak ganda). | | |
+| CMP-07 | Coba unggah: berkas `.svg`, berkas `.gif`, berkas teks yang diberi nama `logo.png`, dan gambar lebih dari 1 MB. | Semuanya ditolak dengan pesan merah di isian Logo. Logo lama dan data lain tidak berubah. | | |
+| CMP-08 | Centang **Hapus logo**, Simpan (gaya masih Logo + Nama + Alamat). Buka formulir lagi dan cetak. | Logo hilang. Pratinjau memberi keterangan bahwa logo belum ada dan kop memakai Nama saja. Cetakan memuat nama saja. Pilihan gaya tetap tersimpan. | | |
+| CMP-09 | Cetak Ringkasan Stok, Lembar Hitung dan Berita Acara Stok Opname (bagian 15). | Kop sama dengan cetakan dokumen: nama, nama PT, dan (bila dipilih gaya itu) logo dan alamat. NPWP hanya ada di cetakan dokumen stok. | | |
+| CMP-10 | Saat logo ada, buka alamat logo (`/company/logo`) di jendela privat tanpa masuk. Hapus logo lalu buka alamat itu lagi. | Gambar logo tampil tanpa login. Setelah logo dihapus: halaman tidak ditemukan (404). | | |
+| CMP-11 | Beri Grup hak **Hanya baca (RO)** untuk Perusahaan, masuk sebagai anggotanya (peran Supervisor), buka layar dan coba Simpan. | Layar terbuka, tetapi Simpan ditolak dengan pesan akses hanya-baca (RO). | | |
+
 ---
 
 ## Hal yang sengaja belum ada
@@ -358,7 +376,7 @@ Fitur berikut **memang belum dibuat** (mungkin ditambah nanti). Jangan dilaporka
 - **Barcode** (membaca atau mencetak barcode/QR).
 - **Notifikasi e-mail / WhatsApp untuk jadwal Stok Opname.** Pengingat hanya tampil di Beranda dan lencana menu. Baris selisih besar ditandai kolom Besar dan kotak penyaring, belum diberi warna baris.
 - **Riwayat pesanan ulang.** Belum ada layar untuk melihat daftar, mengubah, atau menghapus catatan Catat Pemesanan. Yang ada hanya Tutup Pesanan. Pesanan yang sudah tertutup hilang dari peringatan Beranda.
-- **Modul Perusahaan** (kop cetak, logo perusahaan). Kop laporan cetak memakai nama Stoku yang tetap.
+- **Logo hitam-putih khusus Hemat Tinta** dan kop kedua untuk dokumen ber-PPN. Satu logo dan satu kop dipakai di semua cetakan.
 - **Notifikasi otomatis** lewat e-mail, WhatsApp, atau push. Peringatan hanya tampil di Beranda dan di form. E-mail (mis. lupa password) hanya ditulis ke `storage/logs/laravel.log` di mesin uji.
 
 ## Di luar cakupan Stoku

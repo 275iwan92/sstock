@@ -4,7 +4,7 @@ Stoku adalah aplikasi stok barang untuk gudang. Setiap barang punya batch (satu 
 
 Fitur utama:
 
-- Master: Barang (produk dan batch per tanggal kedaluwarsa), Supplier (termasuk Kontan), Satuan dan satuan masuk per barang, Kategori, Lokasi, Departemen, Penerima. Tombol plus untuk menambah master langsung dari dropdown.
+- Master: Barang (produk dan batch per tanggal kedaluwarsa), Supplier (termasuk Kontan), Satuan dan satuan masuk per barang, Kategori, Lokasi, Departemen, Penerima, dan Perusahaan (nama, alamat, logo untuk kop semua cetakan). Tombol plus untuk menambah master langsung dari dropdown.
 - Transaksi: Saldo Awal, Penerimaan Barang, Pengeluaran Barang (FEFO), Penyesuaian Stok (persetujuan Supervisor), pembatalan dengan dokumen pembalik otomatis.
 - **Stok Opname**: mulai (snapshot stok per batch, per cakupan Semua / Kategori / Lokasi), cetak Lembar Hitung, input hasil hitung massal dengan simpan otomatis, hitung buta, kunci transaksi selama opname, tinjau selisih (jumlah, persen, nilai, alasan wajib di atas ambang), setujui (satu Penyesuaian otomatis), cetak Berita Acara, serta jadwal opname dengan pengingat di Beranda.
 - Pesan ulang: titik pesan ulang per produk, Catat Pemesanan, lead time.
@@ -232,8 +232,8 @@ Seeder (`database/seeders/UserSeeder.php`) membuat tiga akun ini. Masuk dengan u
 Yang boleh dilakukan tiap peran:
 
 - **Data Entry**: Penerimaan dan Pengeluaran Barang, mengisi hasil hitung Stok Opname, menambah barang baru dan Satuan masuk-nya (kemasan saat diterima, mis. 1 dus = 12 pcs; memperbaiki faktor yang belum pernah dipakai di dokumen), mengelola Supplier, Departemen, Penerima, dan melihat laporan (tanpa harga/nilai).
-- **Supervisor**: semua milik Data Entry, ditambah mengubah Barang, Satuan (termasuk faktor Satuan masuk yang sudah dipakai di dokumen), Kategori, Lokasi, Saldo Awal, Penyesuaian Stok, memulai, meninjau, dan menyetujui Stok Opname, menyetujui atau menolak, dan melihat harga serta nilai. Pengeluaran dan Penyesuaian selalu dalam satuan stok barang; hanya Penerimaan yang memakai satuan masuk.
-- **Administrator**: semua milik Supervisor, ditambah menu Keamanan (Pengguna, Grup, Data Contoh, Daftar Modul).
+- **Supervisor**: semua milik Data Entry, ditambah mengubah Barang, Satuan (termasuk faktor Satuan masuk yang sudah dipakai di dokumen), Kategori, Lokasi, data Perusahaan (kop cetak), Saldo Awal, Penyesuaian Stok, memulai, meninjau, dan menyetujui Stok Opname, menyetujui atau menolak, dan melihat harga serta nilai. Pengeluaran dan Penyesuaian selalu dalam satuan stok barang; hanya Penerimaan yang memakai satuan masuk.
+- **Administrator**: semua milik Supervisor (termasuk menu Perusahaan), ditambah menu Keamanan (Pengguna, Grup, Data Contoh, Daftar Modul).
 
 > **PERINGATAN.** Ketiga akun ini hanya untuk pengembangan dan pengujian di mesin Anda sendiri. Passwordnya lemah dan tertulis di kode. **Wajib diganti atau dihapus (dinonaktifkan) sebelum Stoku dipakai di server sungguhan.** Jangan pernah membuka Stoku ke internet dengan akun ini.
 

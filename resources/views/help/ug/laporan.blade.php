@@ -18,6 +18,7 @@
     <li><b>Laporan kosong?</b> Periksa periodenya. Periksa juga apakah dokumennya masih Draf.</li>
     <li>Harga, biaya, dan nilai hanya tampil untuk Supervisor.</li>
 </ul>
+<p class="g-note">Kop laporan (nama, logo, alamat) mengikuti data di menu <b>Perusahaan</b>. Semua cetakan memakai kop yang sama.</p>
 <div class="g-tip"><b>Cetak dokumen:</b> tombol <b>Cetak</b> juga ada di form semua dokumen stok (Draf, Terkonfirmasi, Dibatalkan, dan seterusnya). Hasil cetak selalu memuat <b>mode</b> dokumen (DRAFT, CONFIRMED, CANCELLED). Penyesuaian juga memuat WAITING APPROVAL, APPROVED, atau REJECTED. Dokumen yang belum atau tidak sah diberi tanda air.</div>
 
 @if ($can('R-CARD'))

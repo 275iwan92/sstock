@@ -18,6 +18,7 @@
         @if ($can('UOM'))<tr><td><a href="#m-uom">Satuan</a></td><td>pcs, box, kg, dan hitungan antar satuan</td><td><span class="g-role">hanya Supervisor</span></td></tr>@endif
         @if ($can('CAT'))<tr><td><a href="#m-cat">Kategori</a></td><td>Pengelompokan barang dan awalan kode</td><td><span class="g-role">hanya Supervisor</span></td></tr>@endif
         @if ($can('LOC'))<tr><td><a href="#m-loc">Lokasi Penyimpanan</a></td><td>Rak atau gudang</td><td><span class="g-role">hanya Supervisor</span></td></tr>@endif
+        @if ($can('CMP'))<tr><td><a href="#m-cmp">Perusahaan</a></td><td>Nama, alamat, dan logo untuk kop semua cetakan</td><td><span class="g-role">hanya Supervisor</span></td></tr>@endif
     </tbody>
 </table>
 <div class="g-tip"><b>Urutan menyiapkan data baru:</b> Kategori, Lokasi Penyimpanan, Satuan, Supplier, Departemen, Penerima, lalu Barang. Barang butuh kategori, satuan, dan (bila ada) lokasi yang sudah ada. Datanya belum ada? Pakai <a href="#tombol-plus">tombol plus</a> di samping pilihan.</div>
@@ -227,6 +228,43 @@
 <h4>Masalah umum</h4>
 <ul class="g-list">
     <li><b>Kode ditolak.</b> Kode itu sudah dipakai lokasi lain.</li>
+</ul>
+@endif
+
+@if ($can('CMP'))
+<h3 id="m-cmp">Perusahaan <span class="g-role">hanya Supervisor</span></h3>
+<h4>Untuk apa</h4>
+<p>Menyimpan data perusahaan Anda. Data ini dicetak di <b>kop</b>, yaitu bagian paling atas kertas. Kop ada di semua cetakan: dokumen stok, Lembar Hitung, Berita Acara Stok Opname, dan keenam laporan. Anda mengisinya sekali di sini.</p>
+<h4>Siapa yang bisa</h4>
+<p>Supervisor dan Administrator. Data Entry tidak melihat menu ini. Grup dengan hak <b>Hanya baca (RO)</b> boleh membuka layarnya tetapi tidak boleh menyimpan.</p>
+<h4>Langkah</h4>
+<ol class="g-steps">
+    <li>Buka <b>Data Master</b>, lalu <b>Perusahaan</b>. Layarnya satu formulir, tanpa daftar.</li>
+    <li>Isi <b>Nama Perusahaan</b> (wajib). Nama ini dicetak tebal di kop.</li>
+    <li>Isi <b>Nama PT / CV</b> bila ada. Ini nama badan hukum untuk urusan pajak. Ia dicetak kecil di bawah nama perusahaan.</li>
+    <li>Isi <b>NPWP</b>, <b>Telepon</b>, dan <b>Email</b> bila perlu.</li>
+    <li>Isi <b>Alamat</b>. Tulis satu baris alamat per baris.</li>
+    <li>Pada <b>Logo</b>, pilih berkas gambar dari komputer Anda. Tekan <b>Hapus logo</b> bila ingin membuang logo yang sudah ada.</li>
+    <li>Pilih <b>Tampilan kop</b>: <b>Logo + Nama + Alamat</b>, <b>Logo + Nama</b>, atau <b>Nama saja</b>.</li>
+    <li>Lihat <b>Pratinjau kop</b> di bawah isian. Pratinjau berubah langsung saat Anda mengetik atau memilih.</li>
+    <li>Tekan <b>Simpan</b>. Semua cetakan berikutnya memakai kop baru.</li>
+</ol>
+<h4>Yang perlu diperhatikan</h4>
+<ul class="g-list">
+    <li><b>Logo.</b> Pakai PNG, JPG, atau WebP. SVG tidak bisa dipakai. Ukuran berkas paling besar 1 MB, dan tiap sisi gambar antara 32 dan 4000 piksel. Stoku mengecilkan logo otomatis sampai selebar 600 piksel.</li>
+    <li><b>Memilih gaya dengan logo, tetapi logo belum ada?</b> Pilihan Anda tetap disimpan. Namun kop dicetak dengan <b>Nama saja</b> sampai logo diunggah. Pratinjau memberi keterangan kecil tentang hal ini.</li>
+    <li><b>Nama PT / CV sama dengan nama perusahaan?</b> Namanya dicetak sekali saja. Perbedaan huruf besar dan kecil atau spasi tidak dihitung.</li>
+    <li><b>Alamat</b> hanya dicetak pada gaya <b>Logo + Nama + Alamat</b>. Kop dokumen stok memuat paling banyak tiga baris alamat dan kontak. Teks yang terlalu panjang dipotong. Tulis singkat.</li>
+    <li><b>NPWP</b> dicetak di kop dokumen stok. Ia tidak dicetak di Lembar Hitung, Berita Acara, dan laporan.</li>
+    <li>Belum pernah diisi? Kop memakai nama bawaan <b>Stoku</b>, <b>Nama saja</b> bila belum ada logo.</li>
+    <li>Aplikasi tetap bernama <b>Stoku</b> di halaman masuk, menu, dan judul. Hanya kop cetakan yang memakai nama perusahaan Anda.</li>
+    <li>Perubahan berlaku untuk semua cetakan berikutnya, termasuk mencetak ulang dokumen lama. Dokumen yang sudah dicetak di kertas tidak berubah.</li>
+</ul>
+<h4>Masalah umum</h4>
+<ul class="g-list">
+    <li><b>Logo ditolak.</b> Periksa jenis berkasnya (PNG, JPG, atau WebP), ukurannya (paling besar 1 MB), dan sisi gambarnya (32 sampai 4000 piksel). Berkas yang namanya berakhiran .png tetapi bukan gambar juga ditolak.</li>
+    <li><b>Kop cetakan tidak berubah.</b> Muat ulang halaman cetak. Pastikan Anda sudah menekan <b>Simpan</b> dan pesan hijau muncul.</li>
+    <li><b>Menu Perusahaan tidak ada.</b> Menu ini hanya untuk Supervisor dan Administrator.</li>
 </ul>
 @endif
 @endif

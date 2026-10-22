@@ -21,6 +21,7 @@
         <tr><td>Konfirmasi, Terkonfirmasi</td><td>Konfirmasi adalah tombol yang memproses dokumen ke stok. Setelah itu dokumen berstatus Terkonfirmasi dan terkunci.</td></tr>
         <tr><td>Kontan</td><td>Supplier sistem untuk pembelian tunai atau tanpa supplier tetap. Tidak bisa dinonaktifkan, diganti nama, atau dihapus.</td></tr>
         <tr><td>Kunci transaksi</td><td>Pengaturan Stok Opname. Selama opname berjalan, Konfirmasi dan Setujui transaksi stok ditolak.</td></tr>
+        <tr><td>Kop</td><td>Bagian paling atas kertas cetakan yang memuat nama perusahaan, logo, dan alamat. Diatur di menu Perusahaan.</td></tr>
         <tr><td>Lead time</td><td>Lama dari barang dipesan sampai barang datang, dalam hari.</td></tr>
         <tr><td>Lembar Hitung</td><td>Kertas cetak untuk dibawa menghitung barang di gudang saat Stok Opname.</td></tr>
         <tr><td>Penerimaan</td><td>Dokumen yang mencatat barang datang dari supplier. Stok bertambah.</td></tr>

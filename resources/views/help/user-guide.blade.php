@@ -14,7 +14,7 @@
     $user = auth()->user();
     $can = fn (string $code) => $user->canAccess($code);
     $sup = $user->isSupervisor();
-    $anyMaster = collect(['ITM', 'SUP', 'DEP', 'RCP', 'UOM', 'CAT', 'LOC'])->contains($can);
+    $anyMaster = collect(['ITM', 'SUP', 'DEP', 'RCP', 'UOM', 'CAT', 'LOC', 'CMP'])->contains($can);
     $anyTrx = collect(['OPN', 'RCV', 'ISS', 'ADJ', 'SO'])->contains($can);
     $anyRpt = collect(['R-CARD', 'R-SUM', 'R-IN', 'R-OUT', 'R-EXP', 'R-ADJ'])->contains($can);
     $anySec = collect(['USR', 'GRP', 'SMP', 'MOD'])->contains($can);
@@ -45,6 +45,7 @@
             @if ($can('UOM'))<a class="g-toc-sub" href="#m-uom">Satuan</a>@endif
             @if ($can('CAT'))<a class="g-toc-sub" href="#m-cat">Kategori</a>@endif
             @if ($can('LOC'))<a class="g-toc-sub" href="#m-loc">Lokasi Penyimpanan</a>@endif
+            @if ($can('CMP'))<a class="g-toc-sub" href="#m-cmp">Perusahaan</a>@endif
         @endif
         @if ($anyTrx)
             <a href="#transaksi">7. Transaksi</a>
