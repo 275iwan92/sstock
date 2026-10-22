@@ -76,7 +76,7 @@
                 legalEl.textContent = legal && norm(legal) !== norm(name) ? legal : '';
                 const lines = (field('address').value || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean);
                 const contact = [(field('phone').value || '').trim() ? 'Telp. ' + field('phone').value.trim() : '', (field('email').value || '').trim()].filter(Boolean).join(' · ');
-                addrEl.textContent = style === 'logo_name_address' ? lines.concat(contact ? [contact] : []).slice(0, 3).join('\n') : '';
+                addrEl.textContent = style === 'logo_name_address' && url ? lines.concat(contact ? [contact] : []).slice(0, 3).join('\n') : '';
                 note.hidden = !(style !== 'name' && !url);
             };
             document.addEventListener('input', render);
