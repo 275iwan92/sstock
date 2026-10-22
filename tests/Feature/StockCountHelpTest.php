@@ -20,7 +20,7 @@ class StockCountHelpTest extends TestCase
     {
         foreach ([User::factory(), User::factory()->supervisor()] as $factory) {
             $this->actingAs($factory->create())->get(route('help.user-guide'))->assertOk()
-                ->assertSee('id="t-so"', false)->assertSee('Mulai Opname')->assertSee('Cetak Lembar Hitung')->assertSee('Hitung buta')->assertSee('Kunci transaksi')->assertSee('Berita Acara Stok Opname')->assertSee('Alur Stok Opname');
+                ->assertSee('id="t-so"', false)->assertSee('Mulai Opname')->assertSee('Cetak Lembar Hitung')->assertSee('Hitung buta')->assertSee('Kunci transaksi')->assertSee('Berita Acara Stok Opname')->assertSee('Alur Stok Opname')->assertSee('Jadwal dan pengingat')->assertSee('titik acuan stok')->assertSee('Diinput oleh');
         }
 
         $group = UserGroup::create(['code' => 'GD', 'name' => 'Gudang']);
@@ -32,6 +32,6 @@ class StockCountHelpTest extends TestCase
     {
         $this->actingAs(User::factory()->administrator()->create())->get(route('help.technical-guide'))->assertOk()
             ->assertSee('stock_counts', false)->assertSee('stock_count_lines', false)->assertSee('StockCounts', false)->assertSee('recordCountAdjustment', false)
-            ->assertSee('StockLedger::assertNotLocked()', false)->assertSee('StockCount::lockingNow()', false)->assertSee('give_stock_count_to_groups', false)->assertSee('State diagram of a Stok Opname', false);
+            ->assertSee('StockLedger::assertNotLocked()', false)->assertSee('StockCount::lockingNow()', false)->assertSee('give_stock_count_to_groups', false)->assertSee('State diagram of a Stok Opname', false)->assertSee('CountSchedule', false)->assertSee('StockCountRowChanged', false)->assertSee('constants', false);
     }
 }

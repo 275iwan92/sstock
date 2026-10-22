@@ -314,9 +314,15 @@ Peran: Supervisor memulai, meninjau, dan menyetujui. Data Entry mengisi hasil hi
 | OPS-16 | Ulangi Mulai Opname, isi semua baris sama dengan stok sistem, Selesai Hitung, Setujui. | Selesai tanpa membuat Penyesuaian (tidak ada selisih). | | |
 | OPS-17 | Mulai opname baru dengan Kunci transaksi **Tidak**. Sebelum Setujui, buat dan Konfirmasi satu Penerimaan barang uji. Selesai Hitung lalu coba Setujui. | Setujui ditolak: stok bergeser sejak cut-off, daftar barisnya disebut. Tombol **Perbarui Baris Bergeser** mengosongkan baris itu dan mengembalikan opname ke Sedang dihitung. | | |
 | OPS-18 | Pada opname yang berjalan, tekan **Kembalikan ke Penghitungan** tanpa catatan, lalu dengan catatan. | Tanpa catatan ditolak. Dengan catatan: status Sedang dihitung dan catatan tampil. | | |
-| OPS-19 | Pada opname yang berjalan dengan kunci aktif, tekan **Buka Kunci**. | Kunci terbuka (tercatat siapa dan kapan di kepala layar). Konfirmasi Penerimaan kini berhasil. | | |
+| OPS-19 | Pada opname yang berjalan dengan kunci aktif, tekan **Buka Kunci**, lalu **Kunci**. | Kunci terbuka (tercatat siapa dan kapan di kepala layar), Konfirmasi Penerimaan berhasil. Sesudah **Kunci**, Konfirmasi ditolak lagi dan kepala layar mencatat siapa yang mengunci. | | |
 | OPS-20 | Tekan **Batalkan Opname**. | Status Dibatalkan. Kunci lepas. Stok tidak berubah. | | |
 | OPS-21 | Sebagai `entry`, buka opname yang berstatus Sedang dihitung atau Tinjau. | Tombol Buka Kunci, Batalkan Opname, Setujui Opname, dan Kembalikan ke Penghitungan **tidak tampil**. Layar tinjau dan Berita Acara tidak bisa dibuka (ditolak bila alamatnya diketik). | | |
+| OPS-22 | Sebagai `supervisor`, buka daftar Stok Opname. Ubah **Jadwal opname** menjadi Mingguan, hari Senin, Simpan. Lalu ubah lagi jadi Bulanan, akhir bulan. | Jadwal tersimpan dan tampil di atas daftar. Sebagai `entry`, jadwal tampil tetapi tidak bisa diubah (tidak ada tombol Simpan Jadwal). | | |
+| OPS-23 | Buka Beranda sebagai `entry` dan `supervisor` (tidak ada opname berjalan). | Pengingat "Stok Opname terakhir ... Berikutnya ..." (atau "Belum pernah ada Stok Opname"). Warna biasa bila masih jauh, kuning bila H-3 atau lebih dekat, merah "Terlambat N hari". Tombol **Mulai Opname** hanya untuk `supervisor`. | | |
+| OPS-24 | Mulai opname baru. Buka Beranda lagi. | Pengingat berubah menjadi "Stok Opname SO-... sedang berjalan (terisi N dari M)". Item menu Stok Opname memakai lencana kuning. | | |
+| OPS-25 | Buka lembar input yang sama di dua jendela (dua akun, mis. `entry` dan `supervisor`). Di jendela 1 isi baris X. Di jendela 2 (belum dimuat ulang) isi baris X dengan angka lain. | Jendela 2 menampilkan peringatan "Baris ... sudah diubah oleh ... pada ...". Isi alasan lalu Simpan menimpa (angka jendela 2 menggantikan, tidak dijumlahkan); Batal membuang isiannya. | | |
+| OPS-26 | Pada opname Tinjau, lihat kolom **Diinput oleh**, lalu buka Berita Acara. | Kolom menyebut akun penginput tiap baris. Berita Acara memuat baris "Diinput oleh (akun)". Bila Anda sendiri penginput sebagian besar baris, muncul peringatan di layar Tinjau (tetap bisa disetujui). | | |
+| OPS-27 | Pada opname yang sudah Selesai, coba ubah isian, Hitung Ulang, Kembalikan, Batalkan. | Semua ditolak atau tidak tersedia: hasil Selesai permanen. Koreksi lewat Penyesuaian Stok. | | |
 
 ---
 
@@ -329,7 +335,7 @@ Fitur berikut **memang belum dibuat** (mungkin ditambah nanti). Jangan dilaporka
 - **Nomor lot/batch milik pemasok.** Batch di Stoku hanya menurut tanggal kedaluwarsa (kode `KODEBARANG-YYMMDD`).
 - **Ekspor dan impor data** selain yang ada: tombol Export CSV pada grid dan Cetak pada laporan dan dokumen. Belum ada impor barang/transaksi dari Excel atau CSV.
 - **Barcode** (membaca atau mencetak barcode/QR).
-- **Pengingat Stok Opname bulanan di Beranda.** Jadwal opname belum diingatkan otomatis. Baris selisih besar ditandai kolom Besar dan kotak penyaring, belum diberi warna baris.
+- **Notifikasi e-mail / WhatsApp untuk jadwal Stok Opname.** Pengingat hanya tampil di Beranda dan lencana menu. Baris selisih besar ditandai kolom Besar dan kotak penyaring, belum diberi warna baris.
 - **Notifikasi otomatis** lewat e-mail, WhatsApp, atau push. Peringatan hanya tampil di Beranda dan di form. E-mail (mis. lupa password) hanya ditulis ke `storage/logs/laravel.log` di mesin uji.
 
 ## Di luar cakupan Stoku
