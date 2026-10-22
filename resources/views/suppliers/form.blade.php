@@ -17,10 +17,10 @@
     <x-dl::form :title="$isNew ? 'Supplier · Baru' : 'Supplier · '.raw($supplier->code)" :subtitle="$isNew ? null : raw($supplier->name)" panel="top" kind="master"
         :status="$isNew ? 'new' : ($supplier->is_active ? 'active' : 'inactive')" :back="route('suppliers.index')" :new-url="route('suppliers.create')"
         :action="$isNew ? route('suppliers.store') : route('suppliers.update', $supplier)" :hidden="$isNew ? [] : ['_method' => 'PUT']"
-        :created-at="$supplier->created_at?->format('Y-m-d H:i:s')" :updated-at="$supplier->updated_at?->format('Y-m-d H:i:s')">
+        :hide="$supplier->is_system ? ['deactivate', 'activate'] : []" :created-at="$supplier->created_at?->format('Y-m-d H:i:s')" :updated-at="$supplier->updated_at?->format('Y-m-d H:i:s')">
         <x-dl::form.row :cols="3">
             <x-dl::field.text name="code" label="Supplier Code" :value="$v('code')" code :case-toggle="false" required :readonly="! $isNew" maxlength="20" :error="$e('code')" hint="Unique. Cannot be changed after saving." />
-            <x-dl::field.text name="name" label="Supplier Name" :value="$v('name')" required maxlength="150" :error="$e('name')" />
+            <x-dl::field.text name="name" label="Supplier Name" :value="$v('name')" required :readonly="(bool) $supplier->is_system" maxlength="150" :error="$e('name')" />
         </x-dl::form.row>
         <x-dl::form.row :cols="3">
             <x-dl::field.phone name="phone" label="Company Phone (PSTN)" :value="$v('phone')" :error="$e('phone')" hint="Landline, with area code." />

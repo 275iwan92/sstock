@@ -33,7 +33,7 @@ class HomeController extends Controller
             'fresh' => (bool) session('fresh'),
             'below' => $below,
             'leadTimes' => LeadTimes::forMany($below),
-            'suppliers' => Supplier::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id')->all(),
+            'suppliers' => Supplier::query()->where('is_active', true)->forSelect()->pluck('name', 'id')->all(),
             'expiring' => Item::query()->nearExpiry()->orderBy('expiry_date')->get(),
             'itemCount' => Product::query()->where('is_active', true)->count(),
             'stockValue' => $user->isSupervisor() ? round(Item::query()->selectRaw('SUM(stock_qty * avg_cost) v')->value('v') ?? 0, 2) : null,

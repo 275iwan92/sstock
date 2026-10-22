@@ -23,6 +23,9 @@ class SupplierSeeder extends Seeder
             ['SUP-003', 'UD Perkakas Jaya', '+62315550303', 'Bapak Slamet', '+6281234567892', 'Jl. Pasar Turi 45', 'Surabaya'],
         ];
 
+        // Supplier sistem: sudah dibuat migrasi; ini menjamin ada (dan bertanda sistem) bila seeder dijalankan di database yang dibuat dengan cara lain.
+        Supplier::firstOrNew(['code' => 'KONTAN'])->forceFill(['name' => 'Kontan', 'is_active' => true, 'is_system' => true])->save();
+
         foreach ($rows as [$code, $name, $phone, $contact, $mobile, $address, $cityTerm]) {
             $city = collect(GeoArea::search($cityTerm))->firstWhere('level', 'CITY');
             Supplier::updateOrCreate(['code' => $code], [

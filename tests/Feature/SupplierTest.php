@@ -75,14 +75,14 @@ class SupplierTest extends TestCase
     {
         $this->seedGeo();
         $this->actingAs(User::factory()->create())->post(route('suppliers.store'), $this->payload(['area' => '']))->assertSessionHasErrors('area');
-        $this->assertSame(0, Supplier::count());
+        $this->assertSame(0, Supplier::where('is_system', false)->count());   // Kontan (sistem) selalu ada
     }
 
     public function test_region_must_exist_in_the_geo_tables(): void
     {
         $this->seedGeo();
         $this->actingAs(User::factory()->create())->post(route('suppliers.store'), $this->payload(['area' => 'CITY:999']))->assertSessionHasErrors('area');
-        $this->assertSame(0, Supplier::count());
+        $this->assertSame(0, Supplier::where('is_system', false)->count());   // Kontan (sistem) selalu ada
     }
 
     public function test_grid_shows_city_and_country_in_one_column(): void
@@ -91,7 +91,7 @@ class SupplierTest extends TestCase
         Supplier::create(['code' => 'S1', 'name' => 'One', 'area_level' => 'DISTRICT', 'area_id' => 1]);
 
         $this->actingAs(User::factory()->create())->get(route('suppliers.index'))->assertOk()->assertSee('Kab. Sidoarjo, Indonesia', false);
-        $this->get(route('suppliers.show', Supplier::first()))->assertOk()->assertSee('Jawa Timur', false);
+        $this->get(route('suppliers.show', Supplier::where('code', 'S1')->first()))->assertOk()->assertSee('Jawa Timur', false);
     }
 
     public function test_region_is_optional_when_geo_tables_are_empty(): void
@@ -112,6 +112,6 @@ class SupplierTest extends TestCase
     {
         $this->seedGeo();
         $this->actingAs(User::factory()->create())->post(route('suppliers.store'), $this->payload(['area' => '']))->assertSessionHasErrors('area');
-        $this->assertSame(0, Supplier::count());
+        $this->assertSame(0, Supplier::where('is_system', false)->count());   // Kontan (sistem) selalu ada
     }
 }

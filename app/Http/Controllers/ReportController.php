@@ -134,7 +134,7 @@ class ReportController extends Controller
     {
         return $this->documentReport($request, StockDocumentType::Receiving, 'reports.receiving', fn ($q) => $q
             ->when($request->filled('supplier_id'), fn ($w) => $w->whereHas('document', fn ($d) => $d->where('supplier_id', $request->query('supplier_id')))),
-            ['suppliers' => Supplier::orderBy('name')->pluck('name', 'id')->all()]);
+            ['suppliers' => Supplier::forSelect()->pluck('name', 'id')->all()]);
     }
 
     public function issuance(Request $request)

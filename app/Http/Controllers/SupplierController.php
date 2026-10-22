@@ -62,6 +62,10 @@ class SupplierController extends Controller
 
     public function toggle(Supplier $supplier): JsonResponse
     {
+        if ($supplier->is_system) {
+            return response()->json(['message' => Supplier::SYSTEM_MESSAGE], 422);
+        }
+
         $supplier->update(['is_active' => ! $supplier->is_active]);
 
         return response()->json(['active' => $supplier->is_active]);

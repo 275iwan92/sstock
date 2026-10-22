@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Supplier;
 use App\Support\GeoArea;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -21,13 +22,16 @@ class SupplierRequest extends FormRequest
 
     public function rules(): array
     {
+        $system = $this->route('supplier')?->is_system ? $this->route('supplier') : null;
+        $locked = fn (string $field) => fn ($attr, $value, $fail) => $system && $value !== $system->{$field} ? $fail(Supplier::SYSTEM_MESSAGE) : null;
+
         if (in_array($this->input('_action'), ['activate', 'deactivate'], true)) {
-            return [];
+            return $system ? ['_action' => [fn ($attr, $value, $fail) => $fail(Supplier::SYSTEM_MESSAGE)]] : [];
         }
 
         return [
-            'code' => ['required', 'string', 'max:20', Rule::unique('suppliers', 'code')->ignore($this->route('supplier'))],
-            'name' => ['required', 'string', 'max:150'],
+            'code' => ['required', 'string', 'max:20', Rule::unique('suppliers', 'code')->ignore($this->route('supplier')), $locked('code')],
+            'name' => ['required', 'string', 'max:150', $locked('name')],
             'phone' => ['nullable', 'string', 'max:40'],
             'contact_name' => ['nullable', 'string', 'max:100'],
             'contact_mobile' => ['nullable', 'string', 'max:40'],

@@ -221,7 +221,7 @@ class StockDocumentController extends Controller
             't' => $t, 'doc' => $doc, 'log' => $log, 'cancelProblem' => $doc->exists ? $this->documents->cancelProblem($doc) : null,
             'recipients' => Recipient::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id')->all(),
             'departments' => Department::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id')->all(),
-            'suppliers' => Supplier::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id')->all(),
+            'suppliers' => Supplier::query()->where('is_active', true)->forSelect()->pluck('name', 'id')->all(),
             'units' => Unit::query()->where('is_active', true)->orderBy('code')->get()->mapWithKeys(fn (Unit $u) => [$u->code => "{$u->code} · {$u->name}"])->all(),
             'lines' => $this->lineRows($doc, $t),
             'fefo' => $doc->exists && $doc->status === 'draft' ? $this->documents->fefoWarnings($doc) : [],
