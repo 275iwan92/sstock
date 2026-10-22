@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\StockCountRowChanged;
 use App\Models\Category;
 use App\Models\Item;
 use App\Models\StockCount;
@@ -66,13 +67,19 @@ final class StockCounts
     /**
      * Simpan satu baris hasil hitung (dipanggil per perubahan sel). counted_qty kosong = belum dihitung; Tidak dihitung mengosongkan hasil, mengisi hasil melepas tanda.
      *
-     * @param  array{counted_qty?: mixed, counted_by?: ?string, skipped?: mixed, note?: ?string}  $in
+     * Penjaga lunak: bila $in['rev'] tidak sama dengan rev baris (orang lain menyimpannya sejak layar dimuat) dan $overwrite false, StockCountRowChanged dilempar (jangan menimpa diam-diam;
+     * mode Replace: angka yang diketik = jumlah fisik sebenarnya, tidak dijumlahkan). Setiap simpan yang mengubah baris mencatat entered_by / entered_at dan menaikkan rev.
+     *
+     * @param  array{counted_qty?: mixed, counted_by?: ?string, skipped?: mixed, note?: ?string, rev?: mixed}  $in
      */
-    public function saveLine(StockCount $count, int $lineId, array $in, ?string $rememberedCounter = null): StockCountLine
+    public function saveLine(StockCount $count, int $lineId, array $in, ?string $rememberedCounter = null, ?User $enteredBy = null, bool $overwrite = false): StockCountLine
     {
-        return DB::transaction(function () use ($count, $lineId, $in, $rememberedCounter) {
+        return DB::transaction(function () use ($count, $lineId, $in, $rememberedCounter, $enteredBy, $overwrite) {
             $this->lockAndAssert($count, ['counting']);
-            $line = $count->lines()->lockForUpdate()->findOrFail($lineId);
+            $line = $count->lines()->with(['item', 'enteredBy'])->lockForUpdate()->findOrFail($lineId);
+            if (! $overwrite && isset($in['rev']) && (int) $in['rev'] !== $line->rev) {
+                throw new StockCountRowChanged("Baris {$line->item->code} sudah diubah oleh ".($line->enteredBy?->name ?? 'pengguna lain').' pada '.($line->entered_at?->format('H:i') ?? '-').'. Isi alasan lalu Simpan untuk MENIMPA, atau Batal untuk membuang isian Anda.');
+            }
             $qty = $this->qty($in['counted_qty'] ?? null);
             $skip = filter_var($in['skipped'] ?? false, FILTER_VALIDATE_BOOLEAN);
             if ($skip && ! $line->skipped && $qty === $line->counted_qty) {
@@ -87,7 +94,10 @@ final class StockCounts
             $line->forceFill([
                 'counted_qty' => $qty, 'skipped' => $skip, 'counted_by' => $by === '' ? null : $by,
                 'note' => ($note = mb_substr(trim((string) ($in['note'] ?? '')), 0, 255)) === '' ? null : $note,
-            ])->save();
+            ]);
+            if ($line->isDirty()) {
+                $line->forceFill(['entered_by' => $enteredBy?->id, 'entered_at' => now(), 'rev' => $line->rev + 1])->save();
+            }
 
             return $line;
         });
@@ -172,6 +182,14 @@ final class StockCounts
     public function movedLines(StockCount $count): Collection
     {
         return $count->lines()->with('item')->get()->filter(fn (StockCountLine $l) => $l->diff() != 0.0 && abs($l->item->stock_qty - $l->system_qty) > self::EPS)->values();
+    }
+
+    // Bagian baris yang diinput akun ini (0..1). Hanya peringatan pemisahan tugas di layar Setujui, tidak memblokir (gudang kecil boleh satu orang).
+    public function enteredShare(StockCount $count, User $user): float
+    {
+        $total = $count->lines()->count();
+
+        return $total === 0 ? 0.0 : $count->lines()->where('entered_by', $user->id)->count() / $total;
     }
 
     // Perbarui semua baris yang bergeser sekaligus (stok sistem = stok sekarang, baris dibuka untuk diisi ulang).
@@ -262,7 +280,7 @@ final class StockCounts
     {
         return $this->ordered($count)->map(fn (StockCountLine $l) => [
             'id' => $l->id, 'code' => $l->item->code, 'name' => $l->item->name, 'batch' => $this->batch($l->item), 'location' => $l->item->location ?? '', 'unit' => $l->item->unit,
-            'counted_qty' => $l->counted_qty ?? '', 'counted_by' => $l->counted_by ?? '', 'skipped' => $l->skipped, 'note' => $l->note ?? '', 'filled' => $l->isComplete() ? 'yes' : 'no',
+            'counted_qty' => $l->counted_qty ?? '', 'counted_by' => $l->counted_by ?? '', 'skipped' => $l->skipped, 'note' => $l->note ?? '', 'filled' => $l->isComplete() ? 'yes' : 'no', 'rev' => $l->rev,
         ] + ($count->blind ? [] : ['system_qty' => $l->system_qty, 'diff' => $l->finalQty() === null ? '' : $l->diff()]))->values()->all();
     }
 
@@ -275,7 +293,7 @@ final class StockCounts
     {
         return $this->ordered($count)->map(fn (StockCountLine $l) => [
             'id' => $l->id, 'code' => $l->item->code, 'name' => $l->item->name, 'batch' => $this->batch($l->item), 'unit' => $l->item->unit, 'system_qty' => $l->system_qty,
-            'physical' => $l->finalQty() ?? '', 'diff' => $l->diff(), 'pct' => $l->pct() ?? '', 'recount_qty' => $l->recount_qty ?? '', 'reason' => $l->reason ?? '',
+            'physical' => $l->finalQty() ?? '', 'diff' => $l->diff(), 'pct' => $l->pct() ?? '', 'recount_qty' => $l->recount_qty ?? '', 'reason' => $l->reason ?? '', 'entered_by' => $l->enteredBy?->name ?? '',
             'state' => $l->skipped && $l->recount_qty === null ? 'Tidak dihitung' : ($l->recount_qty !== null ? 'Dihitung ulang' : ($l->added_manually ? 'Ditambah manual' : '')),
             'flag' => $l->overThreshold($count->threshold_pct) ? 'Besar' : '', 'has_diff' => $l->diff() != 0.0 ? 'yes' : 'no', 'big' => $l->overThreshold($count->threshold_pct) ? 'yes' : 'no',
         ] + ($withValue ? ['value' => $l->value()] : []))->values()->all();
@@ -303,7 +321,7 @@ final class StockCounts
     /** @return Collection<int, StockCountLine> urut lokasi (tanpa lokasi di akhir) lalu kode batch */
     public function ordered(StockCount $count): Collection
     {
-        return $count->lines()->with('item')->get()
+        return $count->lines()->with(['item', 'enteredBy'])->get()
             ->sortBy(fn (StockCountLine $l) => [$l->item->location === null || $l->item->location === '' ? 1 : 0, (string) $l->item->location, $l->item->code])->values();
     }
 

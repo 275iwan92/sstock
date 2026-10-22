@@ -7,6 +7,7 @@ use App\Models\Item;
 use App\Models\Product;
 use App\Models\StockDocument;
 use App\Models\Supplier;
+use App\Services\CountSchedule;
 use App\Services\LeadTimes;
 use App\Services\StockValuation;
 use App\Support\Menu;
@@ -32,6 +33,8 @@ class HomeController extends Controller
             'open' => $request->query('open'),
             'fresh' => (bool) session('fresh'),
             'below' => $below,
+            'countReminder' => $user->canAccess('SO') && CountSchedule::available() ? CountSchedule::state() : null,   // pengingat Stok Opname (hanya yang punya modul SO)
+            'canStartCount' => $user->isSupervisor() && $user->canWrite('SO'),
             'leadTimes' => LeadTimes::forMany($below),
             'suppliers' => Supplier::query()->where('is_active', true)->forSelect()->pluck('name', 'id')->all(),
             'expiring' => Item::query()->nearExpiry()->orderBy('expiry_date')->get(),

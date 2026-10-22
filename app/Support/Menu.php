@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\User;
+use App\Services\CountSchedule;
 
 /* REMARK
  * Tujuan       : Menu Layer Shell dari daftar modul (App\Support\Modules), disaring menurut akses pengguna (peran + Grup). Modul tanpa akses tidak tampil.
@@ -20,7 +21,9 @@ final class Menu
                 continue;
             }
             $url = is_array($route) ? route($route[0], $route[1]) : route($route);
-            $parents[$parent][] = ['code' => $code, 'label' => $label, 'url' => $url, 'type' => $type, 'icon' => $icon];
+            $badge = $code === 'SO' ? CountSchedule::badge() : null;   // lencana: Stok Opname sedang berjalan atau terlambat
+            $parents[$parent][] = ['code' => $code, 'label' => $label, 'url' => $url, 'type' => $type, 'icon' => $icon]
+                + ($badge ? ['badge' => $badge['badge'], 'badgeTone' => $badge['tone'], 'badgeTitle' => $badge['title']] : []);
         }
 
         $out = [];

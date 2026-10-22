@@ -7,17 +7,22 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['stock_count_id', 'item_id', 'system_qty', 'unit_cost', 'counted_qty', 'recount_qty', 'counted_by', 'skipped', 'reason', 'note', 'added_manually'])]
+#[Fillable(['stock_count_id', 'item_id', 'system_qty', 'unit_cost', 'counted_qty', 'recount_qty', 'counted_by', 'entered_by', 'entered_at', 'rev', 'skipped', 'reason', 'note', 'added_manually'])]
 class StockCountLine extends Model
 {
     protected function casts(): array
     {
-        return ['system_qty' => 'float', 'unit_cost' => 'float', 'counted_qty' => 'float', 'recount_qty' => 'float', 'skipped' => 'boolean', 'added_manually' => 'boolean'];
+        return ['system_qty' => 'float', 'unit_cost' => 'float', 'counted_qty' => 'float', 'recount_qty' => 'float', 'skipped' => 'boolean', 'added_manually' => 'boolean', 'entered_at' => 'datetime', 'rev' => 'integer'];
     }
 
     public function count(): BelongsTo
     {
         return $this->belongsTo(StockCount::class, 'stock_count_id');
+    }
+
+    public function enteredBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'entered_by');
     }
 
     public function item(): BelongsTo

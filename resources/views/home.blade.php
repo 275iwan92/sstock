@@ -13,6 +13,7 @@
         <x-slot:dashboard>
             @include('partials.flash')
             <x-dl::quote :quotes="\Devlib\Components\Frame::textLines('motivasi-harian.txt')" order="day" />
+            @include('partials.count-reminder')
             <x-dl::kpi-row>
                 <x-dl::kpi label="Active items" :value="$itemCount" icon="fa-boxes-stacked" data-open-tab="ITM" class="sstock-link" role="link" tabindex="0" />
                 <x-dl::kpi label="At / below reorder point" :value="$below->count()" icon="fa-triangle-exclamation" :tone="$below->isNotEmpty() ? 'danger' : 'success'" good-when="down" data-open-tab="ITM" class="sstock-link" role="link" tabindex="0" />

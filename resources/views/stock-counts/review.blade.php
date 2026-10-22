@@ -20,6 +20,9 @@
         </x-dl::action-form>
     </x-dl::alert>
 @endif
+@if ($editable && ($ownShare ?? 0) > 0.5)
+    <x-dl::alert tone="warn" :message="raw('Anda sendiri yang menginput '.round($ownShare * 100).' persen baris opname ini. Disarankan penyetuju bukan penginput (hanya peringatan, tetap boleh disetujui).')" />
+@endif
 @if ($editable)
     <x-dl::alert tone="info" :message="raw('Selisih di atas '.Locale::number($count->threshold_pct, 2).' persen (kolom Besar) wajib diberi Alasan sebelum disetujui. Hitung ulang: isi jumlah hasil hitung ulang; bila ada, itu yang dipakai.')" />
 @endif
@@ -52,6 +55,7 @@
         ['key' => 'value', 'label' => 'Value Effect', 'type' => 'money', 'readonly' => true, 'width' => '120px'],
         ['key' => 'flag', 'label' => 'Large', 'readonly' => true, 'width' => '70px'],
         ['key' => 'state', 'label' => 'State', 'readonly' => true, 'width' => '120px'],
+        ['key' => 'entered_by', 'label' => 'Entered By', 'readonly' => true, 'width' => '120px'],
         $edit(['key' => 'recount_qty', 'label' => 'Recount', 'type' => 'number', 'decimal' => true, 'width' => '100px']),
         $edit(['key' => 'reason', 'label' => 'Reason', 'width' => '240px']),
     ]" />

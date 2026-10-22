@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\StockCountRowChanged;
 use App\Models\Category;
 use App\Models\Item;
 use App\Models\Location;
 use App\Models\StockCount;
+use App\Services\CountSchedule;
 use App\Services\StockCounts;
 use App\Support\StockCountPrint;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 /* REMARK
@@ -35,7 +38,18 @@ class StockCountController extends Controller
                 'status' => $c->statusLabel(), 'user' => $c->creator->name, 'active' => true,
             ])->all();
 
-        return view('stock-counts.index', ['rows' => $rows, 'sup' => $request->user()->isSupervisor()]);
+        return view('stock-counts.index', ['rows' => $rows, 'sup' => $request->user()->isSupervisor(), 'schedule' => CountSchedule::state(), 'cfg' => CountSchedule::config()]);
+    }
+
+    // Jadwal opname (Supervisor): frekuensi, hari, tanggal; dipakai pengingat di Beranda.
+    public function schedule(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'frequency' => ['required', Rule::in(['weekly', 'monthly'])], 'weekday' => ['nullable', 'integer', 'between:1,7'], 'day_of_month' => ['nullable', 'regex:/^(last|[1-9]|[12]\d|3[01])$/'],
+        ], [], ['frequency' => 'frekuensi', 'weekday' => 'hari', 'day_of_month' => 'tanggal']);
+        CountSchedule::save($data);
+
+        return redirect()->route('stock-counts.index')->with('status', 'Jadwal opname disimpan: '.CountSchedule::describe().'. Pengingat tampil di Beranda.');
     }
 
     public function create()
@@ -75,7 +89,7 @@ class StockCountController extends Controller
         $data = ['count' => $count->load(['creator', 'unlocker', 'adjustmentDocument']), 'sup' => $sup, 'summary' => $this->counts->summary($count), 'review' => $review];
 
         return view('stock-counts.show', $data + ($review
-            ? ['reviewRows' => $this->counts->reviewRows($count, true), 'moved' => $count->status === 'review' ? $this->counts->movedLines($count) : collect()]
+            ? ['reviewRows' => $this->counts->reviewRows($count, true), 'moved' => $count->status === 'review' ? $this->counts->movedLines($count) : collect(), 'ownShare' => $count->status === 'review' ? $this->counts->enteredShare($count, $request->user()) : null]
             : ['entryRows' => $this->counts->entryRows($count)]));
     }
 
@@ -83,11 +97,18 @@ class StockCountController extends Controller
     public function saveLines(Request $request, StockCount $count): JsonResponse
     {
         $key = "stock-count.{$count->id}.counter";
-        foreach ((array) $request->input('changed', []) as $row) {
-            $line = $this->counts->saveLine($count, (int) ($row['id'] ?? 0), (array) $row, session($key));
-            if ($line->counted_by !== null) {
-                session([$key => $line->counted_by]);
-            }
+        $overwrite = filled($request->input('reason'));   // layar menjawab peringatan "baris sudah diubah orang lain" dengan alasan = menimpa
+        try {
+            DB::transaction(function () use ($request, $count, $key, $overwrite) {
+                foreach ((array) $request->input('changed', []) as $row) {
+                    $line = $this->counts->saveLine($count, (int) ($row['id'] ?? 0), (array) $row, session($key), $request->user(), $overwrite);
+                    if ($line->counted_by !== null) {
+                        session([$key => $line->counted_by]);
+                    }
+                }
+            });
+        } catch (StockCountRowChanged $e) {
+            return response()->json(['reason_required' => true, 'error' => $e->getMessage()], 409);
         }
 
         return response()->json(['rows' => $this->counts->entryRows($count)]);

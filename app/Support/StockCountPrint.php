@@ -66,11 +66,13 @@ final class StockCountPrint
         $diffs = $lines->filter(fn (StockCountLine $l) => $l->diff() != 0.0);
         $money = fn (float $v) => Locale::money($v, 'IDR', 0);
         $counters = $lines->pluck('counted_by')->filter()->map(fn ($n) => trim($n))->unique()->values();
+        $enterers = $lines->map(fn (StockCountLine $l) => $l->enteredBy?->name)->filter()->unique()->values();
         $done = $count->status === 'done';
 
         $summaryRows = [
             ['k' => 'Status', 'v' => $done ? 'Selesai · disetujui '.Locale::stamp($count->approved_at).' oleh '.$count->approver?->name : 'PRATINJAU — belum disetujui (status '.$count->statusLabel().')'],
-            ['k' => 'Penghitung', 'v' => $counters->isEmpty() ? '—' : $counters->implode(', ')],
+            ['k' => 'Penghitung (di kertas)', 'v' => $counters->isEmpty() ? '—' : $counters->implode(', ')],
+            ['k' => 'Diinput oleh (akun)', 'v' => $enterers->isEmpty() ? '—' : $enterers->implode(', ')],
             ['k' => 'Batch dalam lembar / dihitung', 'v' => $summary['lines'].' / '.$summary['counted']],
             ['k' => 'Jumlah selisih', 'v' => $summary['diffs'].' batch ('.$summary['over_lines'].' lebih · '.$summary['under_lines'].' kurang)'],
             ['k' => 'Total nilai lebih', 'v' => $money($summary['over_value'])],
@@ -81,7 +83,7 @@ final class StockCountPrint
         $diffRows = $diffs->values()->map(fn (StockCountLine $l, int $i) => [
             'no' => $i + 1, 'item' => ['text' => $l->item->name, 'sub' => $l->item->code.($l->item->expiry_date ? ' · exp '.Locale::d($l->item->expiry_date) : '')], 'unit' => $l->item->unit,
             'system' => $this->qty($l->system_qty), 'physical' => $this->qty($l->finalQty() ?? 0), 'diff' => $this->qty($l->diff()), 'pct' => $l->pct() === null ? '—' : Locale::number($l->pct(), 2).' %',
-            'value' => $money($l->value()), 'reason' => $l->reason ?: '—',
+            'value' => $money($l->value()), 'reason' => $l->reason ?: '—', 'by' => $l->enteredBy?->name ?? '—',
         ])->all();
 
         return [
@@ -92,7 +94,7 @@ final class StockCountPrint
                 ['title' => 'Baris selisih', 'blocks' => [['type' => 'table', 'empty' => 'Tidak ada selisih.', 'columns' => [
                     ['key' => 'no', 'label' => 'No.', 'width' => 9, 'align' => 'right'], ['key' => 'item', 'label' => 'Barang / Batch'], ['key' => 'unit', 'label' => 'Satuan', 'width' => 14],
                     ['key' => 'system', 'label' => 'Sistem', 'width' => 20, 'align' => 'right'], ['key' => 'physical', 'label' => 'Fisik', 'width' => 20, 'align' => 'right'], ['key' => 'diff', 'label' => 'Selisih', 'width' => 20, 'align' => 'right'],
-                    ['key' => 'pct', 'label' => 'Persen', 'width' => 18, 'align' => 'right'], ['key' => 'value', 'label' => 'Nilai', 'width' => 28, 'align' => 'right'], ['key' => 'reason', 'label' => 'Alasan', 'width' => 60],
+                    ['key' => 'pct', 'label' => 'Persen', 'width' => 18, 'align' => 'right'], ['key' => 'value', 'label' => 'Nilai', 'width' => 28, 'align' => 'right'], ['key' => 'reason', 'label' => 'Alasan', 'width' => 50], ['key' => 'by', 'label' => 'Diinput oleh', 'width' => 30],
                 ], 'rows' => $diffRows]]],
             ],
             'note' => $done ? null : 'PRATINJAU: angka dapat berubah sampai opname disetujui.',

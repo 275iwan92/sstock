@@ -152,6 +152,10 @@ final class Indonesian
         // Stok Opname (cetak)
         'Print Count Sheet' => 'Cetak Lembar Hitung', 'Print Minutes' => 'Cetak Berita Acara', 'Preview Minutes' => 'Pratinjau Berita Acara',
 
+        // Stok Opname (jadwal dan pengingat)
+        'Open Stok Opname' => 'Buka Stok Opname', 'Opname Frequency' => 'Frekuensi Opname', 'Weekday (weekly)' => 'Hari (mingguan)', 'Day of Month (monthly)' => 'Tanggal (bulanan)', 'Save Schedule' => 'Simpan Jadwal', 'Lock' => 'Kunci',
+        'Entered By' => 'Diinput oleh',
+
         // Login / umum
         'Supervisor Gudang' => 'Supervisor Gudang',
     ];

@@ -1,14 +1,27 @@
 {{-- REMARK
  Tujuan       : Daftar Stok Opname (penghitungan fisik rutin) sebagai Grid Transactional POLOS: nomor SO tebal di kolom pertama, hanya kolom Status yang berwarna. Mulai opname hanya untuk Supervisor.
  Sumber hulu  : StockCountController@index.
- Input        : rows, sup.
- Output       : x-dl::grid; klik 2x / Open membuka layar opname, Start Count (Supervisor) membuka form mulai.
+ Input        : rows, sup, schedule (App\Services\CountSchedule::state), cfg (jadwal tersimpan).
+ Output       : bagian kecil Jadwal opname (Supervisor mengubah, semua melihat), x-dl::grid; klik 2x / Open membuka layar opname, Start Count (Supervisor) membuka form mulai.
  Dipakai oleh : route stock-counts.index (menu Transaksi > Stok Opname).
  Status       : Aktif.
 --}}
 @extends('layout', ['title' => 'Stok Opname'])
 @section('body')
     @include('partials.flash')
+    <x-dl::alert :tone="['neutral' => 'info', 'warn' => 'warn', 'danger' => 'danger'][$schedule['tone']]" :message="raw('Jadwal opname: '.$schedule['schedule'].'. '.$schedule['headline'].' '.$schedule['detail'].'.')" />
+    @if ($sup)
+        <x-dl::action-form :action="route('stock-counts.schedule')">
+            <x-dl::form.row :cols="4">
+                <x-dl::field.select name="frequency" label="Opname Frequency" :options="['monthly' => 'Bulanan', 'weekly' => 'Mingguan']" :value="old('frequency', $cfg['frequency'])" required :error="$errors->first('frequency') ?: null" />
+                <x-dl::field.select name="weekday" label="Weekday (weekly)" :options="\App\Services\CountSchedule::WEEKDAYS" :value="old('weekday', $cfg['weekday'])" />
+                <x-dl::field.select name="day_of_month" label="Day of Month (monthly)" :options="['last' => 'Akhir bulan'] + array_combine(range(1, 31), range(1, 31))" :value="old('day_of_month', $cfg['day_of_month'])" />
+            </x-dl::form.row>
+            <x-dl::action-bar align="start">
+                <x-dl::button type="submit" variant="secondary" size="sm" icon="save" label="Save Schedule" />
+            </x-dl::action-bar>
+        </x-dl::action-form>
+    @endif
     <x-dl::grid id="stock-counts" actions="worklist" :rows="$rows" :new-record="$sup ? 'Start Count' : null" :new-url="$sup ? route('stock-counts.create') : null" :open-url="url('stock-counts/{id}')" search="Search count, scope..."
         :columns="[
             ['key' => 'doc_no', 'label' => 'Document', 'type' => 'identity', 'code' => 'scope', 'avatar' => false],

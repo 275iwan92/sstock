@@ -133,6 +133,7 @@ Route::middleware(['auth', 'active', 'module'])->group(function () {
         Route::middleware('supervisor')->group(function () {
             Route::get('create', 'create')->name('stock-counts.create');
             Route::post('/', 'store')->name('stock-counts.store');
+            Route::post('schedule', 'schedule')->name('stock-counts.schedule');
             Route::post('{count}/cancel', 'cancel')->name('stock-counts.cancel');
             Route::post('{count}/lock', 'lock')->name('stock-counts.lock');
             Route::post('{count}/unlock', 'unlock')->name('stock-counts.unlock');
