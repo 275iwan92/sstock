@@ -1,0 +1,28 @@
+<svg class="g-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 230" role="img" aria-labelledby="ug-satuan-masuk-t ug-satuan-masuk-d">
+<title id="ug-satuan-masuk-t">Satuan masuk dan satuan stok</title>
+<desc id="ug-satuan-masuk-d">Satuan masuk adalah kemasan saat barang diterima, misalnya 1 dus berisi 12 pcs. Di Penerimaan Barang Anda mengetik jumlah dan satuan masuk; kolom Dalam satuan stok langsung menghitung hasilnya sebelum Konfirmasi. Stok selalu disimpan dalam satuan stok barang. Pengeluaran dan Penyesuaian selalu memakai satuan stok.</desc>
+<defs><marker id="m-ug-satuan-masuk" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="n n-gray"  x="20" y="30" width="180" height="86" rx="9"/>
+<text class="t b" x="110" y="56" text-anchor="middle">Form Barang</text>
+<text class="t s" x="110" y="76" text-anchor="middle">Satuan masuk:</text>
+<text class="t s" x="110" y="92" text-anchor="middle">1 dus = 12 pcs</text>
+<rect class="n n-in"  x="250" y="30" width="180" height="86" rx="9"/>
+<text class="t b" x="340" y="56" text-anchor="middle">Penerimaan Barang</text>
+<text class="t s" x="340" y="76" text-anchor="middle">Jml 5, Satuan dus</text>
+<text class="t s" x="340" y="92" text-anchor="middle">(yang Anda ketik)</text>
+<rect class="n n-teal"  x="480" y="30" width="180" height="86" rx="9"/>
+<text class="t b" x="570" y="56" text-anchor="middle">= Dalam satuan stok</text>
+<text class="t s" x="570" y="76" text-anchor="middle">60 pcs</text>
+<text class="t s" x="570" y="92" text-anchor="middle">tampil sebelum Konfirmasi</text>
+<rect class="n n-ok"  x="710" y="30" width="170" height="86" rx="9"/>
+<text class="t b" x="795" y="56" text-anchor="middle">Stok bertambah</text>
+<text class="t s" x="795" y="76" text-anchor="middle">60 pcs</text>
+<text class="t s" x="795" y="92" text-anchor="middle">setelah Konfirmasi</text>
+<path class="e" d="M200,73 L250,73" marker-end="url(#m-ug-satuan-masuk)"/>
+<path class="e" d="M430,73 L480,73" marker-end="url(#m-ug-satuan-masuk)"/>
+<path class="e" d="M660,73 L710,73" marker-end="url(#m-ug-satuan-masuk)"/>
+<text class="t s" x="20" y="152" text-anchor="start">Faktor milik barang (bagian Satuan masuk di form Barang) selalu didahulukan.</text>
+<text class="t s" x="20" y="171" text-anchor="start">Konversi umum di menu Satuan hanya cadangan bila barang belum punya faktor sendiri.</text>
+<text class="t s" x="20" y="190" text-anchor="start">Belum ada faktor sama sekali? Jendela Faktor satuan belum ada muncul saat Simpan atau Konfirmasi.</text>
+<text class="t s" x="20" y="209" text-anchor="start">Pengeluaran dan Penyesuaian tidak punya pilihan satuan: selalu satuan stok (di contoh ini pcs).</text>
+</svg>

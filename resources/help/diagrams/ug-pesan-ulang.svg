@@ -1,31 +1,46 @@
-<svg class="g-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 230" role="img" aria-labelledby="ug-pesan-ulang-t ug-pesan-ulang-d">
-<title id="ug-pesan-ulang-t">Alur pesan ulang barang</title>
-<desc id="ug-pesan-ulang-d">Stok tersedia sama dengan atau di bawah Titik Pesan Ulang memunculkan peringatan di Beranda. Setelah memesan ke supplier, tekan Catat Pemesanan. Penerimaan Barang yang dikonfirmasi menutup catatan itu otomatis; membatalkan Penerimaan membukanya lagi.</desc>
+<svg class="g-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 375" role="img" aria-labelledby="ug-pesan-ulang-t ug-pesan-ulang-d">
+<title id="ug-pesan-ulang-t">Alur pesan ulang barang dan Catat Pemesanan</title>
+<desc id="ug-pesan-ulang-d">Stok tersedia sama dengan atau di bawah Titik Pesan Ulang memunculkan peringatan Belum dipesan di Beranda. Setelah memesan ke supplier di luar Stoku, tekan Catat Pemesanan; statusnya menjadi Dipesan. Setiap Penerimaan Barang yang dikonfirmasi menambah jumlah diterima. Selama jumlah diterima kurang dari jumlah dipesan, status Diterima sebagian dan pesanan tetap terbuka. Bila jumlah dipesan terpenuhi, pesanan tertutup otomatis. Tutup Pesanan menutup pesanan secara manual. Penerimaan yang dibatalkan membuat jumlah dihitung ulang.</desc>
 <defs><marker id="m-ug-pesan-ulang" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker></defs>
-<rect class="n n-bad"  x="20" y="30" width="190" height="80" rx="9"/>
-<text class="t b" x="115" y="50" text-anchor="middle">Stok tersedia</text>
-<text class="t b" x="115" y="66" text-anchor="middle">&lt;= Titik Pesan Ulang</text>
-<text class="t s" x="115" y="82" text-anchor="middle">peringatan di Beranda:</text>
-<text class="t s" x="115" y="98" text-anchor="middle">Belum dipesan</text>
-<rect class="n n-gray"  x="255" y="30" width="190" height="80" rx="9"/>
-<text class="t b" x="350" y="66" text-anchor="middle">Pesan ke supplier</text>
-<text class="t s" x="350" y="82" text-anchor="middle">di luar Stoku</text>
-<rect class="n n-in"  x="490" y="30" width="190" height="80" rx="9"/>
-<text class="t b" x="585" y="58" text-anchor="middle">Catat Pemesanan</text>
-<text class="t s" x="585" y="74" text-anchor="middle">Tanggal Pesan + No. Referensi</text>
-<text class="t s" x="585" y="90" text-anchor="middle">Pemesanan</text>
-<rect class="n n-ok"  x="715" y="30" width="165" height="80" rx="9"/>
-<text class="t b" x="797.5" y="58" text-anchor="middle">Status Pesanan:</text>
-<text class="t b" x="797.5" y="74" text-anchor="middle">Dipesan tgl · ref</text>
-<text class="t s" x="797.5" y="90" text-anchor="middle">hijau</text>
-<path class="e" d="M210,70 L255,70" marker-end="url(#m-ug-pesan-ulang)"/>
-<path class="e" d="M445,70 L490,70" marker-end="url(#m-ug-pesan-ulang)"/>
-<path class="e" d="M680,70 L715,70" marker-end="url(#m-ug-pesan-ulang)"/>
-<rect class="n n-teal"  x="490" y="150" width="390" height="56" rx="9"/>
-<text class="t b" x="685" y="174" text-anchor="middle">Penerimaan Barang dikonfirmasi</text>
-<text class="t s" x="685" y="190" text-anchor="middle">catatan pesanan tertutup otomatis</text>
-<path class="e" d="M797.5,110 L797,150" marker-end="url(#m-ug-pesan-ulang)"/>
-<text class="el" x="805" y="134" text-anchor="start">Penerimaan diterima</text>
-<text class="t el" x="20" y="160" text-anchor="start">Penerimaan dibatalkan: catatan pesanan</text>
-<text class="t el" x="20" y="175" text-anchor="start">dibuka lagi (Penerimaan menutupnya)</text>
+<rect class="n n-bad"  x="20" y="30" width="190" height="84" rx="9"/>
+<text class="t b" x="115" y="54" text-anchor="middle">Stok tersedia</text>
+<text class="t b" x="115" y="70" text-anchor="middle">&lt;= Titik Pesan Ulang</text>
+<text class="t s" x="115" y="90" text-anchor="middle">Beranda: Belum dipesan</text>
+<rect class="n n-gray"  x="250" y="30" width="180" height="84" rx="9"/>
+<text class="t b" x="340" y="68" text-anchor="middle">Pesan ke supplier</text>
+<text class="t s" x="340" y="88" text-anchor="middle">di luar Stoku</text>
+<rect class="n n-in"  x="470" y="30" width="190" height="84" rx="9"/>
+<text class="t b" x="565" y="54" text-anchor="middle">Catat Pemesanan</text>
+<text class="t s" x="565" y="74" text-anchor="middle">Supplier, Jumlah Dipesan,</text>
+<text class="t s" x="565" y="90" text-anchor="middle">Tanggal Pesan</text>
+<rect class="n n-ok"  x="700" y="30" width="180" height="84" rx="9"/>
+<text class="t b" x="790" y="54" text-anchor="middle">Dipesan</text>
+<text class="t s" x="790" y="74" text-anchor="middle">hijau, belum ada</text>
+<text class="t s" x="790" y="90" text-anchor="middle">yang diterima</text>
+<path class="e" d="M210,72 L250,72" marker-end="url(#m-ug-pesan-ulang)"/>
+<path class="e" d="M430,72 L470,72" marker-end="url(#m-ug-pesan-ulang)"/>
+<path class="e" d="M660,72 L700,72" marker-end="url(#m-ug-pesan-ulang)"/>
+<rect class="n n-teal"  x="470" y="160" width="410" height="66" rx="9"/>
+<text class="t b" x="675" y="186" text-anchor="middle">Penerimaan Barang dikonfirmasi</text>
+<text class="t s" x="675" y="206" text-anchor="middle">jumlah diterima dicatat ke pesanan (yang paling lama dulu)</text>
+<path class="e" d="M790,114 L790,160" marker-end="url(#m-ug-pesan-ulang)"/>
+<rect class="n n-warn"  x="470" y="270" width="190" height="66" rx="9"/>
+<text class="t b" x="565" y="296" text-anchor="middle">Diterima sebagian</text>
+<text class="t s" x="565" y="316" text-anchor="middle">kuning, tetap terbuka</text>
+<rect class="n n-ok"  x="700" y="270" width="180" height="66" rx="9"/>
+<text class="t b" x="790" y="296" text-anchor="middle">Pesanan tertutup</text>
+<text class="t s" x="790" y="316" text-anchor="middle">diterima &gt;= dipesan</text>
+<path class="e" d="M565,226 L565,270" marker-end="url(#m-ug-pesan-ulang)"/>
+<path class="e" d="M790,226 L790,270" marker-end="url(#m-ug-pesan-ulang)"/>
+<text class="el" x="572" y="252" text-anchor="start">kurang dari dipesan</text>
+<text class="el" x="797" y="252" text-anchor="start">terpenuhi</text>
+<rect class="n n-gray"  x="250" y="270" width="170" height="66" rx="9"/>
+<text class="t b" x="335" y="296" text-anchor="middle">Tutup Pesanan</text>
+<text class="t s" x="335" y="316" text-anchor="middle">manual, alasan opsional</text>
+<rect class="n n-bad"  x="20" y="270" width="190" height="66" rx="9"/>
+<text class="t b" x="115" y="296" text-anchor="middle">Ditutup manual</text>
+<text class="t s" x="115" y="316" text-anchor="middle">tidak bisa dibuka lagi</text>
+<path class="e" d="M470,303 L420,303" marker-end="url(#m-ug-pesan-ulang)"/>
+<path class="e" d="M250,303 L210,303" marker-end="url(#m-ug-pesan-ulang)"/>
+<text class="t s" x="20" y="362" text-anchor="start">Penerimaan dibatalkan: jumlah dihitung ulang, sehingga pesanan yang jadi kurang terbuka lagi.</text>
 </svg>

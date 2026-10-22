@@ -1,0 +1,36 @@
+<svg class="g-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 215" role="img" aria-labelledby="ug-hari-pertama-t ug-hari-pertama-d">
+<title id="ug-hari-pertama-t">Urutan hari pertama memakai Stoku</title>
+<desc id="ug-hari-pertama-d">Enam langkah: masuk, isi Data Master, isi stok awal dengan Saldo Awal atau Penerimaan Barang, catat Pengeluaran Barang, periksa Laporan, lalu lakukan Stok Opname rutin. Setiap dokumen disimpan sebagai Draf dan stok baru berubah setelah Konfirmasi.</desc>
+<defs><marker id="m-ug-hari-pertama" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="n n-gray"  x="18" y="30" width="124" height="96" rx="9"/>
+<text class="t b" x="80" y="58" text-anchor="middle">1. Masuk</text>
+<text class="t s" x="80" y="78" text-anchor="middle">username dan</text>
+<text class="t s" x="80" y="94" text-anchor="middle">password</text>
+<rect class="n n-teal"  x="166" y="30" width="124" height="96" rx="9"/>
+<text class="t b" x="228" y="58" text-anchor="middle">2. Data Master</text>
+<text class="t s" x="228" y="78" text-anchor="middle">kategori, satuan,</text>
+<text class="t s" x="228" y="94" text-anchor="middle">supplier, barang</text>
+<rect class="n n-in"  x="314" y="30" width="124" height="96" rx="9"/>
+<text class="t b" x="376" y="58" text-anchor="middle">3. Stok awal</text>
+<text class="t s" x="376" y="78" text-anchor="middle">Saldo Awal atau</text>
+<text class="t s" x="376" y="94" text-anchor="middle">Penerimaan Barang</text>
+<rect class="n n-in"  x="462" y="30" width="124" height="96" rx="9"/>
+<text class="t b" x="524" y="58" text-anchor="middle">4. Pengeluaran</text>
+<text class="t s" x="524" y="78" text-anchor="middle">barang keluar</text>
+<text class="t s" x="524" y="94" text-anchor="middle">ke penerima</text>
+<rect class="n n-ok"  x="610" y="30" width="124" height="96" rx="9"/>
+<text class="t b" x="672" y="58" text-anchor="middle">5. Laporan</text>
+<text class="t s" x="672" y="78" text-anchor="middle">periksa stok dan</text>
+<text class="t s" x="672" y="94" text-anchor="middle">Kartu Stok</text>
+<rect class="n n-warn"  x="758" y="30" width="124" height="96" rx="9"/>
+<text class="t b" x="820" y="58" text-anchor="middle">6. Stok Opname</text>
+<text class="t s" x="820" y="78" text-anchor="middle">hitung fisik rutin,</text>
+<text class="t s" x="820" y="94" text-anchor="middle">cocokkan stok</text>
+<path class="e" d="M142,78 L166,78" marker-end="url(#m-ug-hari-pertama)"/>
+<path class="e" d="M290,78 L314,78" marker-end="url(#m-ug-hari-pertama)"/>
+<path class="e" d="M438,78 L462,78" marker-end="url(#m-ug-hari-pertama)"/>
+<path class="e" d="M586,78 L610,78" marker-end="url(#m-ug-hari-pertama)"/>
+<path class="e" d="M734,78 L758,78" marker-end="url(#m-ug-hari-pertama)"/>
+<text class="t s" x="18" y="165" text-anchor="start">Setiap dokumen: Simpan (menjadi Draf), periksa, lalu Konfirmasi.</text>
+<text class="t s" x="18" y="184" text-anchor="start">Stok baru berubah setelah Konfirmasi. Laporan hanya menghitung dokumen yang sudah Terkonfirmasi.</text>
+</svg>

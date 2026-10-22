@@ -1,0 +1,25 @@
+<svg class="g-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 340" role="img" aria-labelledby="ug-saldo-awal-vs-penerimaan-t ug-saldo-awal-vs-penerimaan-d">
+<title id="ug-saldo-awal-vs-penerimaan-t">Beda Saldo Awal dan Penerimaan Barang</title>
+<desc id="ug-saldo-awal-vs-penerimaan-d">Saldo Awal memasukkan stok yang sudah ada saat mulai memakai Stoku; hanya Supervisor, hanya untuk barang yang belum punya pergerakan stok, tanggalnya dipilih sendiri. Penerimaan Barang mencatat barang yang datang dari supplier; tanggalnya saat Konfirmasi. Penerimaan pertama tidak otomatis menjadi Saldo Awal.</desc>
+<rect class="n n-in"  x="20" y="20" width="420" height="230" rx="9"/>
+<text class="t b" x="34" y="46">Saldo Awal</text>
+<text class="t s" x="34" y="74">Untuk: stok yang sudah ada di rak saat mulai memakai Stoku</text>
+<text class="t s" x="34" y="98">Siapa: hanya Supervisor</text>
+<text class="t s" x="34" y="122">Syarat: barang belum punya pergerakan stok</text>
+<text class="t s" x="34" y="146">Tanggal: Anda pilih sendiri (tidak lebih dari hari ini)</text>
+<text class="t s" x="34" y="170">Isian harga: Nilai Satuan</text>
+<text class="t s" x="34" y="194">Kartu Stok: baris bertipe AWAL</text>
+<text class="t s" x="34" y="218">Wajib? Tidak. Boleh dilewati.</text>
+<rect class="n n-teal"  x="460" y="20" width="420" height="230" rx="9"/>
+<text class="t b" x="474" y="46">Penerimaan Barang</text>
+<text class="t s" x="474" y="74">Untuk: barang yang datang dari supplier</text>
+<text class="t s" x="474" y="98">Siapa: Data Entry dan Supervisor</text>
+<text class="t s" x="474" y="122">Syarat: Supplier dipilih (Kontan untuk beli tunai)</text>
+<text class="t s" x="474" y="146">Tanggal dan jam: saat Anda menekan Konfirmasi</text>
+<text class="t s" x="474" y="170">Isian harga: Harga Beli / Satuan</text>
+<text class="t s" x="474" y="194">Kartu Stok: baris bertipe MASUK</text>
+<text class="t s" x="474" y="218">Dipakai setiap barang datang.</text>
+<rect class="n n-warn"  x="20" y="272" width="860" height="50" rx="9"/>
+<text class="t b" x="450" y="294" text-anchor="middle">Penerimaan pertama TIDAK otomatis menjadi Saldo Awal.</text>
+<text class="t s" x="450" y="311" text-anchor="middle">Stok yang sudah ada di rak: Saldo Awal. Barang yang baru datang: Penerimaan Barang.</text>
+</svg>

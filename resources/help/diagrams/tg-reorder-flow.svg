@@ -1,6 +1,6 @@
-<svg class="g-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 260" role="img" aria-labelledby="tg-reorder-flow-t tg-reorder-flow-d">
+<svg class="g-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 300" role="img" aria-labelledby="tg-reorder-flow-t tg-reorder-flow-d">
 <title id="tg-reorder-flow-t">Re-order flow</title>
-<desc id="tg-reorder-flow-d">When the available stock of a product (batches that are not expired) is at or below its Reorder Point, the home screen alerts. Record Order writes an open reorder_orders row. Confirming a Receiving closes the open rows of its products and cancelling that Receiving reopens them.</desc>
+<desc id="tg-reorder-flow-d">When the available stock of a product (batches that are not expired) is at or below its Reorder Point, the home screen alerts. Record Order writes an open reorder_orders row (supplier, qty, ordered_at). Every confirmed or cancelled Receiving runs ReorderOrders::reconcile, which allocates the received quantity FIFO over the orders of the product and closes an order only when its qty is reached. A manual Close Order is never reopened.</desc>
 <defs><marker id="m-tg-reorder-flow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker></defs>
 <rect class="n n-bad"  x="20" y="30" width="200" height="76" rx="9"/>
 <text class="t b" x="120" y="56" text-anchor="middle">Product available stock</text>
@@ -11,19 +11,25 @@
 <text class="t s" x="355" y="80" text-anchor="middle">Order Status: not ordered</text>
 <rect class="n n-in"  x="490" y="30" width="190" height="76" rx="9"/>
 <text class="t b" x="585" y="56" text-anchor="middle">Record Order</text>
-<text class="t s" x="585" y="72" text-anchor="middle">POST reorder-orders:</text>
-<text class="t s" x="585" y="88" text-anchor="middle">product, ordered_at, ref_no</text>
+<text class="t s" x="585" y="72" text-anchor="middle">POST reorder-orders: product,</text>
+<text class="t s" x="585" y="88" text-anchor="middle">supplier, qty, ordered_at</text>
 <rect class="n n-ok"  x="720" y="30" width="160" height="76" rx="9"/>
-<text class="t b" x="800" y="64" text-anchor="middle">Open order</text>
-<text class="t s" x="800" y="80" text-anchor="middle">closed_at = NULL</text>
+<text class="t b" x="800" y="56" text-anchor="middle">Open order</text>
+<text class="t s" x="800" y="72" text-anchor="middle">closed_at = NULL</text>
+<text class="t s" x="800" y="88" text-anchor="middle">received_qty = 0</text>
 <path class="e" d="M220,68 L260,68" marker-end="url(#m-tg-reorder-flow)"/>
 <path class="e" d="M450,68 L490,68" marker-end="url(#m-tg-reorder-flow)"/>
 <path class="e" d="M680,68 L720,68" marker-end="url(#m-tg-reorder-flow)"/>
-<rect class="n n-teal"  x="490" y="160" width="390" height="62" rx="9"/>
-<text class="t b" x="685" y="187" text-anchor="middle">Receiving confirmed</text>
-<text class="t s" x="685" y="203" text-anchor="middle">received_qty (FIFO); closes only when qty is reached</text>
-<path class="e" d="M800,106 L800,160" marker-end="url(#m-tg-reorder-flow)"/>
-<path class="e dash" d="M490,191 L350,191 L350,106" marker-end="url(#m-tg-reorder-flow)"/>
-<text class="t el" x="20" y="190" text-anchor="start">Receiving cancelled (finishCancel): recomputed,</text>
-<text class="t el" x="20" y="205" text-anchor="start">orders no longer complete reopen. Or Close Order (manual)</text>
+<rect class="n n-teal"  x="490" y="150" width="390" height="70" rx="9"/>
+<text class="t b" x="685" y="176" text-anchor="middle">Receiving confirmed or cancelled</text>
+<text class="t s" x="685" y="194" text-anchor="middle">ReorderOrders::reconcile: FIFO allocation of received qty</text>
+<text class="t s" x="685" y="210" text-anchor="middle">closed_at set only when received_qty &gt;= qty</text>
+<path class="e" d="M800,106 L800,150" marker-end="url(#m-tg-reorder-flow)"/>
+<path class="e dash" d="M490,185 L350,185 L350,106" marker-end="url(#m-tg-reorder-flow)"/>
+<text class="t el" x="20" y="170" text-anchor="start">Partly received: first_received_at set,</text>
+<text class="t el" x="20" y="185" text-anchor="start">order stays open (Diterima sebagian).</text>
+<text class="t el" x="20" y="200" text-anchor="start">Cancelled Receiving: reconcile recomputes,</text>
+<text class="t el" x="20" y="215" text-anchor="start">an order no longer complete reopens.</text>
+<rect class="n n-gray"  x="490" y="244" width="390" height="40" rx="9"/>
+<text class="t s" x="685" y="269" text-anchor="middle">Close Order (reorder-orders.close): close_reason = 'manual', never reopened</text>
 </svg>

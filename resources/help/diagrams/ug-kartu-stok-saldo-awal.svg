@@ -1,0 +1,23 @@
+<svg class="g-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 310" role="img" aria-labelledby="ug-kartu-stok-saldo-awal-t ug-kartu-stok-saldo-awal-d">
+<title id="ug-kartu-stok-saldo-awal-t">Saldo Awal di Kartu Stok bergantung pada Dari tanggal</title>
+<desc id="ug-kartu-stok-saldo-awal-d">Contoh: dokumen Saldo Awal bertanggal 1 Oktober. Bila Dari tanggal sama atau lebih awal, baris AWAL tampil di daftar dan kotak Saldo Awal di atas bernilai 0. Bila Dari tanggal lebih lambat, baris AWAL tidak tampil dan jumlahnya sudah masuk ke kotak Saldo Awal di atas.</desc>
+<defs><marker id="m-ug-kartu-stok-saldo-awal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<text class="t b" x="20" y="28">Contoh: Saldo Awal bertanggal 1 Oktober (stok 100)</text>
+<path class="e" d="M40,70 L860,70" marker-end="url(#m-ug-kartu-stok-saldo-awal)"/>
+<circle class="n n-in" cx="300" cy="70" r="9"/>
+<text class="t s" x="300" y="52" text-anchor="middle">1 Okt: Saldo Awal</text>
+<text class="t s" x="560" y="52" text-anchor="middle">2 Okt dan seterusnya</text>
+<rect class="n n-ok"  x="20" y="106" width="420" height="150" rx="9"/>
+<text class="t b" x="34" y="132">Dari tanggal = 1 Okt (atau lebih awal)</text>
+<text class="t s" x="34" y="158">Baris AWAL tampil di daftar: masuk 100.</text>
+<text class="t s" x="34" y="182">Kotak Saldo Awal di atas = 0.</text>
+<text class="t s" x="34" y="206">Saldo berjalan mulai dari baris AWAL itu.</text>
+<text class="t s" x="34" y="230">Dipakai untuk melihat seluruh riwayat dari awal.</text>
+<rect class="n n-warn"  x="460" y="106" width="420" height="150" rx="9"/>
+<text class="t b" x="474" y="132">Dari tanggal = 2 Okt (lebih lambat)</text>
+<text class="t s" x="474" y="158">Baris AWAL tidak tampil (di luar periode).</text>
+<text class="t s" x="474" y="182">Kotak Saldo Awal di atas = 100.</text>
+<text class="t s" x="474" y="206">Saldo berjalan mulai dari angka 100 itu.</text>
+<text class="t s" x="474" y="230">Dipakai untuk melihat periode berikutnya saja.</text>
+<text class="t s" x="20" y="288" text-anchor="start">Saldo akhir sama di kedua cara. Yang berbeda hanya cara menampilkannya.</text>
+</svg>

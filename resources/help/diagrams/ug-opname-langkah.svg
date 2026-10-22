@@ -1,0 +1,47 @@
+<svg class="g-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 330" role="img" aria-labelledby="ug-opname-langkah-t ug-opname-langkah-d">
+<title id="ug-opname-langkah-t">Langkah kerja Stok Opname</title>
+<desc id="ug-opname-langkah-d">Delapan langkah: Supervisor menekan Mulai Opname, lembar hitung dicetak, barang dihitung di gudang dan hasilnya ditulis di kertas, Data Entry menginput hasil, Selesai Hitung, Supervisor meninjau selisih, Setujui Opname, lalu sistem membuat satu Penyesuaian Stok otomatis sehingga stok mengikuti hasil fisik.</desc>
+<defs><marker id="m-ug-opname-langkah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="n n-warn"  x="20" y="30" width="190" height="76" rx="9"/>
+<text class="t b" x="115" y="55" text-anchor="middle">1. Mulai Opname</text>
+<text class="t s" x="115" y="74" text-anchor="middle">Supervisor</text>
+<text class="t s" x="115" y="90" text-anchor="middle">stok dicatat (titik acuan)</text>
+<rect class="n n-gray"  x="245" y="30" width="190" height="76" rx="9"/>
+<text class="t b" x="340" y="55" text-anchor="middle">2. Cetak Lembar Hitung</text>
+<text class="t s" x="340" y="74" text-anchor="middle">Data Entry atau</text>
+<text class="t s" x="340" y="90" text-anchor="middle">Supervisor</text>
+<rect class="n n-gray"  x="470" y="30" width="190" height="76" rx="9"/>
+<text class="t b" x="565" y="55" text-anchor="middle">3. Hitung di gudang</text>
+<text class="t s" x="565" y="74" text-anchor="middle">tulis hasil di kertas</text>
+<text class="t s" x="565" y="90" text-anchor="middle">kosong = belum dihitung</text>
+<rect class="n n-in"  x="695" y="30" width="185" height="76" rx="9"/>
+<text class="t b" x="787" y="55" text-anchor="middle">4. Input hasil hitung</text>
+<text class="t s" x="787" y="74" text-anchor="middle">Data Entry atau Supervisor</text>
+<text class="t s" x="787" y="90" text-anchor="middle">tersimpan otomatis</text>
+<path class="e" d="M210,68 L245,68" marker-end="url(#m-ug-opname-langkah)"/>
+<path class="e" d="M435,68 L470,68" marker-end="url(#m-ug-opname-langkah)"/>
+<path class="e" d="M660,68 L695,68" marker-end="url(#m-ug-opname-langkah)"/>
+<path class="e" d="M787,106 L787,138 L115,138 L115,170" marker-end="url(#m-ug-opname-langkah)"/>
+<rect class="n n-in"  x="20" y="170" width="190" height="76" rx="9"/>
+<text class="t b" x="115" y="195" text-anchor="middle">5. Selesai Hitung</text>
+<text class="t s" x="115" y="214" text-anchor="middle">semua baris terisi</text>
+<text class="t s" x="115" y="230" text-anchor="middle">atau Tidak dihitung</text>
+<rect class="n n-warn"  x="245" y="170" width="190" height="76" rx="9"/>
+<text class="t b" x="340" y="195" text-anchor="middle">6. Tinjau</text>
+<text class="t s" x="340" y="214" text-anchor="middle">Supervisor: selisih, alasan,</text>
+<text class="t s" x="340" y="230" text-anchor="middle">Hitung Ulang</text>
+<rect class="n n-warn"  x="470" y="170" width="190" height="76" rx="9"/>
+<text class="t b" x="565" y="195" text-anchor="middle">7. Setujui Opname</text>
+<text class="t s" x="565" y="214" text-anchor="middle">Supervisor</text>
+<text class="t s" x="565" y="230" text-anchor="middle">atau Kembalikan</text>
+<rect class="n n-ok"  x="695" y="170" width="185" height="76" rx="9"/>
+<text class="t b" x="787" y="195" text-anchor="middle">8. Penyesuaian otomatis</text>
+<text class="t s" x="787" y="214" text-anchor="middle">stok mengikuti hasil</text>
+<text class="t s" x="787" y="230" text-anchor="middle">hitung fisik</text>
+<path class="e" d="M210,208 L245,208" marker-end="url(#m-ug-opname-langkah)"/>
+<path class="e" d="M435,208 L470,208" marker-end="url(#m-ug-opname-langkah)"/>
+<path class="e" d="M660,208 L695,208" marker-end="url(#m-ug-opname-langkah)"/>
+<text class="t s" x="20" y="278" text-anchor="start">Stok berubah hanya di langkah 7 dan 8. Sebelum itu stok tidak berubah.</text>
+<text class="t s" x="20" y="297" text-anchor="start">Selama opname berjalan, transaksi stok dikunci (bila kuncinya dinyalakan saat Mulai Opname).</text>
+<text class="t s" x="20" y="316" text-anchor="start">Salah isi? Supervisor menekan Kembalikan ke Penghitungan, lalu Selesai Hitung lagi.</text>
+</svg>
