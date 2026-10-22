@@ -156,3 +156,6 @@ body.dl-body:has(.sstock-guide) { overflow-y: auto; }
 .g-svg .e.dash { stroke-dasharray: 6 4; }
 .g-svg .mk { fill: var(--dl-ink, currentColor); opacity: .8; }
 .g-svg .el { fill: var(--dl-ink, currentColor); font: 600 11.5px system-ui, sans-serif; paint-order: stroke; stroke: var(--dl-surface); stroke-width: 4px; stroke-linejoin: round; }
+
+/* Stok Opname: Lembar Hitung (x-dl::print-sheet) memakai sel kosong untuk tulisan tangan; tinggi baris diberi agar cukup ditulisi pena. */
+.dl-psheet__tbl td.sstock-write { height: 9mm; }

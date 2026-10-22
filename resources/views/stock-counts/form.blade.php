@@ -26,8 +26,8 @@
             <x-dl::field.select name="location_code" label="Location (for scope per Location)" :options="$locations" :value="$v('location_code')" :error="$e('location_code')" />
         </x-dl::form.row>
         <x-dl::form.row :cols="3">
-            <x-dl::field.toggle name="blind" label="Blind count" on-label="Yes" off-label="No" :value="$on('blind')" hint="Ya: stok sistem disembunyikan di lembar hitung dan layar input." />
-            <x-dl::field.toggle name="lock_transactions" label="Lock transactions during count" on-label="Yes" off-label="No" :value="$on('lock_transactions')" hint="Ya: Confirm / Approve Penerimaan, Pengeluaran, dan Penyesuaian ditolak sampai opname selesai atau dibatalkan." />
+            <x-dl::field.toggle name="blind" label="Blind count" on-label="Ya" off-label="Tidak" :value="$on('blind')" hint="Ya: stok sistem disembunyikan di lembar hitung dan layar input." />
+            <x-dl::field.toggle name="lock_transactions" label="Lock transactions during count" on-label="Ya" off-label="Tidak" :value="$on('lock_transactions')" hint="Ya: Confirm / Approve Penerimaan, Pengeluaran, dan Penyesuaian ditolak sampai opname selesai atau dibatalkan." />
         </x-dl::form.row>
         <x-dl::form.row>
             <x-dl::field.text name="note" label="Notes" :value="$v('note')" multiline maxlength="1000" :error="$e('note')" />

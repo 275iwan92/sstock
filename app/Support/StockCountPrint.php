@@ -18,6 +18,9 @@ use Devlib\Locale;
  */
 final class StockCountPrint
 {
+    // Sel isian tulis tangan: kelas sstock-write (resources/css/app.css) memberi tinggi baris cukup untuk ditulisi pena.
+    private const BLANK = ['text' => ' ', 'class' => 'sstock-write'];
+
     public function __construct(private readonly StockCounts $counts) {}
 
     /** @return array<string, mixed> */
@@ -25,7 +28,7 @@ final class StockCountPrint
     {
         $names = Location::query()->pluck('name', 'code');
         $columns = array_values(array_filter([
-            ['key' => 'no', 'label' => 'No', 'width' => 9, 'align' => 'right'],
+            ['key' => 'no', 'label' => 'No.', 'width' => 9, 'align' => 'right'],
             ['key' => 'code', 'label' => 'Kode', 'width' => 34, 'mono' => true],
             ['key' => 'name', 'label' => 'Nama Barang'],
             ['key' => 'batch', 'label' => 'Batch (Kedaluwarsa)', 'width' => 26],
@@ -41,7 +44,7 @@ final class StockCountPrint
         foreach ($this->counts->ordered($count)->groupBy(fn (StockCountLine $l) => (string) ($l->item->location ?? '')) as $location => $lines) {
             $rows = $lines->values()->map(fn (StockCountLine $l, int $i) => [
                 'no' => $i + 1, 'code' => $l->item->code, 'name' => $l->item->name, 'batch' => $l->item->expiry_date ? Locale::d($l->item->expiry_date) : '—',
-                'location' => $location === '' ? '—' : $location, 'unit' => $l->item->unit, 'system' => $this->qty($l->system_qty), 'counted' => ' ', 'counter' => ' ', 'note' => ' ',
+                'location' => $location === '' ? '—' : $location, 'unit' => $l->item->unit, 'system' => $this->qty($l->system_qty), 'counted' => self::BLANK, 'counter' => self::BLANK, 'note' => self::BLANK,
             ])->all();
             $sections[] = ['title' => $location === '' ? 'Tanpa lokasi' : 'Lokasi '.$location.(isset($names[$location]) ? ' · '.$names[$location] : ''), 'blocks' => [['type' => 'table', 'columns' => $columns, 'rows' => $rows]]];
         }
@@ -87,7 +90,7 @@ final class StockCountPrint
             'sections' => [
                 ['title' => 'Ringkasan', 'blocks' => [['type' => 'table', 'columns' => [['key' => 'k', 'label' => 'Uraian', 'width' => 70], ['key' => 'v', 'label' => 'Keterangan']], 'rows' => $summaryRows]]],
                 ['title' => 'Baris selisih', 'blocks' => [['type' => 'table', 'empty' => 'Tidak ada selisih.', 'columns' => [
-                    ['key' => 'no', 'label' => 'No', 'width' => 9, 'align' => 'right'], ['key' => 'item', 'label' => 'Barang / Batch'], ['key' => 'unit', 'label' => 'Satuan', 'width' => 14],
+                    ['key' => 'no', 'label' => 'No.', 'width' => 9, 'align' => 'right'], ['key' => 'item', 'label' => 'Barang / Batch'], ['key' => 'unit', 'label' => 'Satuan', 'width' => 14],
                     ['key' => 'system', 'label' => 'Sistem', 'width' => 20, 'align' => 'right'], ['key' => 'physical', 'label' => 'Fisik', 'width' => 20, 'align' => 'right'], ['key' => 'diff', 'label' => 'Selisih', 'width' => 20, 'align' => 'right'],
                     ['key' => 'pct', 'label' => 'Persen', 'width' => 18, 'align' => 'right'], ['key' => 'value', 'label' => 'Nilai', 'width' => 28, 'align' => 'right'], ['key' => 'reason', 'label' => 'Alasan', 'width' => 60],
                 ], 'rows' => $diffRows]]],

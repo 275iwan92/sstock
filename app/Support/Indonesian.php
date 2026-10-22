@@ -138,7 +138,7 @@ final class Indonesian
         'Start Count' => 'Mulai Opname', 'Search count, scope...' => 'Cari opname, cakupan...', 'Count Date' => 'Tanggal Opname', 'Filled' => 'Terisi', 'Started by' => 'Dimulai oleh',
         'Counting' => 'Sedang dihitung', 'Review' => 'Tinjau', 'Done' => 'Selesai', 'Difference Threshold (%)' => 'Ambang Selisih (%)', 'Difference Threshold' => 'Ambang Selisih',
         'Category (for scope per Category)' => 'Kategori (untuk cakupan per Kategori)', 'Location (for scope per Location)' => 'Lokasi (untuk cakupan per Lokasi)',
-        'Blind count' => 'Hitung buta', 'Lock transactions during count' => 'Kunci transaksi selama opname', 'Yes' => 'Ya', 'No' => 'Tidak', 'Unlock' => 'Buka Kunci', 'Cancel Count' => 'Batalkan Opname', 'Transaction Lock' => 'Kunci Transaksi',
+        'Blind count' => 'Hitung buta', 'Lock transactions during count' => 'Kunci transaksi selama opname', 'Unlock' => 'Buka Kunci', 'Cancel Count' => 'Batalkan Opname', 'Transaction Lock' => 'Kunci Transaksi',
 
         // Stok Opname (lembar input hasil hitung)
         'Not filled' => 'Belum diisi', 'System Stock' => 'Stok Sistem', 'Count Result' => 'Hasil Hitung', 'Counter' => 'Penghitung', 'Not counted' => 'Tidak dihitung', 'Note' => 'Catatan',
