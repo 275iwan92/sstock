@@ -149,6 +149,9 @@ final class Indonesian
         'Net Value' => 'Nilai Bersih', 'Approve Count' => 'Setujui Opname', 'Return to Counting' => 'Kembalikan ke Penghitungan', 'Differences only' => 'Hanya selisih', 'Large differences' => 'Selisih besar',
         'Physical' => 'Fisik', 'Percent' => 'Persen', 'Large' => 'Besar', 'State' => 'Keadaan', 'Recount' => 'Hitung Ulang',
 
+        // Stok Opname (cetak)
+        'Print Count Sheet' => 'Cetak Lembar Hitung', 'Print Minutes' => 'Cetak Berita Acara', 'Preview Minutes' => 'Pratinjau Berita Acara',
+
         // Login / umum
         'Supervisor Gudang' => 'Supervisor Gudang',
     ];

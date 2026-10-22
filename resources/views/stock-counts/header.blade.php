@@ -2,7 +2,7 @@
  Tujuan       : Kepala layar satu Stok Opname: nomor + status, ringkasan (tanggal, cakupan, cut-off, ambang, hitung buta, kunci), pesan penting, dan tombol aksi (Supervisor: Buka kunci, Batalkan).
  Sumber hulu  : StockCountController@show (count, sup, summary).
  Input        : count, sup, summary.
- Output       : x-dl::headline, x-dl::kpi-row, x-dl::alert, x-dl::action-bar (POST stock-counts.unlock / stock-counts.cancel).
+ Output       : x-dl::headline, x-dl::kpi-row, x-dl::alert, x-dl::action-bar (cetak lembar hitung / Berita Acara; POST stock-counts.unlock / stock-counts.cancel).
  Dipakai oleh : stock-counts/show.
  Status       : Aktif.
 --}}
@@ -42,6 +42,10 @@
 @endif
 <x-dl::action-bar align="start">
     <x-dl::button variant="secondary" icon="back" label="Back" :href="route('stock-counts.index')" />
+    <x-dl::button variant="secondary" icon="print" label="Print Count Sheet" :href="route('stock-counts.sheet', $count)" target="_blank" />
+    @if ($sup && in_array($count->status, ['review', 'done'], true))
+        <x-dl::button variant="secondary" icon="print" :label="$count->status === 'done' ? 'Print Minutes' : 'Preview Minutes'" :href="route('stock-counts.report', $count)" target="_blank" />
+    @endif
     @if ($running && $sup)
         @if ($count->lock_transactions)
             <x-dl::action-form :action="route('stock-counts.unlock', $count)">

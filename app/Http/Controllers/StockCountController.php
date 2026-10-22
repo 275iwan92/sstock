@@ -7,6 +7,7 @@ use App\Models\Item;
 use App\Models\Location;
 use App\Models\StockCount;
 use App\Services\StockCounts;
+use App\Support\StockCountPrint;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -99,6 +100,20 @@ class StockCountController extends Controller
         $line = $this->counts->addItem($count, Item::query()->findOrFail($data['item_id']));
 
         return redirect()->route('stock-counts.show', $count)->with('status', "{$line->item->code} ditambahkan ke lembar hitung (stok sistem saat ini). Isi hasil hitungnya.");
+    }
+
+    // Cetak lembar hitung (A4): dipegang orang gudang di lapangan; stok sistem hanya tampil bila opname tidak buta.
+    public function sheet(StockCount $count, StockCountPrint $print)
+    {
+        return view('stock-counts.print', ['count' => $count, 'data' => $print->sheet($count), 'kind' => 'sheet']);
+    }
+
+    // Berita Acara (Supervisor): setelah Selesai, dan sebagai pratinjau saat Tinjau.
+    public function report(StockCount $count, StockCountPrint $print)
+    {
+        abort_unless(in_array($count->status, ['review', 'done'], true), 422, 'Berita Acara tersedia saat Tinjau (pratinjau) dan sesudah Selesai.');
+
+        return view('stock-counts.print', ['count' => $count->load(['approver', 'adjustmentDocument']), 'data' => $print->report($count), 'kind' => 'report']);
     }
 
     // Tinjau (Supervisor): hitung ulang dan alasan per baris, disimpan per sel; balasan = seluruh baris dengan selisih terhitung ulang.

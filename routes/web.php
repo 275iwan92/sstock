@@ -139,8 +139,10 @@ Route::middleware(['auth', 'active', 'module'])->group(function () {
             Route::post('{count}/refresh', 'refreshMoved')->name('stock-counts.refresh');
             Route::post('{count}/approve', 'approve')->name('stock-counts.approve');
             Route::post('{count}/reject', 'reject')->name('stock-counts.reject');
+            Route::get('{count}/report', 'report')->name('stock-counts.report');
         });
         Route::get('{count}', 'show')->name('stock-counts.show');
+        Route::get('{count}/sheet', 'sheet')->name('stock-counts.sheet');
         Route::post('{count}/lines', 'saveLines')->name('stock-counts.lines');
         Route::post('{count}/items', 'addItem')->name('stock-counts.items');
         Route::post('{count}/finish', 'finish')->name('stock-counts.finish');
