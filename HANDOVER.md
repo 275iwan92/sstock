@@ -5,7 +5,7 @@ Tempel seluruh teks ini di awal sesi baru, lalu baca juga `CLAUDE.md` bila perlu
 ## 1. ATURAN KERJA (wajib dipatuhi)
 1. **Selalu commit dan push** setiap selesai perubahan, walau belum "ok" / tes gagal / belum selesai (pemilik memakainya sebagai backup). Pesan commit bahasa Indonesia, akhiri dengan baris atribusi yang diminta sistem. Jangan force-push, jangan commit rahasia (`.env`). Repo `../devlib` TIDAK punya remote: cukup commit di sana. Bila push gagal "Connection reset", ulangi.
 2. **Seluruh tampilan harus Bahasa Indonesia.** Kode layar menulis label English (kebiasaan DevLib), kamus `App\Support\Indonesian` menerjemahkannya (`Lang::translateUsing`, `config('devlib.translate_fixed')=true`). Label baru WAJIB ditambah ke kamus lalu dicek di layar. Teks yang dirangkai di PHP (pesan, status, menu) ditulis langsung Indonesia. Pesan validasi: `lang/id/validation.php` (termasuk nama atribut). Mata uang tetap kode `IDR`.
-3. **Aturan DevLib** (`C:\Users\iwanp\Herd\devlib`, paket `telasih/devlib`, komponen `x-dl::*`): DevLib membuat, aplikasi mewarisi; layar = deklarasi `x-dl::*`, tanpa HTML mentah / warna literal; nilai data dibungkus `raw()`. Ada aplikasi besar (tmerp) yang menu/perilakunya berbeda: setiap perubahan DevLib harus OPT-IN (default perilaku lama tidak berubah), lalu commit di repo devlib. Perbaiki akar masalah di DevLib, bukan akal-akalan di aplikasi.
+3. **Aturan DevLib** (`C:\Users\iwanp\Herd\devlib`, paket `jo/devlib`, komponen `x-dl::*`): DevLib membuat, aplikasi mewarisi; layar = deklarasi `x-dl::*`, tanpa HTML mentah / warna literal; nilai data dibungkus `raw()`. Ada aplikasi besar (tmerp) yang menu/perilakunya berbeda: setiap perubahan DevLib harus OPT-IN (default perilaku lama tidak berubah), lalu commit di repo devlib. Perbaiki akar masalah di DevLib, bukan akal-akalan di aplikasi.
 4. **Gaya grid:** transaksi POLOS (nomor dokumen tebal, hanya Status berwarna); master memakai kotak warna per baris (`box`, `hue` dari `App\Support\Palette`).
 5. **Setiap form dokumen harus punya Confirm (artinya diproses ke stok), Delete selama belum Confirm, dan Cancel.** Selama belum Confirm stok TIDAK berubah. Tombol **Kembali selalu ke GRID** (bukan layar sebelumnya). Form tidak boleh bisa terkirim dua kali (penjaga di `layout.blade.php`).
 6. **Cancel dokumen yang sudah Confirm:** pengguna mengajukan + wajib menulis alasan, lalu Supervisor menyetujui/menolak; Supervisor/Administrator yang menekan Cancel langsung berlaku. Sebelum menerima pengajuan sistem MENGHITUNG apakah stok masih cukup untuk menarik dokumen itu kembali; bila tidak cukup, pembatalan DITOLAK dan pengguna harus membuat Stock Adjustment. Hitungan juga tampil sebagai peringatan di form sebelum tombol ditekan, dan diulang saat persetujuan.
@@ -15,7 +15,7 @@ Tempel seluruh teks ini di awal sesi baru, lalu baca juga `CLAUDE.md` bila perlu
 
 ## 2. Lokasi, stack, akun
 - Folder `C:\Users\iwanp\Herd\sstock` (sejajar `tmerp` dan `devlib`), situs http://sstock.test (Herd), GitHub https://github.com/275iwan92/sstock (privat, `main`).
-- Laravel 13.37, PHP 8.4, Vite + Tailwind 4, MySQL 8 (db `sstock`, user `sstock_usr`, dibuat oleh `php artisan sstock:install`). Tes memakai SQLite in-memory.
+- Laravel 13.37, PHP 8.3 atau lebih baru (`composer.json` ^8.3), Vite + Tailwind 4, MySQL 8 (db `sstock`, user `sstock_usr`, dibuat oleh `php artisan sstock:install`). Tes memakai SQLite in-memory.
 - Akun uji (hanya untuk pengembangan/UAT, ganti sebelum produksi; ada di `UserSeeder`): `admin` / `admin` (Administrator), `supervisor` / `1qa2ws3ed` (Supervisor), `entry` / `12345678` (Data Entry).
 - **Bangun ulang data contoh:** layar Administrator **Keamanan > Data Contoh** (`SampleDataController`, `App\Services\SampleData`; ketik SEGARKAN; tabel `geo_*` dipertahankan; pengguna keluar lalu masuk ulang; dimatikan di production kecuali `SSTOCK_SAMPLE_REFRESH=true`), atau CLI `composer sample` (= `php artisan migrate:fresh --seed --force`, TERMASUK menghapus `geo_*`; MENGHAPUS seluruh isi database `sstock`, lalu mengisi ulang akun, kategori, lokasi, barang, supplier, departemen, dan riwayat transaksi contoh). Wajib dijalankan ulang bila seeder berubah. Seeder dijaga tes `ItemCodeTest`.
 - Perintah: `php artisan test` (61 tes lulus saat serah terima), `vendor\bin\pint --dirty`, `npm run build`, `php artisan sstock:wallpapers`, `php artisan sstock:import-geo`.
@@ -42,8 +42,8 @@ Tempel seluruh teks ini di awal sesi baru, lalu baca juga `CLAUDE.md` bila perlu
 
 ## 5. Belum dikerjakan
 - Stok Opname: baris selisih besar berwarna (butuh opsi DevLib `x-dl::sheet`), tombol Simpan cadangan di lembar input (kini hanya simpan otomatis), perbarui satu baris saja dari layar (kini perbarui semua baris yang bergeser sekaligus).
-- Cetak dokumen tunggal (nota Penerimaan/Pengeluaran); yang ada baru cetak laporan.
-- Pemisahan tugas pembuat vs penyetuju, perkiraan tiba pemesanan dari `lead_time_days`, batalkan/ubah pencatatan pemesanan ulang, regenerasi DDL referensi, SMTP produksi.
+- Layar riwayat pesanan ulang (daftar, ubah, hapus catatan Catat Pemesanan; status Selesai / Ditutup manual belum tampil di layar mana pun) dan modul Perusahaan (kop cetak, logo).
+- Pemisahan tugas pembuat vs penyetuju, regenerasi DDL referensi, SMTP produksi.
 - Foto portrait wallpaper (layar HP memakai foto lanskap yang dipotong).
 
 ## 6. Menjalankan di mesin lain

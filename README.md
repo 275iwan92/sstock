@@ -9,7 +9,8 @@ Fitur utama:
 - **Stok Opname**: mulai (snapshot stok per batch, per cakupan Semua / Kategori / Lokasi), cetak Lembar Hitung, input hasil hitung massal dengan simpan otomatis, hitung buta, kunci transaksi selama opname, tinjau selisih (jumlah, persen, nilai, alasan wajib di atas ambang), setujui (satu Penyesuaian otomatis), cetak Berita Acara, serta jadwal opname dengan pengingat di Beranda.
 - Pesan ulang: titik pesan ulang per produk, Catat Pemesanan, lead time.
 - Laporan: Kartu Stok, Ringkasan Stok, Penerimaan, Pengeluaran, Kedaluwarsa, Opname & Penyesuaian. Harga dan nilai hanya untuk Supervisor.
-- Keamanan: peran, grup dengan akses RW / RO per modul, bantuan di dalam aplikasi (Panduan Pengguna dan Panduan Teknis).
+- Keamanan: peran, grup dengan akses RW / RO per modul, tanpa "ingat saya", keluar otomatis setelah 30 menit tanpa aktivitas (dengan peringatan 2 menit sebelumnya), dan akun nonaktif langsung keluar.
+- Bantuan di dalam aplikasi: Panduan Pengguna (Indonesia, mulai dari "Mulai di sini") dan Panduan Teknis (English, Administrator).
 
 Dokumen ini ditulis untuk penguji (QC) pemula. Ikuti langkahnya satu per satu, dari atas ke bawah.
 
@@ -230,8 +231,8 @@ Seeder (`database/seeders/UserSeeder.php`) membuat tiga akun ini. Masuk dengan u
 
 Yang boleh dilakukan tiap peran:
 
-- **Data Entry**: Penerimaan dan Pengeluaran Barang, menambah barang baru dan Satuan masuk-nya (kemasan saat diterima, mis. 1 dus = 12 pcs; memperbaiki faktor yang belum pernah dipakai di dokumen), mengelola Supplier, Departemen, Penerima, dan melihat laporan (tanpa harga/nilai).
-- **Supervisor**: semua milik Data Entry, ditambah mengubah Barang, Satuan (termasuk faktor Satuan masuk yang sudah dipakai di dokumen), Kategori, Lokasi, Saldo Awal, Penyesuaian Stok, menyetujui atau menolak, dan melihat harga serta nilai. Pengeluaran dan Penyesuaian selalu dalam satuan stok barang; hanya Penerimaan yang memakai satuan masuk.
+- **Data Entry**: Penerimaan dan Pengeluaran Barang, mengisi hasil hitung Stok Opname, menambah barang baru dan Satuan masuk-nya (kemasan saat diterima, mis. 1 dus = 12 pcs; memperbaiki faktor yang belum pernah dipakai di dokumen), mengelola Supplier, Departemen, Penerima, dan melihat laporan (tanpa harga/nilai).
+- **Supervisor**: semua milik Data Entry, ditambah mengubah Barang, Satuan (termasuk faktor Satuan masuk yang sudah dipakai di dokumen), Kategori, Lokasi, Saldo Awal, Penyesuaian Stok, memulai, meninjau, dan menyetujui Stok Opname, menyetujui atau menolak, dan melihat harga serta nilai. Pengeluaran dan Penyesuaian selalu dalam satuan stok barang; hanya Penerimaan yang memakai satuan masuk.
 - **Administrator**: semua milik Supervisor, ditambah menu Keamanan (Pengguna, Grup, Data Contoh, Daftar Modul).
 
 > **PERINGATAN.** Ketiga akun ini hanya untuk pengembangan dan pengujian di mesin Anda sendiri. Passwordnya lemah dan tertulis di kode. **Wajib diganti atau dihapus (dinonaktifkan) sebelum Stoku dipakai di server sungguhan.** Jangan pernah membuka Stoku ke internet dengan akun ini.
@@ -312,5 +313,5 @@ php artisan test
 ## 8. Skenario uji dan bantuan di dalam aplikasi
 
 - **Skenario uji QC** (tabel kasus uji, cara melapor temuan, dan hal yang sengaja belum ada): [docs/QC-SKENARIO.md](docs/QC-SKENARIO.md).
-- **Bantuan di dalam aplikasi:** klik nama Anda di pojok layar untuk membuka menu profil, lalu pilih Bantuan & dukungan. Atau tekan F1 di layar mana pun. Ini membuka Panduan Pengguna (User's Guide, Bahasa Indonesia, untuk semua peran).
+- **Bantuan di dalam aplikasi:** klik nama Anda di pojok layar untuk membuka menu profil, lalu pilih Bantuan & dukungan. Atau tekan F1 di layar mana pun. Ini membuka Panduan Pengguna (User's Guide, Bahasa Indonesia, untuk semua peran). Pemula: mulai dari bagian **Mulai di sini** (peta menu dan urutan hari pertama). Setiap modul punya bagian dengan pola tetap: Untuk apa, Siapa yang bisa, Langkah, Yang perlu diperhatikan, Masalah umum.
 - **Panduan Teknis** (Technical Guide, Bahasa Inggris): hanya untuk Administrator, ada sebagai tab di halaman Bantuan yang sama.

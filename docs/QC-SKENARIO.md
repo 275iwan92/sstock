@@ -57,12 +57,14 @@ Untuk kasus yang butuh barang bersih, buat barang baru lewat kasus `BRG-02` dan 
 | LGN-05 | Masuk dengan e-mail (`supervisor@sstock.test`) sebagai pengganti username, dengan password benar. | Berhasil masuk. | | |
 | LGN-06 | Kosongkan username lalu tekan masuk. Ulangi dengan password kosong. | Pesan "Isi username atau e-mail Anda." dan "Isi password Anda." | | |
 | LGN-07 | Salah password 5 kali berturut-turut untuk username yang sama, lalu coba masuk sekali lagi (percobaan ke-6). | Muncul pesan "Terlalu banyak percobaan. Coba lagi dalam ... detik." Setelah waktunya lewat, bisa masuk lagi. | | |
-| LGN-08 | Masuk sebagai `entry`. Lihat panel kiri. | Menu yang ada: Barang, Suppliers, Departemen, Penerima, Penerimaan Barang, Pengeluaran Barang, Kartu Stok, Ringkasan Stok, Laporan Penerimaan, Laporan Pengeluaran, Laporan Kedaluwarsa. **Tidak ada**: Satuan, Kategori, Lokasi Penyimpanan, Saldo Awal, Penyesuaian Stok, Laporan Opname & Penyesuaian, dan Keamanan. | | |
+| LGN-08 | Masuk sebagai `entry`. Lihat panel kiri. | Menu yang ada: Barang, Suppliers, Departemen, Penerima, Penerimaan Barang, Pengeluaran Barang, Stok Opname, Kartu Stok, Ringkasan Stok, Laporan Penerimaan, Laporan Pengeluaran, Laporan Kedaluwarsa. **Tidak ada**: Satuan, Kategori, Lokasi Penyimpanan, Saldo Awal, Penyesuaian Stok, Laporan Opname & Penyesuaian, dan Keamanan. | | |
 | LGN-09 | Masih sebagai `entry`, ketik langsung di browser alamat `/units`, lalu `/users`, lalu `/docs/adjustment` (tambahkan setelah alamat aplikasi). | Setiap alamat ditolak (halaman terlarang/403). Tidak ada data yang tampil. | | |
 | LGN-10 | Masuk sebagai `supervisor`. Lihat panel kiri, lalu ketik `/users` langsung. | Menu Keamanan tidak ada. Alamat `/users` ditolak. | | |
 | LGN-11 | Pada halaman masuk, tekan Lupa password?. Isi username `entry`. Kirim. | Pesan umum bahwa tautan dikirim (pesan sama untuk akun apa pun, termasuk yang tidak ada). | | |
 | LGN-12 | Buka berkas `storage/logs/laravel.log` di folder aplikasi, cari tautan reset di bagian paling bawah. Buka tautannya, isi password baru (min. 8 karakter), simpan. Lalu masuk dengan password baru. | Password berhasil diganti dan bisa dipakai masuk. **Kembalikan** password `entry` ke `12345678` setelahnya (lewat Ubah password atau reset lagi). | | |
 | LGN-13 | Buka lagi tautan reset yang sama (yang sudah dipakai). | Tautan ditolak (tidak bisa dipakai dua kali). | | |
+| LGN-14 | Buka halaman masuk. Cari kotak "ingat saya". | Kotak itu tidak ada. Hanya ada isian username / e-mail dan password. | | |
+| LGN-15 | Di `.env` ubah `SESSION_LIFETIME=3`, jalankan `php artisan config:clear`, lalu masuk sebagai `entry`. Diamkan tanpa menyentuh mouse atau keyboard sekitar 1 menit. Kembalikan `SESSION_LIFETIME` ke `30` setelah uji. | Di pojok kanan bawah muncul peringatan "Sesi hampir berakhir" dengan hitung mundur, tombol **Tetap masuk** dan **Keluar sekarang**. Tekan Tetap masuk: peringatan hilang dan hitungan mulai lagi. Bila dibiarkan sampai habis, Anda keluar otomatis ke halaman masuk. | | |
 
 ## 2. Master barang dan batch (BRG)
 
@@ -92,6 +94,7 @@ Untuk kasus yang butuh barang bersih, buat barang baru lewat kasus `BRG-02` dan 
 | BRG-17 | Buat supplier lagi dengan kode `S-QC1`. | Ditolak: kode sudah dipakai. | | |
 | BRG-18 | Buka Departemen dan Penerima. Tambah satu departemen dan satu penerima (dengan departemen bawaan). | Keduanya tersimpan dan muncul di grid. | | |
 | BRG-19 | Nonaktifkan supplier `S-QC1`, lalu buat Penerimaan baru. | Supplier itu tidak muncul di pilihan. | | |
+| BRG-20 | Buka Suppliers dan cari **Kontan** (supplier sistem untuk pembelian tunai). Buka formnya, cari tombol Nonaktifkan dan coba mengganti nama. | Kontan ada. Tombol Nonaktifkan tidak ada dan namanya terkunci. Menonaktifkannya dari grid ditolak dengan pesan "Kontan adalah supplier sistem: tidak bisa dinonaktifkan, diganti nama, atau dihapus." | | |
 
 ## 3. Supplier dan wilayah (SUP)
 
@@ -135,11 +138,13 @@ Peran: Data Entry atau Supervisor. Pakai **barang uji** (stok 10 dari `SAL-04`; 
 | PNM-06 | Buat Penerimaan **Lem Kayu Fox 100 ml** tanpa Tanggal Kedaluwarsa. Simpan atau Konfirmasi. | Ditolak: "Isi tanggal kedaluwarsa untuk Lem Kayu Fox 100 ml." | | |
 | PNM-07 | Terima Lem Kayu Fox 100 ml Jml `5` dengan tanggal kedaluwarsa baru (mis. 1 tahun dari sekarang). Konfirmasi. Buka barang itu. | Muncul batch baru berkode `KODE-YYMMDD` sesuai tanggal itu, stok 5. Batch lama tidak berubah. | | |
 | PNM-08 | Terima lagi Lem Kayu Fox 100 ml Jml `3` dengan **tanggal yang sama** persis dengan PNM-07. Konfirmasi. | Tidak ada batch baru. Stok batch yang sama menjadi 8. | | |
-| PNM-09 | Buat Penerimaan dengan satuan `box` untuk barang `pcs` (barang uji) saat konversi box-pcs **belum ada**. Simpan atau Konfirmasi. | Muncul jendela "Konversi satuan belum ada". Isi "1 box = 12 pcs", Simpan Konversi, lalu Simpan/Konfirmasi lagi. | | |
+| PNM-09 | Buat Penerimaan dengan satuan `box` untuk barang `pcs` (barang uji) saat barang itu **belum punya faktor** untuk `box` (bagian Satuan masuk di form Barang kosong) dan konversi umum box-pcs belum ada. Simpan atau Konfirmasi. | Muncul jendela "Faktor satuan belum ada". Isi "1 box = ... pcs" dengan `12`, tekan Simpan Faktor, lalu Simpan/Konfirmasi lagi. Faktor tersimpan sebagai Satuan masuk milik barang uji itu. | | |
 | PNM-10 | Lanjutan PNM-09: setelah konversi tersimpan, Konfirmasi penerimaan 2 box. | Stok barang uji bertambah 24 pcs (2 x 12). Kolom "Dalam satuan stok" menunjukkan 24. | | |
 | PNM-11 | Isi form Penerimaan, tekan Simpan **dua kali cepat** (klik ganda). | Hanya satu dokumen yang dibuat. Tombol hanya bereaksi sekali. | | |
 | PNM-12 | Buka Penerimaan Terkonfirmasi, tekan tombol Kembali. | Kembali ke grid Penerimaan Barang (bukan layar sebelumnya). | | |
 | PNM-13 | Pada Penerimaan Terkonfirmasi, tekan Cetak. | Halaman cetak memuat tulisan mode `CONFIRMED`. Pada Draf, tulisan `DRAFT` dan ada tanda air. | | |
+| PNM-14 | Di Penerimaan baru, buka pilihan Supplier. Tekan tombol **+** (Tambah baru) di sebelahnya. Isi Nama Supplier `Supplier Cepat QC`, Simpan. | Kontan ada paling atas di pilihan. Kotak kecil "Tambah Supplier" tertutup dan supplier baru langsung terpilih. Di menu Suppliers kodenya otomatis (SUP-00N). Nama yang sama ditolak. Pada Penerimaan Terkonfirmasi tombol + tidak ada. | | |
+| PNM-15 | Lanjutan PNM-10: buka barang uji dan lihat bagian Satuan masuk. Sebagai `entry` coba memperbaiki faktor `box`, lalu sebagai `supervisor`. | Tabel menunjukkan `box`, faktor 12, Dipakai "1 dokumen", dan Diubah oleh. Data Entry melihat tulisan "Hubungi Supervisor" (bukan tombol Ubah). Supervisor boleh mengubah. Penerimaan lama tidak berubah. | | |
 
 ## 6. Pengeluaran Barang, FEFO, dan peringatan batch (PNG)
 
@@ -157,9 +162,9 @@ Peran: Data Entry atau Supervisor. FEFO = barang yang paling cepat kedaluwarsa k
 | PNG-08 | Catat stok kedua batch Lem Kayu Fox sekarang (B1 = batch cepat, B2 = batch lambat). Buat Pengeluaran baru, pilih batch yang **paling cepat** kedaluwarsa, isi Jml = B1 + 5. Konfirmasi. | Sisa 5 otomatis diambil dari batch berikutnya. Setelahnya: batch cepat = 0, batch lambat = B2 - 5. Kartu Stok menunjukkan dua pergerakan keluar. | | |
 | PNG-09 | Keluarkan barang sampai stok sama dengan atau di bawah Titik Pesan Ulang barang itu (mis. barang uji dengan titik 5). Konfirmasi. | Muncul peringatan titik pesan ulang. Barang muncul di tabel peringatan di Beranda. | | |
 | PNG-10 | Pilih Penerima `Sari`, kosongkan Departemen. Konfirmasi. Buka dokumennya. | Departemen terisi dari departemen bawaan penerima (Admin). | | |
-| PNG-11 | Di isian Penerima, pilih baris "Penerima baru". Isi nama, Simpan di kotak kecil. | Penerima baru langsung terpilih tanpa meninggalkan dokumen. Penerima itu juga muncul di master Penerima. | | |
+| PNG-11 | Di isian Penerima, tekan tombol **+** (Tambah baru) di sebelahnya. Isi nama, Simpan di kotak kecil. | Penerima baru langsung terpilih tanpa meninggalkan dokumen. Penerima itu juga muncul di master Penerima. | | |
 | PNG-12 | Tambah barang uji dua kali dalam satu Pengeluaran. Simpan. | Ditolak: "Barang yang sama muncul di lebih dari satu baris." | | |
-| PNG-13 | Pengeluaran dengan satuan `box` untuk barang uji (konversi sudah ada dari PNM-09), Jml `1`. Konfirmasi. | Stok berkurang 12 pcs. Kolom "Dalam satuan stok" = 12. | | |
+| PNG-13 | Buka Pengeluaran baru, tambah barang uji (faktor `box` sudah ada dari PNM-09). Cari pilihan satuan di baris itu. | Tidak ada pilihan satuan. Kolom Satuan hanya menampilkan satuan stok (`pcs`) dan tidak bisa diubah. Pengeluaran selalu dalam satuan stok, jadi Jml `1` mengurangi stok 1 pcs. | | |
 | PNG-14 | Isi form dengan baris tak lengkap (barang kosong). Simpan. | Pesan "Pilih barang di setiap baris." Baris yang sudah diketik tetap tampil (tidak hilang). | | |
 
 ## 7. Penyesuaian Stok dan persetujuan Supervisor (ADJ)
@@ -196,7 +201,7 @@ Yang dibatalkan hanya dokumen yang sudah Terkonfirmasi/Disetujui. Draf tidak dib
 | BTL-10 | Lanjutan BTL-09: tetap tekan Batalkan pada Penerimaan itu (sebagai Supervisor) dan isi alasan. | Ditolak: "Pembatalan tidak bisa dilakukan: stok ... tinggal ..., tidak cukup untuk menarik kembali ...". Disarankan Penyesuaian Stok. Stok tidak berubah. | | |
 | BTL-11 | Buat Draf dan buka. Cari tombol. | Tombol Hapus ada, tombol Batalkan tidak. Setelah Konfirmasi: Hapus hilang, Batalkan muncul. | | |
 | BTL-12 | Buka Kartu Stok (bagian 9) untuk barang yang dokumennya dibatalkan. | Baris pembalik ditandai "(BATAL)". Baris asal tetap ada (riwayat tidak dihapus). | | |
-| BTL-13 | Catat satu Pemesanan Ulang untuk barang X (lihat `ROP-03`). Terima barang X lewat Penerimaan dan Konfirmasi (pesanan tertutup). Batalkan Penerimaan itu. | Barang itu kembali berstatus "Dipesan" (hijau) di tabel peringatan Beranda, bila stoknya masih di/bawah titik pesan ulang. | | |
+| BTL-13 | Catat satu Pemesanan Ulang dengan Jumlah Dipesan `10` untuk barang X (lihat `ROP-03`). Terima barang X Jml `10` lewat Penerimaan dan Konfirmasi (pesanan tertutup). Batalkan Penerimaan itu. | Barang itu kembali berstatus "Dipesan" (hijau) di tabel peringatan Beranda, bila stoknya masih di/bawah titik pesan ulang. | | |
 | BTL-14 | Batalkan Penerimaan, lalu cek Laporan Penerimaan di periode itu. | Dokumen yang dibatalkan tidak dihitung di laporan. | | |
 | BTL-15 | Buka form Penyesuaian yang masih Menunggu Persetujuan, tekan Batalkan. | Pengajuan ditarik tanpa pembalikan stok (stok memang belum berubah). | | |
 
@@ -214,6 +219,7 @@ Yang dibatalkan hanya dokumen yang sudah Terkonfirmasi/Disetujui. Draf tidak dib
 | LAP-08 | Ubah saringan "Kedaluwarsa dalam (hari)" menjadi `300` lalu Terapkan. | Daftar bertambah: batch yang kedaluwarsa dalam 300 hari ikut tampil (mis. batch Lem Kayu Fox dan Cat Semprot Pelindung yang tadinya tidak tampil). | | |
 | LAP-09 | Tekan Cetak di salah satu laporan. | Muncul dialog cetak browser dengan isi laporan. | | |
 | LAP-10 | Ubah Dari tanggal lebih besar dari Sampai tanggal. Terapkan. | Tidak ada error teknis. Hasil kosong atau pesan yang jelas. | | |
+| LAP-11 | Pakai barang uji yang punya Saldo Awal (`SAL-04`). Buka Kartu Stok, isi Dari tanggal = tanggal Saldo Awal, Terapkan. Lalu ubah Dari tanggal menjadi sehari sesudahnya, Terapkan. | Pertama: baris bertipe AWAL tampil di daftar dan kotak Saldo Awal di atas bernilai 0. Kedua: baris AWAL tidak tampil, dan jumlah Saldo Awal sudah masuk ke kotak Saldo Awal di atas. Saldo akhir sama di keduanya. | | |
 
 ## 10. Titik pesan ulang (ROP)
 
@@ -221,16 +227,19 @@ Yang dibatalkan hanya dokumen yang sudah Terkonfirmasi/Disetujui. Draf tidak dib
 |---|---|---|---|---|
 | ROP-01 | Sebagai `supervisor`, lihat Beranda. | Kotak "Di / bawah titik pesan ulang" menunjukkan jumlah. Tabel peringatan menampilkan barang dengan stok tersedia <= titik, dengan kolom Status Pesanan. | | |
 | ROP-02 | Klik kotak "Di / bawah titik pesan ulang". | Membuka tab menu terkait. | | |
-| ROP-03 | Pada Beranda tekan Catat Pemesanan. Pilih barang yang ada di tabel peringatan, isi Tanggal Pesan dan No. Referensi `REF-QC-1`. Simpan. | Baris barang itu berubah dari merah "Belum dipesan" menjadi hijau "Dipesan tgl ... - REF-QC-1". | | |
-| ROP-04 | Terima barang itu lewat Penerimaan Barang, Konfirmasi. Lihat Beranda. | Catatan pesanan tertutup otomatis. Bila stok masih di/bawah titik, barang tetap di tabel, dengan status kembali "Belum dipesan" (merah). | | |
+| ROP-03 | Pada Beranda tekan Catat Pemesanan. Pilih barang yang ada di tabel peringatan, pilih Supplier `Kontan`, isi Jumlah Dipesan `10`, Tanggal Pesan dan No. Referensi `REF-QC-1`. Simpan. | Baris barang itu berubah dari merah "Belum dipesan" menjadi hijau "Dipesan tgl ... - REF-QC-1". | | |
+| ROP-04 | Terima barang itu lewat Penerimaan Barang Jml `10` (sama dengan Jumlah Dipesan), Konfirmasi. Lihat Beranda. | Catatan pesanan tertutup otomatis karena jumlah diterima memenuhi jumlah dipesan. Bila stok masih di/bawah titik, barang tetap di tabel, dengan status kembali "Belum dipesan" (merah). | | |
 | ROP-05 | Buat barang dengan Titik Pesan Ulang `0` dan stok 0. | Tidak ada peringatan untuk barang itu (0 = tanpa peringatan). | | |
 | ROP-06 | Pada barang berkedaluwarsa yang punya batch sudah lewat (Cairan Pembersih Mesin 5L), bandingkan Stok dan Stok Tersedia. | Stok tersedia tidak menghitung batch yang sudah kedaluwarsa. Status PESAN ULANG dihitung dari stok tersedia, jadi barang bisa PESAN ULANG walau rak masih berisi stok kedaluwarsa. | | |
 | ROP-07 | Ubah Titik Pesan Ulang barang uji menjadi lebih besar dari stoknya. Buka Beranda dan grid Barang. | Barang masuk daftar peringatan dan berstatus PESAN ULANG (merah muda). | | |
 | ROP-08 | Sebagai `entry`, lihat Beranda. | Tabel peringatan tampil, kotak Nilai stok tidak tampil. | | |
+| ROP-09 | Catat pesanan baru untuk barang yang menipis, Jumlah Dipesan `10`. Terima hanya `4` lewat Penerimaan Barang, Konfirmasi (pilih barang yang Titik Pesan Ulang-nya cukup tinggi supaya tetap tampil di tabel). Lihat Beranda. | Status menjadi kuning "Diterima sebagian tgl · ref". Keterangan memuat "Diterima sejak dipesan: 4 dari 10". Pesanan tetap terbuka. | | |
+| ROP-10 | Pada pesanan ROP-09 tekan **Tutup Pesanan**, isi alasan `supplier tidak kirim sisanya`, lalu tekan Tutup Pesanan di jendela itu. | Pesanan tertutup (tidak bisa dibuka lagi). Status kembali "Belum dipesan" bila stok masih menipis. Penerimaan 4 tadi tetap tercatat. Anda bisa Catat Pemesanan lagi. | | |
+| ROP-11 | Pada Catat Pemesanan isi Jumlah Dipesan `0`, lalu ulangi dengan Tanggal Pesan besok. Simpan. | Keduanya ditolak dengan pesan merah ("Jumlah dipesan harus lebih dari 0." untuk jumlah 0). Pesanan tidak tercatat. | | |
 
 ## 11. Satuan dan konversi (SAT)
 
-Peran: Supervisor. Data Entry tidak punya menu Satuan, tetapi boleh mengisi konversi lewat jendela di dokumen.
+Peran: Supervisor. Data Entry tidak punya menu Satuan, tetapi boleh mengisi faktor satuan lewat jendela di dokumen.
 
 | No | Langkah | Hasil yang diharapkan | Lulus/Gagal | Catatan |
 |---|---|---|---|---|
@@ -242,7 +251,7 @@ Peran: Supervisor. Data Entry tidak punya menu Satuan, tetapi boleh mengisi konv
 | SAT-06 | Tambah konversi dengan Faktor `0`. | Ditolak. | | |
 | SAT-07 | Terima barang uji (`pcs`) dengan satuan `lusin` Jml 2. Konfirmasi. | Stok barang uji bertambah 24 pcs. | | |
 | SAT-08 | Nonaktifkan satuan `lusin`. Buat barang baru dan lihat pilihan Satuan. | `lusin` tidak muncul di pilihan untuk barang baru. Barang lama yang sudah memakainya tidak rusak. | | |
-| SAT-09 | Sebagai `entry`, buka Penerimaan dengan satuan yang konversinya belum ada, lalu isi di jendela "Konversi satuan belum ada". | Data Entry bisa menyimpan konversi dari jendela itu tanpa membuka master Satuan. | | |
+| SAT-09 | Sebagai `entry`, buka Penerimaan dengan satuan yang faktornya belum ada untuk barang itu, lalu isi di jendela "Faktor satuan belum ada". | Data Entry bisa menyimpan faktor dari jendela itu tanpa membuka master Satuan. Faktor menjadi Satuan masuk milik barang itu, bukan konversi umum. | | |
 
 ## 12. Pengguna dan grup (PGN)
 
@@ -324,6 +333,18 @@ Peran: Supervisor memulai, meninjau, dan menyetujui. Data Entry mengisi hasil hi
 | OPS-26 | Pada opname Tinjau, lihat kolom **Diinput oleh**, lalu buka Berita Acara. | Kolom menyebut akun penginput tiap baris. Berita Acara memuat baris "Diinput oleh (akun)". Bila Anda sendiri penginput sebagian besar baris, muncul peringatan di layar Tinjau (tetap bisa disetujui). | | |
 | OPS-27 | Pada opname yang sudah Selesai, coba ubah isian, Hitung Ulang, Kembalikan, Batalkan. | Semua ditolak atau tidak tersedia: hasil Selesai permanen. Koreksi lewat Penyesuaian Stok. | | |
 
+## 16. Bantuan di dalam aplikasi (HLP)
+
+Bantuan adalah Panduan Pengguna (Bahasa Indonesia). Bagian per modulnya hanya tampil untuk yang boleh membuka modul itu.
+
+| No | Langkah | Hasil yang diharapkan | Lulus/Gagal | Catatan |
+|---|---|---|---|---|
+| HLP-01 | Sebagai `entry`, tekan F1 (atau menu profil, Bantuan & dukungan). | Panduan Pengguna terbuka. Daftar isi ada di kiri. Bagian 1 "Mulai di sini" memuat peta menu dan urutan hari pertama. Tidak ada bagian Saldo Awal, Penyesuaian Stok, Satuan, Kategori, Lokasi Penyimpanan, atau Keamanan. | | |
+| HLP-02 | Klik setiap tautan di daftar isi. | Halaman bergulir ke bagian yang dimaksud. Tidak ada tautan yang mati. | | |
+| HLP-03 | Buka Bantuan sebagai `supervisor`, lalu sebagai `admin`. | Supervisor melihat juga Saldo Awal, Penyesuaian Stok, Satuan, Kategori, Lokasi Penyimpanan, dan Laporan Opname & Penyesuaian, tanpa bagian Keamanan. Administrator melihat juga Keamanan (Pengguna, Grup, Daftar Modul, Data Contoh). | | |
+| HLP-04 | Buka bagian Mulai di sini, Catat Pemesanan, dan Stok Opname. Lihat gambar (diagram) di dalamnya. | Gambar tampil di dalam halaman, tidak terpotong, tulisannya terbaca. Gambar mengikuti tema terang atau gelap. | | |
+| HLP-05 | Ikuti satu bagian panduan di layar nyata (mis. Catat Pemesanan atau Mulai Opname). Bandingkan nama tombol dan isian. | Nama tombol dan isian di panduan sama dengan di layar. Bila beda, laporkan nama bagian dan tulisan yang berbeda. | | |
+
 ---
 
 ## Hal yang sengaja belum ada
@@ -336,13 +357,15 @@ Fitur berikut **memang belum dibuat** (mungkin ditambah nanti). Jangan dilaporka
 - **Ekspor dan impor data** selain yang ada: tombol Export CSV pada grid dan Cetak pada laporan dan dokumen. Belum ada impor barang/transaksi dari Excel atau CSV.
 - **Barcode** (membaca atau mencetak barcode/QR).
 - **Notifikasi e-mail / WhatsApp untuk jadwal Stok Opname.** Pengingat hanya tampil di Beranda dan lencana menu. Baris selisih besar ditandai kolom Besar dan kotak penyaring, belum diberi warna baris.
+- **Riwayat pesanan ulang.** Belum ada layar untuk melihat daftar, mengubah, atau menghapus catatan Catat Pemesanan. Yang ada hanya Tutup Pesanan. Pesanan yang sudah tertutup hilang dari peringatan Beranda.
+- **Modul Perusahaan** (kop cetak, logo perusahaan). Kop laporan cetak memakai nama Stoku yang tetap.
 - **Notifikasi otomatis** lewat e-mail, WhatsApp, atau push. Peringatan hanya tampil di Beranda dan di form. E-mail (mis. lupa password) hanya ditulis ke `storage/logs/laravel.log` di mesin uji.
 
 ## Di luar cakupan Stoku
 
 Stoku hanya mencatat **pemasukan dan pengeluaran stok**. Hal berikut bukan bagian Stoku dan tidak perlu dilaporkan:
 
-- Pembelian: tidak ada dokumen pesanan pembelian (PO) dan tidak ada satuan beli. Penerimaan Barang adalah pemasukan stok tanpa dokumen pembelian. "Catat Pemesanan" di Beranda hanya catatan satu klik bahwa barang sudah dipesan di luar Stoku.
+- Pembelian: tidak ada dokumen pesanan pembelian (PO) dan tidak ada satuan beli. Penerimaan Barang adalah pemasukan stok tanpa dokumen pembelian. "Catat Pemesanan" di Beranda hanya catatan sederhana (supplier, jumlah, tanggal) bahwa barang sudah dipesan di luar Stoku. Ia tidak punya harga, persetujuan, atau cetakan.
 
 ## Kondisi yang sudah diketahui
 
