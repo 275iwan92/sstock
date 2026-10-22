@@ -33,7 +33,7 @@
             ['key' => 'remaining', 'label' => 'Remaining'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['Dipesan' => 'success', 'Diterima sebagian' => 'warn', 'Selesai' => 'info', 'Ditutup manual' => 'neutral']],
             ['key' => 'first_received', 'label' => 'First Received', 'type' => 'date'],
-            ['key' => 'lead', 'label' => 'Lead Time (days)', 'type' => 'integer'],
+            ['key' => 'lead', 'label' => 'Lead Time (days)'],
             ['key' => 'creator', 'label' => 'Recorded by'],
             ['key' => 'closed', 'label' => 'Closed'],
         ]"

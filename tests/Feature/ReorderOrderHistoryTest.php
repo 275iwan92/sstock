@@ -92,12 +92,28 @@ class ReorderOrderHistoryTest extends TestCase
 
         $rows = collect($this->get(route('reorder-orders.index'))->viewData('rows'));
         $a = $rows->firstWhere('id', $o->id);
-        $this->assertSame(['Diterima sebagian', '12', '18', 4], [$a['status'], $a['received'], $a['remaining'], $a['lead']]);
+        $this->assertSame(['Diterima sebagian', '12', '18', '4'], [$a['status'], $a['received'], $a['remaining'], $a['lead']]);
         $this->assertStringContainsString('30', $a['qty']);
         $m = $rows->firstWhere('id', $manual->id);
         $this->assertSame('Ditutup manual', $m['status']);
         $this->assertStringContainsString('Ditutup: tidak dikirim', $m['closed']);
-        $this->assertNull($m['lead']);
+        $this->assertSame('-', $m['lead']);
+    }
+
+    public function test_lead_time_is_blank_until_the_first_receiving_and_zero_when_received_the_same_day(): void
+    {
+        $ordered = $this->order(10, 3, 'PO-BELUM');
+        $rows = fn () => collect($this->get(route('reorder-orders.index'))->viewData('rows'));
+        $this->assertSame(['Dipesan', '-', null], [$rows()->firstWhere('id', $ordered->id)['status'], $rows()->firstWhere('id', $ordered->id)['lead'], $rows()->firstWhere('id', $ordered->id)['first_received']]);
+        $this->get(route('reorder-orders.show', $ordered))->assertOk()->assertDontSee('0 hari');
+
+        $sameDay = $this->order(5, 0, 'PO-HARIINI');
+        $this->receive(5);   // penerimaan hari ini: memenuhi PO-BELUM (10)? tidak; jumlah masuk FIFO ke yang lebih lama dulu
+        $sameDay = $sameDay->fresh();
+        $this->receive(10);
+        $row = $rows()->firstWhere('id', $sameDay->id);
+        $this->assertSame('0', $row['lead']);
+        $this->get(route('reorder-orders.show', $sameDay))->assertOk()->assertSee('0 hari');
     }
 
     public function test_date_range_filter(): void

@@ -92,7 +92,7 @@ class ReorderOrderController extends Controller
             'id' => $o->id, 'ordered_at' => $o->ordered_at->format('Y-m-d'), 'ref_no' => $o->ref_no ?: '-', 'product' => $o->product->name, 'code' => $o->product->code,
             'supplier' => $o->supplier?->name ?? '-', 'qty' => $num($qty).($qty === null ? '' : ' '.$o->product->unit), 'received' => $num($received), 'remaining' => $num($qty === null ? null : max(0, round($qty - (float) $o->received_qty, 3))),
             'status' => $o->statusLabel(), 'first_received' => $o->first_received_at?->format('Y-m-d'),
-            'lead' => $o->first_received_at ? (int) $o->ordered_at->copy()->startOfDay()->diffInDays($o->first_received_at->copy()->startOfDay()) : null,
+            'lead' => $o->first_received_at ? (string) (int) $o->ordered_at->copy()->startOfDay()->diffInDays($o->first_received_at->copy()->startOfDay()) : '-',   // teks: grid angka menampilkan kosong sebagai 0; '-' = belum ada penerimaan pertama
             'creator' => $o->creator?->name ?? '-',
             'closed' => $o->closed_at ? $o->closed_at->format(self::LABEL_DATE).($manual && $o->note ? ' · '.$o->note : '') : '-', 'note' => $o->note ?: '-', 'active' => true,
             'open' => $o->closed_at === null,

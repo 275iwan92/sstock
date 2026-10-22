@@ -25,7 +25,7 @@
     </x-dl::kpi-row>
     <x-dl::form.row :cols="3">
         <x-dl::field.display label="First Received" :value="raw($order->first_received_at ? Devlib\Locale::d($order->first_received_at) : '-')" />
-        <x-dl::field.display label="Lead Time (days)" :value="raw($row['lead'] === null ? '-' : $row['lead'].' hari (dari tanggal pesan sampai penerimaan pertama)')" />
+        <x-dl::field.display label="Lead Time (days)" :value="raw($row['lead'] === '-' ? '-' : $row['lead'].' hari (dari tanggal pesan sampai penerimaan pertama)')" />
         <x-dl::field.display label="Closed" :value="raw($row['closed'])" />
     </x-dl::form.row>
     <x-dl::form.row>
