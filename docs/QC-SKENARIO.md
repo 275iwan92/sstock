@@ -237,6 +237,20 @@ Yang dibatalkan hanya dokumen yang sudah Terkonfirmasi/Disetujui. Draf tidak dib
 | ROP-10 | Pada pesanan ROP-09 tekan **Tutup Pesanan**, isi alasan `supplier tidak kirim sisanya`, lalu tekan Tutup Pesanan di jendela itu. | Pesanan tertutup (tidak bisa dibuka lagi). Status kembali "Belum dipesan" bila stok masih menipis. Penerimaan 4 tadi tetap tercatat. Anda bisa Catat Pemesanan lagi. | | |
 | ROP-11 | Pada Catat Pemesanan isi Jumlah Dipesan `0`, lalu ulangi dengan Tanggal Pesan besok. Simpan. | Keduanya ditolak dengan pesan merah ("Jumlah dipesan harus lebih dari 0." untuk jumlah 0). Pesanan tidak tercatat. | | |
 
+### Riwayat Pemesanan (ORH)
+
+Menu Transaksi > Riwayat Pemesanan. Lanjutan dari ROP-03 sampai ROP-10 (ada pesanan Dipesan, Diterima sebagian, dan Ditutup manual).
+
+| No | Langkah | Hasil yang diharapkan | Lulus/Gagal | Catatan |
+|---|---|---|---|---|
+| ORH-01 | Sebagai `entry`, buka Transaksi > Riwayat Pemesanan. | Grid memuat semua pesanan dengan kolom Tanggal Pesan, No. Referensi Pemesanan, Barang, Supplier, Jumlah Dipesan, Diterima, Sisa, Status, Pertama Diterima, Lead Time (hari), Dicatat oleh, Ditutup. Tidak ada harga atau nilai uang. | | |
+| ORH-02 | Klik kotak **Terbuka**, **Selesai**, **Ditutup manual**, lalu **Semua**. | Grid tersaring menurut status. Terbuka = Dipesan dan Diterima sebagian. Pesanan Selesai dan Ditutup manual yang hilang dari Beranda ada di sini. | | |
+| ORH-03 | Atur Dari tanggal / Sampai tanggal, Terapkan. Pakai Saring untuk satu Supplier dan kotak Cari. | Hanya pesanan dalam rentang tanggal pesan, supplier, dan kata cari itu yang tampil. Kosongkan tanggal: semua tampil. | | |
+| ORH-04 | Klik 2x pesanan berstatus Diterima sebagian. | Detail: data pesanan, kotak Jumlah Dipesan / Diterima / Sisa, dan tabel Penerimaan yang dialokasikan (nomor RCV, tanggal, jumlah) yang jumlahnya sama dengan Diterima. Tombol Tutup Pesanan ada. | | |
+| ORH-05 | Pada detail itu tekan Tutup Pesanan, isi alasan, tekan Tutup Pesanan di jendela. | Kembali ke detail yang sama. Status Ditutup manual, kolom Ditutup memuat tanggal dan alasan, tombol Tutup Pesanan hilang. | | |
+| ORH-06 | Buka detail pesanan Ditutup manual dan pesanan Selesai. | Ditutup manual: ada keterangan bahwa penerimaan tidak dirinci. Selesai: tabel penerimaan terisi dan tidak ada tombol Tutup Pesanan. | | |
+| ORH-07 | Beri Grup hak **Hanya baca (RO)** untuk Riwayat Pemesanan dan masuk sebagai anggotanya. Buka detail pesanan terbuka. | Grid dan detail terbuka, tetapi tombol Tutup Pesanan tidak tampil. | | |
+
 ## 11. Satuan dan konversi (SAT)
 
 Peran: Supervisor. Data Entry tidak punya menu Satuan, tetapi boleh mengisi faktor satuan lewat jendela di dokumen.
@@ -375,7 +389,7 @@ Fitur berikut **memang belum dibuat** (mungkin ditambah nanti). Jangan dilaporka
 - **Ekspor dan impor data** selain yang ada: tombol Export CSV pada grid dan Cetak pada laporan dan dokumen. Belum ada impor barang/transaksi dari Excel atau CSV.
 - **Barcode** (membaca atau mencetak barcode/QR).
 - **Notifikasi e-mail / WhatsApp untuk jadwal Stok Opname.** Pengingat hanya tampil di Beranda dan lencana menu. Baris selisih besar ditandai kolom Besar dan kotak penyaring, belum diberi warna baris.
-- **Riwayat pesanan ulang.** Belum ada layar untuk melihat daftar, mengubah, atau menghapus catatan Catat Pemesanan. Yang ada hanya Tutup Pesanan. Pesanan yang sudah tertutup hilang dari peringatan Beranda.
+- **Mengubah atau menghapus catatan pesanan.** Riwayat Pemesanan hanya membaca dan punya Tutup Pesanan. Salah catat: tutup pesanan, lalu catat yang baru.
 - **Logo hitam-putih khusus Hemat Tinta** dan kop kedua untuk dokumen ber-PPN. Satu logo dan satu kop dipakai di semua cetakan.
 - **Notifikasi otomatis** lewat e-mail, WhatsApp, atau push. Peringatan hanya tampil di Beranda dan di form. E-mail (mis. lupa password) hanya ditulis ke `storage/logs/laravel.log` di mesin uji.
 

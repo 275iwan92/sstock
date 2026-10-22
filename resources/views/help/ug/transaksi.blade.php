@@ -16,6 +16,7 @@
         @if ($can('ISS'))<tr><td><a href="#t-iss">Pengeluaran Barang</a></td><td>Barang keluar ke penerima</td><td>Data Entry, Supervisor</td></tr>@endif
         @if ($can('ADJ'))<tr><td><a href="#t-adj">Penyesuaian Stok</a></td><td>Mengoreksi stok barang per barang, untuk temuan di luar jadwal</td><td><span class="g-role">hanya Supervisor</span></td></tr>@endif
         @if ($can('SO'))<tr><td><a href="#t-so">Stok Opname</a></td><td>Hitung fisik rutin untuk banyak barang sekaligus</td><td>Data Entry (mengisi hasil), Supervisor (memulai, menyetujui)</td></tr>@endif
+        @if ($can('ORD'))<tr><td><a href="#t-ord">Riwayat Pemesanan</a></td><td>Daftar semua catatan pesanan ke supplier, termasuk yang sudah tertutup</td><td>Data Entry, Supervisor</td></tr>@endif
     </tbody>
 </table>
 <p class="g-note">Sebuah Stok Opname yang berjalan dengan kunci transaksi menolak Konfirmasi dan Setujui.@if ($can('SO')) Lihat <a href="#t-so">Stok Opname</a>.@endif</p>
@@ -246,6 +247,40 @@
     <li><b>Setujui Opname ditolak: alasan wajib.</b> Isi kolom Alasan pada baris yang bertanda Besar.</li>
     <li><b>Penerimaan atau Pengeluaran ditolak: transaksi dikunci.</b> Tunggu opname selesai, atau minta Supervisor menekan <b>Buka Kunci</b>.</li>
     <li><b>Tombol Mulai Opname tidak ada.</b> Tombol itu hanya untuk Supervisor.</li>
+</ul>
+@endif
+
+@if ($can('ORD'))
+<h3 id="t-ord">Riwayat Pemesanan</h3>
+<h4>Untuk apa</h4>
+<p>Melihat semua catatan <a href="#catat-pemesanan">Catat Pemesanan</a>, termasuk yang sudah tertutup. Di Beranda hanya pesanan yang masih terbuka tampil. Di sini Anda juga melihat pesanan <b>Selesai</b> dan <b>Ditutup manual</b>, dan penerimaan mana yang memenuhinya. Layar ini tidak memuat harga atau nilai uang.</p>
+<h4>Siapa yang bisa</h4>
+<p>Data Entry dan Supervisor. Tombol <b>Tutup Pesanan</b> hanya tampil bagi yang boleh menulis modul ini. Grup dengan hak <b>Hanya baca (RO)</b> hanya melihat.</p>
+<h4>Langkah</h4>
+<ol class="g-steps">
+    <li>Buka <b>Transaksi</b>, lalu <b>Riwayat Pemesanan</b>.</li>
+    <li>Pilih kotak status di atas grid: <b>Semua</b>, <b>Terbuka</b> (Dipesan dan Diterima sebagian), <b>Selesai</b>, atau <b>Ditutup manual</b>.</li>
+    <li>Atur <b>Dari tanggal</b> dan <b>Sampai tanggal</b> (tanggal pesan), lalu tekan <b>Terapkan</b>. Kosong berarti semua tanggal. Pakai <b>Saring</b> untuk memilih satu <b>Supplier</b>, dan kotak <b>Cari</b> untuk barang, supplier, atau referensi.</li>
+    <li>Klik 2x pada baris, atau tekan ikon <b>Buka</b>, untuk melihat detail pesanan.</li>
+    <li>Di detail, lihat tabel <b>Penerimaan yang dialokasikan</b>: nomor dokumen Penerimaan, tanggal, dan jumlahnya.</li>
+    <li>Pesanan masih terbuka dan supplier tidak akan mengirim sisanya? Tekan <b>Tutup Pesanan</b>, isi alasan bila perlu, lalu tekan <b>Tutup Pesanan</b> di jendela itu.</li>
+</ol>
+<h4>Yang perlu diperhatikan</h4>
+<ul class="g-list">
+    <li>Kolom grid: <b>Tanggal Pesan</b>, <b>No. Referensi Pemesanan</b>, <b>Barang</b>, <b>Supplier</b>, <b>Jumlah Dipesan</b> (satuan stok), <b>Diterima</b>, <b>Sisa</b>, <b>Status</b>, <b>Pertama Diterima</b>, <b>Lead Time (hari)</b>, <b>Dicatat oleh</b>, dan <b>Ditutup</b>.</li>
+    <li><b>Status</b> berwarna sama dengan Beranda: hijau <b>Dipesan</b>, kuning <b>Diterima sebagian</b>. Ditambah biru <b>Selesai</b> (jumlah dipesan sudah terpenuhi) dan abu-abu <b>Ditutup manual</b>.</li>
+    <li><b>Lead Time (hari)</b> adalah lama dari tanggal pesan sampai penerimaan pertama. Kolomnya kosong bila belum ada penerimaan.</li>
+    <li>Kolom <b>Ditutup</b> memuat tanggal penutupan. Pesanan yang ditutup manual juga memuat alasannya.</li>
+    <li>Catatan lama yang dibuat sebelum ada jumlah tampil dengan tanda &quot;-&quot; pada <b>Jumlah Dipesan</b>, <b>Diterima</b>, dan <b>Sisa</b>. Ini normal.</li>
+    <li>Pesanan yang ditutup manual tidak dirinci penerimaannya. Detailnya hanya menunjukkan jumlah yang tercatat sampai pesanan ditutup.</li>
+    <li>Pesanan yang ditutup tidak bisa dibuka lagi. Anda bisa mencatat pesanan baru dari Beranda.</li>
+    <li>Layar ini hanya membaca. Belum ada tombol untuk mengubah atau menghapus catatan pesanan.</li>
+</ul>
+<h4>Masalah umum</h4>
+<ul class="g-list">
+    <li><b>Pesanan tidak ada di daftar.</b> Periksa tanggal pesan dan saringan. Tekan <b>Semua</b> pada kotak status.</li>
+    <li><b>Tombol Tutup Pesanan tidak ada.</b> Pesanannya sudah tertutup, atau grup Anda hanya boleh membaca.</li>
+    <li><b>Penerimaan tidak muncul di tabel detail.</b> Penerimaan itu Draf, dibatalkan, atau tanggalnya sebelum tanggal pesan.</li>
 </ul>
 @endif
 

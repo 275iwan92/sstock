@@ -31,6 +31,7 @@
         <tr><td>PO</td><td>Surat pesanan resmi ke supplier. Catat Pemesanan di Stoku bukan PO.</td></tr>
         <tr><td>RO dan RW</td><td>Hak akses grup. RO (hanya baca) boleh membuka layar. RW (baca dan tulis) boleh juga menyimpan.</td></tr>
         <tr><td>Saldo Awal</td><td>Dokumen yang memasukkan stok yang sudah ada saat mulai memakai Stoku. Hanya Supervisor, hanya untuk barang yang belum punya pergerakan stok. Tidak wajib.</td></tr>
+        <tr><td>Pesanan terbuka</td><td>Catatan pesanan yang jumlahnya belum terpenuhi dan belum ditutup. Statusnya Dipesan atau Diterima sebagian.</td></tr>
         <tr><td>Satuan masuk</td><td>Kemasan barang saat diterima, misalnya dus berisi 12 pcs. Dikonversi ke satuan stok di Penerimaan Barang.</td></tr>
         <tr><td>Satuan stok</td><td>Satuan yang dipakai untuk menyimpan stok barang, misalnya pcs. Pengeluaran dan Penyesuaian selalu memakainya.</td></tr>
         <tr><td>Selisih</td><td>Hasil hitung fisik dikurangi stok di sistem. Plus berarti lebih. Minus berarti kurang.</td></tr>

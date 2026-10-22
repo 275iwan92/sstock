@@ -7,7 +7,7 @@ Fitur utama:
 - Master: Barang (produk dan batch per tanggal kedaluwarsa), Supplier (termasuk Kontan), Satuan dan satuan masuk per barang, Kategori, Lokasi, Departemen, Penerima, dan Perusahaan (nama, alamat, logo untuk kop semua cetakan). Tombol plus untuk menambah master langsung dari dropdown.
 - Transaksi: Saldo Awal, Penerimaan Barang, Pengeluaran Barang (FEFO), Penyesuaian Stok (persetujuan Supervisor), pembatalan dengan dokumen pembalik otomatis.
 - **Stok Opname**: mulai (snapshot stok per batch, per cakupan Semua / Kategori / Lokasi), cetak Lembar Hitung, input hasil hitung massal dengan simpan otomatis, hitung buta, kunci transaksi selama opname, tinjau selisih (jumlah, persen, nilai, alasan wajib di atas ambang), setujui (satu Penyesuaian otomatis), cetak Berita Acara, serta jadwal opname dengan pengingat di Beranda.
-- Pesan ulang: titik pesan ulang per produk, Catat Pemesanan, lead time.
+- Pesan ulang: titik pesan ulang per produk, Catat Pemesanan, Riwayat Pemesanan (semua status, penerimaan yang memenuhi pesanan), lead time.
 - Laporan: Kartu Stok, Ringkasan Stok, Penerimaan, Pengeluaran, Kedaluwarsa, Opname & Penyesuaian. Harga dan nilai hanya untuk Supervisor.
 - Keamanan: peran, grup dengan akses RW / RO per modul, tanpa "ingat saya", keluar otomatis setelah 30 menit tanpa aktivitas (dengan peringatan 2 menit sebelumnya), dan akun nonaktif langsung keluar.
 - Bantuan di dalam aplikasi: Panduan Pengguna (Indonesia, mulai dari "Mulai di sini") dan Panduan Teknis (English, Administrator).

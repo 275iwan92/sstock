@@ -27,6 +27,7 @@
         @if ($can('ISS'))<tr><td><a href="#t-iss">Pengeluaran Barang</a></td><td>Mencatat barang yang keluar ke penerima</td><td>Setiap barang keluar</td></tr>@endif
         @if ($can('ADJ'))<tr><td><a href="#t-adj">Penyesuaian Stok</a></td><td>Mencocokkan stok sistem dengan hitungan fisik, satu per satu</td><td>Ada temuan di luar jadwal, misalnya salah catat</td></tr>@endif
         @if ($can('SO'))<tr><td><a href="#t-so">Stok Opname</a></td><td>Menghitung fisik banyak barang sekaligus</td><td>Rutin, mingguan atau bulanan</td></tr>@endif
+        @if ($can('ORD'))<tr><td><a href="#t-ord">Riwayat Pemesanan</a></td><td>Melihat semua catatan pesanan ke supplier, termasuk yang tertutup</td><td>Memeriksa pesanan yang belum datang, atau menutup pesanan</td></tr>@endif
         @if ($can('R-CARD') || $can('R-SUM') || $can('R-IN') || $can('R-OUT') || $can('R-EXP') || $can('R-ADJ'))<tr><td><a href="#laporan">Laporan</a></td><td>Membaca stok, riwayat, penerimaan, pengeluaran, dan barang hampir kedaluwarsa</td><td>Kapan saja Anda ingin tahu keadaan stok</td></tr>@endif
         <tr><td><a href="#beranda">Beranda</a></td><td>Peringatan stok menipis, barang hampir kedaluwarsa, dan jadwal Stok Opname</td><td>Setiap kali Anda masuk</td></tr>
     </tbody>

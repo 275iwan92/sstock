@@ -15,7 +15,7 @@
     $can = fn (string $code) => $user->canAccess($code);
     $sup = $user->isSupervisor();
     $anyMaster = collect(['ITM', 'SUP', 'DEP', 'RCP', 'UOM', 'CAT', 'LOC', 'CMP'])->contains($can);
-    $anyTrx = collect(['OPN', 'RCV', 'ISS', 'ADJ', 'SO'])->contains($can);
+    $anyTrx = collect(['OPN', 'RCV', 'ISS', 'ADJ', 'SO', 'ORD'])->contains($can);
     $anyRpt = collect(['R-CARD', 'R-SUM', 'R-IN', 'R-OUT', 'R-EXP', 'R-ADJ'])->contains($can);
     $anySec = collect(['USR', 'GRP', 'SMP', 'MOD'])->contains($can);
 @endphp
@@ -54,6 +54,7 @@
             @if ($can('ISS'))<a class="g-toc-sub" href="#t-iss">Pengeluaran Barang</a>@endif
             @if ($can('ADJ'))<a class="g-toc-sub" href="#t-adj">Penyesuaian Stok</a>@endif
             @if ($can('SO'))<a class="g-toc-sub" href="#t-so">Stok Opname</a>@endif
+            @if ($can('ORD'))<a class="g-toc-sub" href="#t-ord">Riwayat Pemesanan</a>@endif
             <a class="g-toc-sub" href="#t-batal">Membatalkan dokumen</a>
         @endif
         @if ($anyRpt)
