@@ -161,7 +161,7 @@ Perintah ini aman dijalankan ulang. Ia tidak menimpa data yang sudah ada. Urutan
 1. Membuat database `sstock` dan user MySQL (bila belum ada). Bila sandi admin tidak ada di `.env`, ia menanyakannya (tekan Enter bila `root` tanpa sandi). Di langkah 3 Anda mungkin ditanya sekali lagi.
 2. Menjalankan migrasi (membuat semua tabel).
 3. Mencoba menyalin data wilayah dari database proyek lain. **Di mesin penguji ini hampir pasti gagal, dan itu tidak apa-apa.** Anda akan melihat peringatan "Data wilayah belum disalin". Lihat [bagian 4](#4-wilayah-opsional).
-4. Mengisi data contoh, tetapi hanya bila belum ada satu pun pengguna. Yang dibuat: 3 akun uji ([bagian 3](#3-akun-uji)), 3 kategori (ATK, SPR, TLS), 3 supplier, puluhan barang beserta lokasi rak, 5 departemen, 6 penerima, dan riwayat transaksi contoh (saldo awal, penerimaan, pengeluaran, penyesuaian). Sebagian barang punya batch kedaluwarsa.
+4. Mengisi data contoh, tetapi hanya bila belum ada satu pun pengguna. Yang dibuat: 3 akun uji ([bagian 3](#3-akun-uji)), 3 kategori (ATK, SPR, TLS), 3 supplier contoh (ditambah supplier sistem **Kontan** untuk pembelian tunai, yang selalu ada dari migrasi dan tidak bisa dinonaktifkan, diganti nama, atau dihapus), puluhan barang beserta lokasi rak, 5 departemen, 6 penerima, dan riwayat transaksi contoh (saldo awal, penerimaan, pengeluaran, penyesuaian). Sebagian barang punya batch kedaluwarsa.
 
 Pesan terakhir yang benar: `Instalasi selesai.`
 

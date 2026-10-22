@@ -255,6 +255,7 @@
             <li>Pada <b>Kecamatan, Kota / Kabupaten, Provinsi, Negara</b> ketik kecamatan, kota, atau kode pos lalu pilih dari daftar; satu pilihan mengisi kecamatan, kota, provinsi, negara, dan kode pos. Wilayah wajib dipilih dari daftar (minimal sampai kota) bila data wilayah sudah ada; bila daftar wilayah masih kosong, isian ini boleh dikosongkan.</li>
             <li>Tekan <b>Simpan</b>.</li>
         </ol>
+        <p class="g-note"><b>Kontan</b> adalah supplier sistem untuk pembelian tunai atau tanpa supplier tetap. Ia selalu ada di urutan pertama pilihan Supplier, dan tidak bisa dinonaktifkan, diganti nama, atau dihapus. Dari pilihan Supplier di Penerimaan atau Catat Pemesanan, tombol <b>+</b> menambah supplier baru hanya dengan nama (telepon dan kontak opsional); kodenya dibuat otomatis (SUP-001, SUP-002, ...), dan alamat atau wilayah bisa dilengkapi nanti di menu ini.</p>
         @endif
 
         @if ($can('DEP') || $can('RCP'))
@@ -263,7 +264,7 @@
         <ul class="g-list">
             @if ($can('DEP'))<li><b>Departemen:</b> isi <b>Kode Departemen</b> dan <b>Nama Departemen</b>.</li>@endif
             @if ($can('RCP'))<li><b>Penerima:</b> isi <b>Nama Penerima</b> dan (opsional) <b>Departemen Bawaan</b>. Departemen bawaan dipakai di dokumen bila Anda tidak memilih departemen.</li>@endif
-            <li><b>Tambah cepat dari dokumen:</b> saat mengisi Penerimaan, Pengeluaran, atau Penyesuaian, buka pilihan <b>Penerima</b> atau <b>Departemen</b> dan pilih baris <b>Penerima baru</b> / <b>Departemen baru</b> di bagian atas. Kotak kecil terbuka; isi nama lalu <b>Simpan</b>, dan pilihan langsung terisi tanpa meninggalkan dokumen.</li>
+            <li><b>Tambah cepat dari pilihan:</b> pilihan <b>Supplier</b>, <b>Penerima</b>, <b>Departemen</b>, <b>Kategori</b>, <b>Satuan</b>, dan <b>Lokasi</b> di dokumen dan form barang punya tombol <b>+</b> di sebelah kanan. Tekan, isi kotak kecil yang terbuka, lalu <b>Simpan</b>: datanya masuk ke master dan langsung terpilih tanpa meninggalkan layar. Tombol hanya tampil bila Anda boleh mengelola master itu (Supplier, Penerima, Departemen: Data Entry dan Supervisor; Kategori, Satuan, Lokasi: Supervisor), dan tidak tampil di dokumen yang sudah dikonfirmasi. Nama yang sudah ada ditolak (kecuali Penerima).</li>
         </ul>
         @endif
 
@@ -320,7 +321,7 @@
         <h3 id="t-rcv">Penerimaan Barang</h3>
         <ol class="g-steps">
             <li>Buka <b>Penerimaan Barang</b>, tekan <b>+ Data Baru</b>.</li>
-            <li>Pilih <b>Supplier</b> (wajib). Isi <b>No. Referensi (surat jalan / PO / faktur)</b> bila ada. <b>Penerima</b> dan <b>Departemen</b> opsional.</li>
+            <li>Pilih <b>Supplier</b> (wajib; <b>Kontan</b> untuk pembelian tunai, atau tekan <b>+</b> untuk supplier baru). Isi <b>No. Referensi (surat jalan / PO / faktur)</b> bila ada. <b>Penerima</b> dan <b>Departemen</b> opsional.</li>
             <li>Tekan <b>+ Tambah Barang</b>, pilih barang, lalu isi <b>Tanggal Kedaluwarsa</b> (wajib untuk barang berkedaluwarsa; barang lain mengabaikannya), <b>Jml</b>, <b>Satuan</b>, dan <b>Harga Beli / Satuan</b>. Satu kedatangan biasanya satu tanggal, jadi cukup satu baris. Kolom <b>Satuan</b> menawarkan satuan stok barang itu dan <b>Satuan masuk</b>-nya (mis. dus = 12); satuan lain ada di grup <b>Satuan lain</b>. Setelah mengisi Jml dan Satuan, kolom <b>= Dalam satuan stok</b> langsung menghitung hasilnya (mis. 5 dus = 60 pcs) sebelum Konfirmasi; <b>Subtotal</b> juga terisi otomatis. Yang Anda ketik (jumlah, satuan, harga per satuan) tercatat di dokumen, sedangkan stok dan biaya rata-rata memakai satuan stok. Bila satuan yang dipilih belum punya faktor (tidak ada di Satuan masuk barang itu maupun di konversi umum), saat <b>Simpan</b> / <b>Konfirmasi</b> muncul jendela <b>Faktor satuan belum ada</b>: isi angka pada "1 dus = ... pcs" untuk tiap barang, tekan <b>Simpan Faktor</b>, lalu tekan Simpan / Konfirmasi lagi. Faktor itu tersimpan sebagai Satuan masuk milik <b>barang tersebut</b> saja.</li>
             <li>Isi <b>Catatan</b> bila perlu, tekan <b>Simpan</b> (menjadi Draf), periksa, lalu <b>Konfirmasi</b>.</li>
         </ol>
