@@ -156,6 +156,9 @@ final class Indonesian
         'Open Stok Opname' => 'Buka Stok Opname', 'Opname Frequency' => 'Frekuensi Opname', 'Weekday (weekly)' => 'Hari (mingguan)', 'Day of Month (monthly)' => 'Tanggal (bulanan)', 'Save Schedule' => 'Simpan Jadwal', 'Lock' => 'Kunci',
         'Entered By' => 'Diinput oleh',
 
+        // Perusahaan (kop cetakan)
+        'Company' => 'Perusahaan', 'Company Name' => 'Nama Perusahaan', 'Legal Entity Name' => 'Nama PT / CV', 'Tax ID (NPWP)' => 'NPWP', 'Phone' => 'Telepon', 'Company Address' => 'Alamat', 'Print Header Style' => 'Tampilan kop',
+
         // Login / umum
         'Supervisor Gudang' => 'Supervisor Gudang',
     ];

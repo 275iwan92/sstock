@@ -9,6 +9,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\HomeController;
@@ -37,6 +38,9 @@ Route::middleware('guest')->group(function () {
     Route::get('reset-password/{token}', [PasswordResetController::class, 'reset'])->name('password.reset');
     Route::post('reset-password', [PasswordResetController::class, 'update'])->middleware('throttle:5,1')->name('password.update');
 });
+
+// Logo perusahaan di kop cetakan: tanpa login karena cetakan tautan publik (doc-share) memuatnya.
+Route::get('company/logo', [CompanyController::class, 'logo'])->name('company.logo');
 
 Route::middleware(['auth', 'active', 'module'])->group(function () {
     Route::get('/', HomeController::class)->name('home');
@@ -86,6 +90,10 @@ Route::middleware(['auth', 'active', 'module'])->group(function () {
         Route::get('units/{unit}', [UnitController::class, 'show'])->name('units.show');
         Route::put('units/{unit}', [UnitController::class, 'update'])->name('units.update');
         Route::post('units/{unit}/toggle', [UnitController::class, 'toggle'])->name('units.toggle');
+
+        // Perusahaan (kop cetakan): satu formulir, hanya Supervisor.
+        Route::get('company', [CompanyController::class, 'edit'])->name('company.edit');
+        Route::put('company', [CompanyController::class, 'update'])->name('company.update');
 
         foreach (['categories' => [CategoryController::class, 'category'], 'locations' => [LocationController::class, 'location']] as $path => [$controller, $param]) {
             Route::get($path, [$controller, 'index'])->name("{$path}.index");

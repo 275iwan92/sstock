@@ -35,6 +35,7 @@ final class Modules
             'UOM' => ['MST', 'Satuan', 'fa-solid fa-ruler', 'grid', 'units.index', 'supervisor', ['units.']],
             'CAT' => ['MST', 'Kategori', 'fa-solid fa-tags', 'grid', 'categories.index', 'supervisor', ['categories.']],
             'LOC' => ['MST', 'Lokasi Penyimpanan', 'fa-solid fa-warehouse', 'grid', 'locations.index', 'supervisor', ['locations.']],
+            'CMP' => ['MST', 'Perusahaan', 'fa-solid fa-city', 'form', 'company.edit', 'supervisor', ['company.edit', 'company.update']],
             'OPN' => ['TRX', 'Saldo Awal', 'fa-solid fa-flag-checkered', 'grid', ['docs.index', 'opening'], 'supervisor', []],
             'RCV' => ['TRX', 'Penerimaan Barang', 'fa-solid fa-truck-ramp-box', 'grid', ['docs.index', 'receiving'], 'entry', []],
             'ISS' => ['TRX', 'Pengeluaran Barang', 'fa-solid fa-dolly', 'grid', ['docs.index', 'issuance'], 'entry', []],
