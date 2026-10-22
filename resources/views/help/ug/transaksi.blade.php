@@ -179,7 +179,7 @@
             <li>Tidak ada batch berstok dalam cakupan itu? Stoku menolak dan meminta cakupan lain.</li>
         </ul>
     </li>
-    <li><b>Cetak Lembar Hitung.</b> Tekan <b>Cetak Lembar Hitung</b>. Lembar A4 dikelompokkan per Lokasi, lalu kode. Kolom <b>Hasil Hitung</b>, <b>Penghitung</b>, dan <b>Catatan</b> dikosongkan untuk ditulis tangan. Stok sistem hanya tercetak bila opname tidak buta. Data Entry dan Supervisor boleh mencetaknya.</li>
+    <li><b>Cetak Lembar Hitung.</b> Tekan <b>Cetak Lembar Hitung</b>. Lembar A4 lanskap ini dikelompokkan per Lokasi, lalu kode. Kolom <b>Hasil Hitung</b>, <b>Penghitung</b>, dan <b>Catatan</b> dikosongkan untuk ditulis tangan. Kolom <b>Stok Sistem</b> hanya tercetak bila opname tidak buta. Di bawahnya ada kotak tanda tangan Penghitung dan Mengetahui (Supervisor). Data Entry dan Supervisor boleh mencetaknya.</li>
     <li><b>Hitung di gudang</b> memakai lembar itu. Tulis <b>0</b> bila barang memang kosong. <b>Kosongkan</b> bila belum dihitung.</li>
     <li><b>Input hasil hitung</b> (Data Entry atau Supervisor). Buka opname dari daftar. Setiap baris adalah satu batch. Isi <b>Hasil Hitung</b> (angka 0 atau lebih, sampai 3 desimal, dalam satuan stok) dan <b>Penghitung</b>. Nama penghitung terakhir diingat untuk baris berikutnya.
         <ul class="g-list">
@@ -202,7 +202,7 @@
     </li>
     <li><b>Setujui Opname</b> <span class="g-role">hanya Supervisor</span>. Stoku memeriksa tiga hal: semua baris sudah final, alasan terisi, dan stok barang yang berselisih belum bergeser sejak titik acuan. Bila semuanya benar, Stoku membuat <b>satu dokumen Penyesuaian Stok</b> (status Disetujui, alasan &quot;Stok Opname SO-...&quot;) berisi baris yang selisihnya tidak nol. Dokumen itu diposting ke stok dan kunci transaksi dilepas. Tidak ada selisih sama sekali? Opname selesai tanpa Penyesuaian.</li>
     <li><b>Kembalikan ke Penghitungan</b> (dengan catatan) mengembalikan opname agar diperbaiki. Stok tidak berubah. Setelah diperbaiki, tekan Selesai Hitung lagi.</li>
-    <li><b>Berita Acara Stok Opname.</b> Tombol <b>Cetak Berita Acara</b> ada sesudah opname Selesai. Sebelum itu ada <b>Pratinjau Berita Acara</b>. Isinya: nomor, tanggal, cakupan, daftar penghitung, ringkasan, baris selisih beserta alasannya, nomor Penyesuaian yang dibuat, dan tiga kotak tanda tangan (Penghitung, Supervisor, Penanggung Jawab Gudang).</li>
+    <li><b>Berita Acara Stok Opname.</b> Tombol <b>Cetak Berita Acara</b> ada sesudah opname Selesai. Sebelum itu ada <b>Pratinjau Berita Acara</b>. Isinya: nomor, tanggal, cakupan, cut-off, ambang selisih, daftar penghitung, ringkasan, baris selisih beserta alasannya, nomor Penyesuaian yang dibuat, dan tiga kotak tanda tangan (Penghitung, Supervisor, Penanggung Jawab Gudang).</li>
 </ol>
 @include('help.diagram', ['name' => 'ug-stok-opname', 'caption' => 'Alur Stok Opname: status dari Mulai sampai Selesai atau Dibatalkan.'])
 <h4>Yang perlu diperhatikan</h4>
