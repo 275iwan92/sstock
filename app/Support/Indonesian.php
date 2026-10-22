@@ -134,6 +134,12 @@ final class Indonesian
         'The department code is created automatically.' => 'Kode departemen dibuat otomatis.',
         'Short, lowercase (pcs, box, kg). Cannot be changed after saving.' => 'Singkat, huruf kecil (pcs, box, kg). Tidak bisa diubah setelah disimpan.',
 
+        // Stok Opname (daftar, mulai, kepala layar)
+        'Start Count' => 'Mulai Opname', 'Search count, scope...' => 'Cari opname, cakupan...', 'Count Date' => 'Tanggal Opname', 'Filled' => 'Terisi', 'Started by' => 'Dimulai oleh',
+        'Counting' => 'Sedang dihitung', 'Review' => 'Tinjau', 'Done' => 'Selesai', 'Difference Threshold (%)' => 'Ambang Selisih (%)', 'Difference Threshold' => 'Ambang Selisih',
+        'Category (for scope per Category)' => 'Kategori (untuk cakupan per Kategori)', 'Location (for scope per Location)' => 'Lokasi (untuk cakupan per Lokasi)',
+        'Blind count' => 'Hitung buta', 'Lock transactions during count' => 'Kunci transaksi selama opname', 'Yes' => 'Ya', 'No' => 'Tidak', 'Unlock' => 'Buka Kunci', 'Cancel Count' => 'Batalkan Opname', 'Transaction Lock' => 'Kunci Transaksi',
+
         // Login / umum
         'Supervisor Gudang' => 'Supervisor Gudang',
     ];

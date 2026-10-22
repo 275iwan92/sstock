@@ -20,6 +20,7 @@ use App\Http\Controllers\RecipientController;
 use App\Http\Controllers\ReorderOrderController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SampleDataController;
+use App\Http\Controllers\StockCountController;
 use App\Http\Controllers\StockDocumentController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UnitController;
@@ -124,6 +125,18 @@ Route::middleware(['auth', 'active', 'module'])->group(function () {
         Route::get('{document}/print', 'print')->name('docs.print');
         Route::get('{document}', 'show')->name('docs.show');
         Route::put('{document}', 'update')->name('docs.update');
+    });
+
+    // Stok Opname: modul SO (lihat, isi hasil hitung, cetak lembar = akses modul; Data Entry boleh). Mulai, tinjau, setujui, batalkan, buka kunci = Supervisor.
+    Route::prefix('stock-counts')->controller(StockCountController::class)->group(function () {
+        Route::get('/', 'index')->name('stock-counts.index');
+        Route::middleware('supervisor')->group(function () {
+            Route::get('create', 'create')->name('stock-counts.create');
+            Route::post('/', 'store')->name('stock-counts.store');
+            Route::post('{count}/cancel', 'cancel')->name('stock-counts.cancel');
+            Route::post('{count}/unlock', 'unlock')->name('stock-counts.unlock');
+        });
+        Route::get('{count}', 'show')->name('stock-counts.show');
     });
 
     Route::prefix('reports')->controller(ReportController::class)->group(function () {
