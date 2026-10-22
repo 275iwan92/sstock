@@ -1,8 +1,8 @@
 {{-- REMARK
  Tujuan       : Layar satu Stok Opname: kepala (nomor, status, ringkasan, aksi) lalu isinya menurut status.
  Sumber hulu  : StockCountController@show.
- Input        : count, sup, summary.
- Output       : stock-counts.header, stock-counts.entry.
+ Input        : count, sup, summary, review (Supervisor di luar status Sedang dihitung).
+ Output       : stock-counts.header, lalu stock-counts.review (Supervisor) atau stock-counts.entry.
  Dipakai oleh : route stock-counts.show.
  Status       : Aktif.
 --}}
@@ -10,5 +10,5 @@
 @section('body')
     @include('partials.flash')
     @include('stock-counts.header')
-    @include('stock-counts.entry')
+    @include($review ? 'stock-counts.review' : 'stock-counts.entry')
 @endsection

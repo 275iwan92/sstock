@@ -66,12 +66,16 @@ class StockCountController extends Controller
         return redirect()->route('stock-counts.show', $count)->with('status', "{$count->doc_no} dimulai: {$count->lines()->count()} batch masuk lembar hitung. Stok belum berubah sebelum opname disetujui.");
     }
 
+    // Supervisor meninjau (Tinjau) dan membaca hasilnya (Selesai / Dibatalkan); selain itu lembar input (hanya bisa diisi saat Sedang dihitung).
     public function show(Request $request, StockCount $count)
     {
-        return view('stock-counts.show', [
-            'count' => $count->load(['creator', 'unlocker', 'adjustmentDocument']), 'sup' => $request->user()->isSupervisor(), 'summary' => $this->counts->summary($count),
-            'entryRows' => $this->counts->entryRows($count),
-        ]);
+        $sup = $request->user()->isSupervisor();
+        $review = $sup && $count->status !== 'counting';
+        $data = ['count' => $count->load(['creator', 'unlocker', 'adjustmentDocument']), 'sup' => $sup, 'summary' => $this->counts->summary($count), 'review' => $review];
+
+        return view('stock-counts.show', $data + ($review
+            ? ['reviewRows' => $this->counts->reviewRows($count, true), 'moved' => $count->status === 'review' ? $this->counts->movedLines($count) : collect()]
+            : ['entryRows' => $this->counts->entryRows($count)]));
     }
 
     // Simpan per sel dari lembar input (x-dl::lookup-grid auto-save): {changed: [baris]} -> {rows: seluruh baris}. Nama penghitung terakhir diingat per sesi dan mengisi baris berikutnya yang namanya kosong.
@@ -95,6 +99,39 @@ class StockCountController extends Controller
         $line = $this->counts->addItem($count, Item::query()->findOrFail($data['item_id']));
 
         return redirect()->route('stock-counts.show', $count)->with('status', "{$line->item->code} ditambahkan ke lembar hitung (stok sistem saat ini). Isi hasil hitungnya.");
+    }
+
+    // Tinjau (Supervisor): hitung ulang dan alasan per baris, disimpan per sel; balasan = seluruh baris dengan selisih terhitung ulang.
+    public function reviewLines(Request $request, StockCount $count): JsonResponse
+    {
+        foreach ((array) $request->input('changed', []) as $row) {
+            $this->counts->reviewLine($count, (int) ($row['id'] ?? 0), (array) $row);
+        }
+
+        return response()->json(['rows' => $this->counts->reviewRows($count, true)]);
+    }
+
+    public function refreshMoved(StockCount $count): RedirectResponse
+    {
+        $n = $this->counts->refreshMoved($count);
+
+        return redirect()->route('stock-counts.show', $count)->with('status', "{$n} baris diperbarui ke stok sekarang dan dibuka untuk diisi ulang. Isi hasil hitungnya, lalu Selesai hitung lagi.");
+    }
+
+    public function approve(Request $request, StockCount $count): RedirectResponse
+    {
+        $adj = $this->counts->approve($count, $request->user());
+
+        return redirect()->route('stock-counts.show', $count)->with('status', $adj
+            ? "{$count->doc_no} disetujui. Penyesuaian {$adj->doc_no} dibuat dan diposting: stok kini mengikuti hasil hitung fisik. Kunci transaksi dilepas."
+            : "{$count->doc_no} disetujui. Tidak ada selisih, jadi tidak ada Penyesuaian. Kunci transaksi dilepas.");
+    }
+
+    public function reject(Request $request, StockCount $count): RedirectResponse
+    {
+        $this->counts->reject($count, (string) $request->input('note'));
+
+        return redirect()->route('stock-counts.show', $count)->with('status', "{$count->doc_no} dikembalikan ke penghitungan. Perbaiki isian lalu Selesai hitung lagi.");
     }
 
     // Selesai hitung: semua baris harus terisi atau ditandai Tidak dihitung dengan catatan.

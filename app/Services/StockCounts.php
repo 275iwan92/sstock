@@ -155,6 +155,27 @@ final class StockCounts
     }
 
     /**
+     * Baris selisih yang stok sistemnya sudah bergeser sejak cut-off (kunci dibuka lalu ada transaksi): persetujuan akan menolaknya.
+     *
+     * @return Collection<int, StockCountLine>
+     */
+    public function movedLines(StockCount $count): Collection
+    {
+        return $count->lines()->with('item')->get()->filter(fn (StockCountLine $l) => $l->diff() != 0.0 && abs($l->item->stock_qty - $l->system_qty) > self::EPS)->values();
+    }
+
+    // Perbarui semua baris yang bergeser sekaligus (stok sistem = stok sekarang, baris dibuka untuk diisi ulang).
+    public function refreshMoved(StockCount $count): int
+    {
+        $ids = $this->movedLines($count)->pluck('id');
+        foreach ($ids as $id) {
+            $this->refreshLine($count, $id);
+        }
+
+        return $ids->count();
+    }
+
+    /**
      * Setujui: semua baris final, alasan wajib di atas ambang, stok baris selisih belum bergeser sejak cut-off. Lalu SATU Penyesuaian approved diposting (tanpa selisih: tanpa dokumen).
      * Status Selesai (kunci lepas) ditulis lebih dulu di transaksi yang sama supaya posting Penyesuaian lolos penjaga kunci; kegagalan apa pun membatalkan semuanya.
      */

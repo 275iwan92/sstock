@@ -135,6 +135,10 @@ Route::middleware(['auth', 'active', 'module'])->group(function () {
             Route::post('/', 'store')->name('stock-counts.store');
             Route::post('{count}/cancel', 'cancel')->name('stock-counts.cancel');
             Route::post('{count}/unlock', 'unlock')->name('stock-counts.unlock');
+            Route::post('{count}/review', 'reviewLines')->name('stock-counts.review');
+            Route::post('{count}/refresh', 'refreshMoved')->name('stock-counts.refresh');
+            Route::post('{count}/approve', 'approve')->name('stock-counts.approve');
+            Route::post('{count}/reject', 'reject')->name('stock-counts.reject');
         });
         Route::get('{count}', 'show')->name('stock-counts.show');
         Route::post('{count}/lines', 'saveLines')->name('stock-counts.lines');
