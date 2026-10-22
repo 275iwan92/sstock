@@ -11,7 +11,7 @@
     <x-report-filter :from="$from" :to="$to">
         <x-dl::field.select name="supplier_id" label="Supplier" :options="['' => 'Semua supplier'] + $suppliers" :value="request('supplier_id')" />
     </x-report-filter>
-    <x-dl::report title="Receiving Report" subtitle="Goods received from suppliers" :company="config('devlib.company')" :printed-by="raw(auth()->user()->name)" paper="a4l"
+    <x-dl::report title="Receiving Report" subtitle="Goods received from suppliers" :company="\App\Support\Company::report()" :printed-by="raw(auth()->user()->name)" paper="a4l"
         :criteria="['Period' => raw(Devlib\Locale::d($from).' — '.Devlib\Locale::d($to)), 'Supplier' => raw($suppliers[request('supplier_id')] ?? 'Semua supplier')]"
         group-by="party" :groups="['party' => 'Per Supplier', 'month' => 'Per Month']"
         :summary="array_values(array_filter([['label' => 'Baris diterima', 'value' => count($rows)], $sup ? ['label' => 'Total Nilai Pembelian', 'sum' => 'amount'] : null]))"

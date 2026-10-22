@@ -13,7 +13,7 @@
         <x-dl::field.checkbox name="only_reorder" label="Filter" text="Only items at / below reorder point" :value="request()->boolean('only_reorder')" />
         <x-dl::field.checkbox name="inactive" label="Inactive" text="Include inactive items" :value="request()->boolean('inactive')" />
     </x-report-filter>
-    <x-dl::report title="Summary Stock" subtitle="Stock position and movement per period" :company="config('devlib.company')" :printed-by="raw(auth()->user()->name)" paper="a4l"
+    <x-dl::report title="Summary Stock" subtitle="Stock position and movement per period" :company="\App\Support\Company::report()" :printed-by="raw(auth()->user()->name)" paper="a4l"
         :criteria="array_filter([
             'Period' => raw(Devlib\Locale::d($from).' — '.Devlib\Locale::d($to)),
             'Category' => raw($categories[request('category_id')] ?? 'Semua kategori'),

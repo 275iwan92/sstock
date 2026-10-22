@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Support\Company;
 use App\Support\GeoLookup;
 use App\Support\Indonesian;
 use App\Support\ItemLookups;
@@ -22,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
         ItemLookups::register();
         GeoLookup::register();
         Indonesian::register();
-        Document::companyUsing(fn () => ['name' => config('app.name'), 'initials' => 'ST', 'lines' => ['Stok sederhana']]);
+        Document::companyUsing(fn () => Company::kop());   // satu sumber kop semua cetakan: layar Perusahaan
 
         // E-mail reset password berbahasa Indonesia; tautan ke layar password baru, berlaku sesuai config auth.passwords.users.expire.
         ResetPassword::toMailUsing(function (object $user, string $token) {

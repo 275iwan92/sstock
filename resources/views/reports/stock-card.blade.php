@@ -14,7 +14,7 @@
     @if (! $item)
         <x-dl::empty-state title="Choose an item" message="Select an item and a period, then press Apply to see its stock card." icon="file" />
     @else
-        <x-dl::report title="Stock Card" subtitle="Stock movement history per item" :company="config('devlib.company')" :printed-by="raw(auth()->user()->name)" paper="a4l"
+        <x-dl::report title="Stock Card" subtitle="Stock movement history per item" :company="\App\Support\Company::report()" :printed-by="raw(auth()->user()->name)" paper="a4l"
             :criteria="array_filter([
                 'Item Code' => raw($item->code), 'Item Name' => raw($item->name), 'Unit' => raw($item->unit), 'Location' => raw($item->location ?? '—'),
                 'Period' => raw(Devlib\Locale::d($from).' — '.Devlib\Locale::d($to)),

@@ -11,7 +11,7 @@
     <x-report-filter :from="$from" :to="$to">
         <x-dl::field.select name="status" label="Status" :options="['' => 'Semua', 'draft' => 'Draf', 'approval' => 'Menunggu Persetujuan', 'approved' => 'Disetujui', 'rejected' => 'Ditolak']" :value="request('status')" />
     </x-report-filter>
-    <x-dl::report title="Opname & Adjustment Report" subtitle="Physical count vs system stock" :company="config('devlib.company')" :printed-by="raw(auth()->user()->name)" paper="a4l"
+    <x-dl::report title="Opname & Adjustment Report" subtitle="Physical count vs system stock" :company="\App\Support\Company::report()" :printed-by="raw(auth()->user()->name)" paper="a4l"
         :criteria="['Period' => raw(Devlib\Locale::d($from).' — '.Devlib\Locale::d($to)), 'Status' => raw(['draft' => 'Draf', 'approval' => 'Menunggu Persetujuan', 'approved' => 'Disetujui', 'rejected' => 'Ditolak'][request('status')] ?? 'Semua')]"
         group-by="status" :groups="['status' => 'Per Status', 'doc' => 'Per Document']"
         :summary="[['label' => 'Baris dihitung', 'value' => count($rows)], ['label' => 'Dampak nilai bersih', 'sum' => 'effect', 'signed' => true]]"

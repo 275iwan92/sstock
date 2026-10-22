@@ -17,7 +17,7 @@
             <x-dl::button type="submit" icon="fa-filter" label="Apply" size="sm" />
         </x-dl::action-bar>
     </x-dl::action-form>
-    <x-dl::report title="Expiry Report" subtitle="Items with stock that are expired or about to expire" :company="config('devlib.company')" :printed-by="raw(auth()->user()->name)" paper="a4l"
+    <x-dl::report title="Expiry Report" subtitle="Items with stock that are expired or about to expire" :company="\App\Support\Company::report()" :printed-by="raw(auth()->user()->name)" paper="a4l"
         :criteria="array_filter([
             'Expires within (days)' => raw((string) $days),
             'Category' => raw($categories[request('category_id')] ?? 'Semua kategori'),
