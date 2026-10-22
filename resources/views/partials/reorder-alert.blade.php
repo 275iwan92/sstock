@@ -24,7 +24,7 @@
             <form id="reorder-form" method="POST" action="{{ route('reorder-orders.store') }}">
                 @csrf
                 <x-dl::field.select name="product_id" label="Item" :options="$orderable" required />
-                <x-dl::field.select name="supplier_id" label="Supplier" :options="$suppliers" required />
+                <x-dl::field.select name="supplier_id" label="Supplier" :options="$suppliers" required :add="\App\Support\QuickAdd::for('supplier')" />
                 <x-dl::field.decimal name="qty" label="Jumlah Dipesan" :decimals="3" :value="0" required />
                 <p class="dl-note" data-reorder-unit>Satuan: satuan stok barang.</p>
                 <x-dl::field.date name="ordered_at" label="Order Date" :value="today()->format('Y-m-d')" required />
@@ -36,6 +36,8 @@
         <script>
             // Satuan di samping jumlah mengikuti barang yang dipilih (jumlah selalu dalam satuan stok barang).
             (() => {
+                // Dialog dipindah ke <body> (seperti popup tambah supplier): di dalam Layer Shell popup tambah supplier tertutup dialog ini.
+                document.body.append(document.querySelector('[data-dl-modal-id="reorder-modal"]'));
                 const units = @json($units), note = document.querySelector('[data-reorder-unit]'), pick = document.querySelector('#reorder-form [name="product_id"]');
                 const show = () => { note.textContent = pick.value && units[pick.value] ? 'Satuan: ' + units[pick.value] + ' (satuan stok barang)' : 'Satuan: satuan stok barang.'; };
                 pick.addEventListener('change', show);

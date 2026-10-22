@@ -127,6 +127,13 @@ final class Indonesian
         "The department chosen in this form becomes the recipient's default department." => 'Departemen yang dipilih di form ini menjadi departemen bawaan penerima.',
         'RO opens the screen but blocks saving or changing anything. A user also needs a high enough role: Supervisor-only and Administrator-only modules stay closed to lower roles even when granted. Administrators always have full access.' => 'RO membuka layar tetapi menolak menyimpan atau mengubah apa pun. Pengguna juga harus berperan cukup tinggi: modul khusus Supervisor atau Administrator tetap tertutup bagi peran di bawahnya walau diberikan. Administrator selalu punya akses penuh.',
 
+        // Tambah cepat dari dropdown (x-dl::field.select add)
+        'Add Supplier' => 'Tambah Supplier', 'Add Recipient' => 'Tambah Penerima', 'Add Department' => 'Tambah Departemen', 'Add Category' => 'Tambah Kategori', 'Add Location' => 'Tambah Lokasi', 'Add Unit' => 'Tambah Satuan',
+        'Recipient Name' => 'Nama Penerima', 'Department Name' => 'Nama Departemen',
+        'The supplier code is created automatically. Address and region can be completed later in Suppliers.' => 'Kode supplier dibuat otomatis. Alamat dan wilayah bisa dilengkapi nanti di menu Suppliers.',
+        'The department code is created automatically.' => 'Kode departemen dibuat otomatis.',
+        'Short, lowercase (pcs, box, kg). Cannot be changed after saving.' => 'Singkat, huruf kecil (pcs, box, kg). Tidak bisa diubah setelah disimpan.',
+
         // Login / umum
         'Supervisor Gudang' => 'Supervisor Gudang',
     ];

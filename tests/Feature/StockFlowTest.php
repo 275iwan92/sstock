@@ -341,7 +341,7 @@ class StockFlowTest extends TestCase
         $this->assertSame(['id', 'name'], array_keys($rec));
         $this->postJson(route('recipients.store'), ['name' => ''])->assertStatus(422);
 
-        $this->get(route('docs.create', 'issuance'))->assertOk()->assertSee('qa-recipient', false)->assertSee('Penerima baru', false);
+        $this->get(route('docs.create', 'issuance'))->assertOk()->assertDontSee('qa-recipient', false)->assertDontSee('Penerima baru', false);
         $this->get(route('departments.index'))->assertOk();
         $this->get(route('recipients.index'))->assertOk();
         $this->get(route('recipients.show', $this->recipient))->assertOk();

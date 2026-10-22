@@ -66,7 +66,6 @@ body.dl-body:not(.sstock-bare) { padding: 0 16px 16px; }
 .sstock-reorder .dl-table td, .sstock-reorder .dl-table th { font-size: 1.05rem; padding: 12px 14px; }
 .sstock-reorder .dl-table th { font-size: .85rem; }
 @media (max-width: 1100px) { .sstock-split { grid-template-columns: 1fr; } .sstock-box .dl-chart svg { max-height: 240px; } }
-.sstock-dd-new { font-weight: 600; color: var(--dl-accent, #2563eb); border-bottom: 1px solid var(--dl-border); }
 .sstock-quickadd__err { color: var(--dl-danger, #c0392b); font-size: .85rem; margin: 6px 0 0; }
 
 /* REMARK

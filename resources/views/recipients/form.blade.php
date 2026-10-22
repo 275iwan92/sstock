@@ -21,7 +21,7 @@
         :created-at="$recipient->created_at?->format('Y-m-d H:i:s')" :updated-at="$recipient->updated_at?->format('Y-m-d H:i:s')">
         <x-dl::form.row :cols="3">
             <x-dl::field.text name="name" label="Recipient Name" :value="$v('name')" required maxlength="100" :error="$e('name')" />
-            <x-dl::field.select name="department_id" label="Default Department" :options="$deptOptions" :value="$v('department_id')" :error="$e('department_id')" hint="Used in Issuance when no department is chosen." />
+            <x-dl::field.select name="department_id" label="Default Department" :options="$deptOptions" :value="$v('department_id')" :add="\App\Support\QuickAdd::for('department')" :error="$e('department_id')" hint="Used in Issuance when no department is chosen." />
         </x-dl::form.row>
         @unless ($isNew)
             <x-dl::form.row :cols="3">

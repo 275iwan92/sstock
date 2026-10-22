@@ -81,7 +81,7 @@
         </x-dl::form.row>
         @if ($t === T::Receiving)
             <x-dl::form.row :cols="3">
-                <x-dl::field.select name="supplier_id" label="Supplier" :options="$suppliers + ($doc->supplier ? [$doc->supplier_id => $doc->supplier->name] : [])" :value="$v('supplier_id')" required :error="$e('supplier_id')" />
+                <x-dl::field.select name="supplier_id" label="Supplier" :options="$suppliers + ($doc->supplier ? [$doc->supplier_id => $doc->supplier->name] : [])" :value="$v('supplier_id')" required :add="$locked ? [] : \App\Support\QuickAdd::for('supplier')" :error="$e('supplier_id')" />
                 <x-dl::field.text name="ref_no" label="Reference No. (delivery note / PO / invoice)" :value="$v('ref_no')" maxlength="60" :error="$e('ref_no')" />
             </x-dl::form.row>
             <x-dl::form.row :cols="3">
@@ -102,9 +102,6 @@
                 @include('docs.recipient-field')
                 @include('docs.department-field')
             </x-dl::form.row>
-        @endif
-        @if (! $locked && $t !== T::Opening)
-            @include('docs.quick-add')
         @endif
         <x-dl::form.row>
             <x-dl::field.text name="note" label="Notes" :value="$v('note')" multiline maxlength="1000" :error="$e('note')" />

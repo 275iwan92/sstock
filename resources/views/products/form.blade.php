@@ -41,9 +41,9 @@
         </x-dl::form.row>
         <x-dl::form.row :cols="4">
             <x-dl::field.text name="code" label="Item Code" :value="$product->code" code :case-toggle="false" readonly tooltip="Generated automatically: category prefix and running number. The expiry date is never part of the item code; each expiry batch has its own batch code." />
-            <x-dl::field.select name="category_id" label="Category" :options="$categories" :value="$v('category_id')" required :readonly="! $isNew" :error="$e('category_id')" />
-            <x-dl::field.select name="unit" label="Unit" :options="$units" :value="$v('unit')" required :error="$e('unit')" />
-            <x-dl::field.select name="location" label="Rack / Storage Location" :options="$locations" :value="$v('location')" :error="$e('location')" />
+            <x-dl::field.select name="category_id" label="Category" :options="$categories" :value="$v('category_id')" required :readonly="! $isNew" :add="\App\Support\QuickAdd::for('category')" :error="$e('category_id')" />
+            <x-dl::field.select name="unit" label="Unit" :options="$units" :value="$v('unit')" required :add="\App\Support\QuickAdd::for('unit')" :error="$e('unit')" />
+            <x-dl::field.select name="location" label="Rack / Storage Location" :options="$locations" :value="$v('location')" :add="\App\Support\QuickAdd::for('location')" :error="$e('location')" />
         </x-dl::form.row>
         <x-dl::form.row :cols="4">
             @if ($isNew)
@@ -111,7 +111,7 @@
     </x-dl::form>
     @unless ($isNew)
         <x-dl::modal id="pack-unit" title="Satuan masuk" icon="fa-boxes-packing" size="sm">
-            <x-dl::field.select name="pack_unit" label="Satuan" :options="$packChoices" required />
+            <x-dl::field.select name="pack_unit" label="Satuan" :options="$packChoices" required :add="\App\Support\QuickAdd::for('unit')" />
             <x-dl::field.text name="pack_factor" :label="'Faktor ke '.$product->unit" placeholder="Contoh: 12" required :hint="'1 satuan ini = berapa '.$product->unit" />
             <p class="dl-note" data-pack-used hidden>Faktor ini sudah dipakai di dokumen. Perubahan hanya berlaku untuk penerimaan berikutnya, dokumen lama tidak berubah.</p>
             <p class="sstock-quickadd__err" data-pack-error hidden></p>
