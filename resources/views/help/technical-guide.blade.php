@@ -237,7 +237,7 @@
                 <tr><td>UOM, CAT, LOC</td><td>Satuan, Kategori, Lokasi Penyimpanan</td><td>Data Master</td><td>Supervisor</td><td><code>units.</code>, <code>categories.</code>, <code>locations.</code></td></tr>
                 <tr><td>CMP</td><td>Perusahaan</td><td>Data Master</td><td>Supervisor</td><td><code>company.edit</code>, <code>company.update</code> (the route <code>company.logo</code> is public and has no module)</td></tr>
                 <tr><td>OPN, ADJ</td><td>Saldo Awal, Penyesuaian Stok</td><td>Transaksi</td><td>Supervisor</td><td><code>docs.*</code> with <code>{type}</code> = opening / adjustment</td></tr>
-                <tr><td>ORD</td><td>Riwayat Pemesanan</td><td>Transaksi</td><td>Data Entry</td><td><code>reorder-orders.index</code>, <code>reorder-orders.show</code> (the POST routes <code>reorder-orders.store</code> and <code>reorder-orders.close</code> belong to no module and stay open from the Home screen)</td></tr>
+                <tr><td>ORD</td><td>Riwayat Pemesanan</td><td>Transaksi</td><td>Data Entry</td><td><code>reorder-orders.</code> (all of them: GET list and detail are readable with RO; the POST routes <code>store</code> = Catat Pemesanan and <code>close</code> = Tutup Pesanan need RW)</td></tr>
                 <tr><td>SO</td><td>Stok Opname</td><td>Transaksi</td><td>Data Entry</td><td><code>stock-counts.</code> (start, review, approve, return, cancel, unlock, minutes: Supervisor middleware on the route)</td></tr>
                 <tr><td>RCV, ISS</td><td>Penerimaan Barang, Pengeluaran Barang</td><td>Transaksi</td><td>Data Entry</td><td><code>docs.*</code> with <code>{type}</code> = receiving / issuance</td></tr>
                 <tr><td>R-CARD, R-SUM, R-IN, R-OUT, R-EXP</td><td>Kartu Stok, Ringkasan Stok, Laporan Penerimaan / Pengeluaran / Kedaluwarsa</td><td>Laporan</td><td>Data Entry</td><td><code>reports.*</code></td></tr>
@@ -245,7 +245,7 @@
                 <tr><td>USR, GRP, SMP, MOD</td><td>Pengguna, Grup, Data Contoh, Daftar Modul</td><td>Keamanan</td><td>Administrator</td><td><code>users.</code>, <code>groups.</code>, <code>sample.</code>, <code>modules.</code></td></tr>
             </tbody>
         </table>
-        <p class="g-note">Routes that belong to no module (home, logout, re-order records, Help) are open to every logged-in user. The User's Guide lists only the modules the reader may open (<code>User::canAccess</code>); the Technical Guide route sits in the <code>administrator</code> middleware group and its tab link is rendered only for Administrators.</p>
+        <p class="g-note">Routes that belong to no module (home, logout, session ping, Help) are open to every logged-in user. The User's Guide lists only the modules the reader may open (<code>User::canAccess</code>); the Technical Guide route sits in the <code>administrator</code> middleware group and its tab link is rendered only for Administrators.</p>
 
         <h2 id="screens">8. Dashboard and reports</h2>
         <ul class="g-list">

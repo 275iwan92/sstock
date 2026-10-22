@@ -250,6 +250,7 @@ Menu Transaksi > Riwayat Pemesanan. Lanjutan dari ROP-03 sampai ROP-10 (ada pesa
 | ORH-05 | Pada detail itu tekan Tutup Pesanan, isi alasan, tekan Tutup Pesanan di jendela. | Kembali ke detail yang sama. Status Ditutup manual, kolom Ditutup memuat tanggal dan alasan, tombol Tutup Pesanan hilang. | | |
 | ORH-06 | Buka detail pesanan Ditutup manual dan pesanan Selesai. | Ditutup manual: ada keterangan bahwa penerimaan tidak dirinci. Selesai: tabel penerimaan terisi dan tidak ada tombol Tutup Pesanan. | | |
 | ORH-07 | Beri Grup hak **Hanya baca (RO)** untuk Riwayat Pemesanan dan masuk sebagai anggotanya. Buka detail pesanan terbuka. | Grid dan detail terbuka, tetapi tombol Tutup Pesanan tidak tampil. | | |
+| ORH-08 | Pakai Grup tanpa modul Riwayat Pemesanan (atau RO). Masuk sebagai anggotanya, buka Beranda dengan barang yang menipis. | Tombol Catat Pemesanan dan Tutup Pesanan tidak tampil. Bila alamat simpannya dipanggil langsung, Stoku menolak (403, tidak ada pesanan tercatat). Dengan hak RW, keduanya berfungsi. | | |
 
 ## 11. Satuan dan konversi (SAT)
 

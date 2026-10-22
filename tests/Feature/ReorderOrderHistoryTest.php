@@ -181,6 +181,39 @@ class ReorderOrderHistoryTest extends TestCase
         $this->get(route('reorder-orders.index'))->assertRedirect(route('login'));
     }
 
+    public function test_writing_orders_needs_rw_on_the_orders_module_on_the_server(): void
+    {
+        $open = $this->order(10, 3, 'PO-W');
+        $payload = ['product_id' => $this->item->product_id, 'supplier_id' => $this->supplier()->id, 'qty' => 5, 'ordered_at' => today()->toDateString()];
+        $mk = fn (string $code, array $access) => tap(UserGroup::create(['code' => $code, 'name' => $code]), fn ($g) => $g->syncAccess($access));
+        $ro = User::factory()->create(['group_id' => $mk('RO', ['ORD' => 'ro', 'RCV' => 'rw'])->id]);
+        $none = User::factory()->create(['group_id' => $mk('NO', ['RCV' => 'rw', 'ISS' => 'rw'])->id]);
+        $rw = User::factory()->create(['group_id' => $mk('RW', ['ORD' => 'rw'])->id]);
+
+        foreach ([$ro, $none] as $user) {
+            $this->actingAs($user)->post(route('reorder-orders.store'), $payload)->assertForbidden();
+            $this->post(route('reorder-orders.close', $open), ['note' => 'x'])->assertForbidden();
+        }
+        $this->assertNull($open->fresh()->closed_at);
+        $this->assertSame(1, ReorderOrder::count());
+
+        $this->actingAs($rw)->post(route('reorder-orders.store'), ['supplier_id' => 0] + $payload)->assertSessionHasErrors('supplier_id');   // lolos penjaga modul, ditolak validasi
+        $this->post(route('reorder-orders.close', $open), ['note' => 'x'])->assertRedirect(route('home'));
+        $this->assertSame('manual', $open->fresh()->close_reason);
+        $this->actingAs($this->entry)->post(route('reorder-orders.store'), ['supplier_id' => 0] + $payload)->assertSessionHasErrors('supplier_id');   // Data Entry tanpa grup tetap bisa
+    }
+
+    public function test_home_hides_the_order_buttons_without_write_access(): void
+    {
+        $this->order(10, 3, 'PO-H');
+        $group = UserGroup::create(['code' => 'RO', 'name' => 'RO']);
+        $group->syncAccess(['ORD' => 'ro', 'ITM' => 'rw']);
+        $ro = User::factory()->create(['group_id' => $group->id]);
+
+        $this->actingAs($ro)->get(route('home'))->assertOk()->assertDontSee('reorder-modal', false)->assertDontSee('close-order-', false);
+        $this->actingAs($this->entry)->get(route('home'))->assertOk()->assertSee('close-order-', false);
+    }
+
     public function test_migration_follows_receiving_rights(): void
     {
         $writer = UserGroup::create(['code' => 'W', 'name' => 'Tulis']);

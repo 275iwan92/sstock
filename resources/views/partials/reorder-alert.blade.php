@@ -10,16 +10,17 @@
     @php
         $text = $below->count().' barang berada di atau di bawah titik pesan ulang. Segera pesan ke supplier.';
         $cols = ['Item', 'Reorder Qty', 'Available Stock', 'Order Status'];
+        $canOrder = auth()->user()->canWrite('ORD');   // Catat Pemesanan / Tutup Pesanan = tulis modul ORD (server menolak yang lain dengan 403)
         $orderable = $below->filter(fn ($i) => ! $i->openOrder)->mapWithKeys(fn ($i) => [$i->id => $i->name])->all();
         $units = $below->filter(fn ($i) => ! $i->openOrder)->mapWithKeys(fn ($i) => [$i->id => $i->unit])->all();
     @endphp
     <x-dl::alert tone="danger" :message="$text">
         <x-dl::button variant="secondary" size="sm" icon="fa-truck-ramp-box" label="Open Receiving" href="#" data-open-tab="RCV" />
-        @if ($orderable)
+        @if ($orderable && $canOrder)
             <x-dl::button size="sm" icon="fa-cart-shopping" label="Record Order" data-dl-open="reorder-modal" />
         @endif
     </x-dl::alert>
-    @if ($orderable)
+    @if ($orderable && $canOrder)
         <x-dl::modal id="reorder-modal" title="Record Order" icon="fa-cart-shopping" size="sm">
             <form id="reorder-form" method="POST" action="{{ route('reorder-orders.store') }}">
                 @csrf
@@ -61,7 +62,7 @@
                             @if ($i->openOrder)
                                 @php $partial = $i->openOrder->status() === 'partial'; @endphp
                                 <x-dl::badge :tone="$partial ? 'warn' : 'success'" :icon="$partial ? 'fa-box-open' : 'fa-circle-check'" :label="$i->openOrder->statusLabel().' '.$i->openOrder->ordered_at->format('d/m/Y').($i->openOrder->ref_no ? ' · '.$i->openOrder->ref_no : '')" />
-                                <x-dl::button variant="secondary" size="sm" icon="fa-ban" label="Close Order" :data-dl-open="'close-order-'.$i->openOrder->id" />
+                                @if ($canOrder)<x-dl::button variant="secondary" size="sm" icon="fa-ban" label="Close Order" :data-dl-open="'close-order-'.$i->openOrder->id" />@endif
                                 <div class="dl-note">{{ $i->openOrder->note($leadTimes[$i->id] ?? null) }}</div>
                             @else
                                 <x-dl::badge tone="danger" icon="fa-triangle-exclamation" label="Belum dipesan" />
@@ -73,7 +74,7 @@
         </table>
     </div>
     {{-- Tutup manual: untuk pesanan yang tidak akan dipenuhi penuh (supplier mengirim kurang). Tidak menghapus apa pun; jumlah yang sudah diterima tetap tercatat di Penerimaan. --}}
-    @foreach ($below->filter(fn ($i) => $i->openOrder) as $i)
+    @foreach ($canOrder ? $below->filter(fn ($i) => $i->openOrder) : [] as $i)
         <x-dl::modal :id="'close-order-'.$i->openOrder->id" title="Close Order" icon="fa-ban" size="sm">
             <form id="close-order-form-{{ $i->openOrder->id }}" method="POST" action="{{ route('reorder-orders.close', $i->openOrder) }}">
                 @csrf

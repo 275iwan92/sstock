@@ -50,7 +50,7 @@
 <h4>Untuk apa</h4>
 <p>Mencatat bahwa barang yang stoknya menipis sudah Anda pesan ke supplier. Catatan ini sederhana. Ini bukan dokumen PO (surat pesanan resmi): tidak ada harga, persetujuan, atau cetakan. Fungsinya agar rekan Anda tahu pesanan ke mana, berapa, dan kapan.</p>
 <h4>Siapa yang bisa</h4>
-<p>Semua pengguna yang membuka Beranda, termasuk Data Entry.</p>
+<p>Data Entry dan Supervisor. Grup yang diatur Administrator perlu hak <b>Baca &amp; tulis (RW)</b> untuk modul <b>Riwayat Pemesanan</b>. Tanpa hak itu, tombol <b>Catat Pemesanan</b> dan <b>Tutup Pesanan</b> tidak tampil dan Stoku menolak simpanannya.</p>
 <h4>Langkah</h4>
 <ol class="g-steps">
     <li>Pesan barang ke supplier lebih dulu. Pemesanan dilakukan di luar Stoku.</li>
