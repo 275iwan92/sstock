@@ -15,7 +15,7 @@
 @include('help.diagram', ['name' => 'ug-masuk', 'caption' => 'Masuk, lupa password, dan membuka menu.'])
 
 <h3 id="keluar-otomatis">Keluar otomatis</h3>
-<p class="g-note">Tidak ada pilihan &quot;ingat saya&quot;. Anda masuk lagi setiap kali menutup browser atau sesi habis.</p>
+<p class="g-note">Tidak ada pilihan &quot;ingat saya&quot;. Stoku tidak mengingat Anda di komputer ini. Bila sesi habis, Anda masuk lagi.</p>
 <ul class="g-list">
     <li>Tidak ada aktivitas selama <b>30 menit</b>? Stoku keluar otomatis. Angka 30 menit adalah pengaturan bawaan. Administrator bisa mengubahnya.</li>
     <li>Dua menit sebelumnya muncul peringatan <b>Sesi hampir berakhir</b> di pojok kanan bawah, dengan hitung mundur.</li>
