@@ -77,6 +77,16 @@ class StockCountEntryTest extends TestCase
         $this->getJson(route('devlib.lookup', 'item_count').'?q=Pensil')->assertOk()->assertJsonMissing(['stock' => 12345.5]);
     }
 
+    public function test_open_count_shows_the_live_difference_per_row_after_each_save(): void
+    {
+        $count = $this->start(['blind' => false]);
+        $rows = collect($this->actingAs($this->entry)->save($count, [['id' => $this->lineId($count, $this->b), 'counted_qty' => 5]])->assertOk()->json('rows'))->keyBy('id');
+
+        $this->assertSame([-2, 7], [$rows[$this->lineId($count, $this->b)]['diff'], $rows[$this->lineId($count, $this->b)]['system_qty']]);   // 5 - 7
+        $this->assertSame('', $rows[$this->lineId($count, $this->a)]['diff']);   // belum dihitung: tanpa selisih
+        $this->get(route('stock-counts.show', $count))->assertSee('Selisih');
+    }
+
     public function test_open_count_shows_system_stock_to_everyone(): void
     {
         $count = $this->start(['blind' => false]);

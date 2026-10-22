@@ -30,6 +30,7 @@
         ['key' => 'location', 'label' => 'Location', 'readonly' => true, 'width' => '100px'],
         ['key' => 'unit', 'label' => 'Unit', 'readonly' => true, 'width' => '70px'],
         $count->blind ? null : ['key' => 'system_qty', 'label' => 'System Stock', 'type' => 'number', 'decimal' => true, 'readonly' => true, 'width' => '110px'],
+        $count->blind ? null : ['key' => 'diff', 'label' => 'Difference', 'type' => 'number', 'decimal' => true, 'readonly' => true, 'width' => '100px'],
         $edit(['key' => 'counted_qty', 'label' => 'Count Result', 'type' => 'number', 'decimal' => true, 'width' => '120px']),
         $edit(['key' => 'counted_by', 'label' => 'Counter', 'width' => '140px']),
         $edit(['key' => 'skipped', 'label' => 'Not counted', 'type' => 'check', 'width' => '100px']),

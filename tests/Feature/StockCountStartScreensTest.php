@@ -133,7 +133,15 @@ class StockCountStartScreensTest extends TestCase
         $this->get(route('stock-counts.show', $count))->assertSee('Dibuka');
         $this->post(route('stock-counts.unlock', $count))->assertStatus(422);   // sudah terbuka
 
-        $this->post(route('stock-counts.cancel', $count))->assertRedirect();
+        $this->post(route('stock-counts.lock', $count))->assertRedirect();   // Supervisor mengunci kembali: tercatat siapa dan kapan
+        $locked = $count->fresh();
+        $this->assertSame([true, $this->sup->id], [$locked->lock_transactions, $locked->locked_by]);
+        $this->assertNotNull($locked->locked_at);
+        $this->get(route('stock-counts.show', $count))->assertSee('Dikunci');
+        $this->post(route('stock-counts.lock', $count))->assertStatus(422);   // sudah terkunci
+        $this->actingAs($this->entry)->post(route('stock-counts.lock', $count))->assertForbidden();
+
+        $this->actingAs($this->sup)->post(route('stock-counts.cancel', $count))->assertRedirect();
         $this->assertSame('cancelled', $count->fresh()->status);
     }
 

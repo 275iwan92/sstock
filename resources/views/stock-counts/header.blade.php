@@ -13,7 +13,7 @@
     $lockText = match (true) {
         ! $running => 'Dilepas',
         $count->lock_transactions => 'Aktif',
-        $count->unlocked_at !== null => 'Dibuka',
+        $count->unlocked_at !== null => 'Dibuka',   // kunci sempat dibuka dan tidak dikunci lagi
         default => 'Tanpa kunci',
     };
 @endphp
@@ -26,7 +26,7 @@
         <x-dl::stat-box label="Filled" :value="$summary['filled'].' / '.$summary['lines']" :tone="$summary['filled'] === $summary['lines'] ? 'success' : 'accent'" :sub="'Oleh '.$count->creator->name" />
     @endif
     <x-dl::stat-box label="Difference Threshold" :value="Locale::number($count->threshold_pct, 2).' %'" tone="neutral" :sub="$count->blind ? 'Hitung buta: ya' : 'Hitung buta: tidak'" />
-    <x-dl::stat-box label="Transaction Lock" :value="$lockText" :tone="$running && $count->lock_transactions ? 'danger' : 'neutral'" :sub="$count->unlocked_at ? 'Dibuka '.$count->unlocker?->name.' · '.Locale::stamp($count->unlocked_at) : null" />
+    <x-dl::stat-box label="Transaction Lock" :value="$lockText" :tone="$running && $count->lock_transactions ? 'danger' : 'neutral'" :sub="$count->lock_transactions && $count->locked_at ? 'Dikunci '.$count->locker?->name.' · '.Locale::stamp($count->locked_at) : ($count->unlocked_at ? 'Dibuka '.$count->unlocker?->name.' · '.Locale::stamp($count->unlocked_at) : null)" />
 </x-dl::kpi-row>
 @if ($running && $count->lock_transactions)
     <x-dl::alert tone="warn" message="Transaksi dikunci: Confirm / Approve Penerimaan, Pengeluaran, dan Penyesuaian ditolak sampai opname selesai atau dibatalkan." />
@@ -47,6 +47,11 @@
         <x-dl::button variant="secondary" icon="print" :label="$count->status === 'done' ? 'Print Minutes' : 'Preview Minutes'" :href="route('stock-counts.report', $count)" target="_blank" />
     @endif
     @if ($running && $sup)
+        @unless ($count->lock_transactions)
+            <x-dl::action-form :action="route('stock-counts.lock', $count)">
+                <x-dl::button type="submit" variant="secondary" icon="fa-lock" label="Lock" data-dl-confirm="Kunci transaksi lagi? Confirm / Approve Penerimaan, Pengeluaran, dan Penyesuaian ditolak sampai opname selesai atau dibatalkan." data-dl-confirm-tone="warn" />
+            </x-dl::action-form>
+        @endunless
         @if ($count->lock_transactions)
             <x-dl::action-form :action="route('stock-counts.unlock', $count)">
                 <x-dl::button type="submit" variant="secondary" icon="fa-lock-open" label="Unlock" data-dl-confirm="Buka kunci transaksi? Transaksi stok boleh diproses lagi selama opname berjalan; yang menggeser stok akan ditolak saat persetujuan." data-dl-confirm-tone="warn" />

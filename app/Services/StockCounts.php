@@ -154,6 +154,16 @@ final class StockCounts
         });
     }
 
+    // Kunci kembali transaksi sesudah dibuka (tercatat siapa dan kapan). Stok yang sempat bergeser ditolak saat persetujuan, bukan di sini.
+    public function lock(StockCount $count, User $by): void
+    {
+        DB::transaction(function () use ($count, $by) {
+            $this->lockAndAssert($count, ['counting', 'review']);
+            abort_if($count->lock_transactions, 422, 'Transaksi sudah dikunci.');
+            $count->update(['lock_transactions' => true, 'locked_by' => $by->id, 'locked_at' => now()]);
+        });
+    }
+
     /**
      * Baris selisih yang stok sistemnya sudah bergeser sejak cut-off (kunci dibuka lalu ada transaksi): persetujuan akan menolaknya.
      *
@@ -253,7 +263,7 @@ final class StockCounts
         return $this->ordered($count)->map(fn (StockCountLine $l) => [
             'id' => $l->id, 'code' => $l->item->code, 'name' => $l->item->name, 'batch' => $this->batch($l->item), 'location' => $l->item->location ?? '', 'unit' => $l->item->unit,
             'counted_qty' => $l->counted_qty ?? '', 'counted_by' => $l->counted_by ?? '', 'skipped' => $l->skipped, 'note' => $l->note ?? '', 'filled' => $l->isComplete() ? 'yes' : 'no',
-        ] + ($count->blind ? [] : ['system_qty' => $l->system_qty]))->values()->all();
+        ] + ($count->blind ? [] : ['system_qty' => $l->system_qty, 'diff' => $l->finalQty() === null ? '' : $l->diff()]))->values()->all();
     }
 
     /**

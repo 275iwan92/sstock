@@ -164,6 +164,13 @@ class StockCountController extends Controller
         return redirect()->route('stock-counts.show', $count)->with('status', "{$count->doc_no} dibatalkan. Kunci transaksi dilepas, stok tidak berubah.");
     }
 
+    public function lock(StockCount $count): RedirectResponse
+    {
+        $this->counts->lock($count, request()->user());
+
+        return redirect()->route('stock-counts.show', $count)->with('status', "Transaksi dikunci kembali untuk {$count->doc_no}. Confirm / Approve Penerimaan, Pengeluaran, dan Penyesuaian ditolak sampai opname selesai atau dibatalkan.");
+    }
+
     public function unlock(StockCount $count): RedirectResponse
     {
         $this->counts->unlock($count, request()->user());

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['doc_no', 'count_date', 'scope_type', 'scope_value', 'status', 'blind', 'lock_transactions', 'threshold_pct', 'cutoff_at', 'created_by', 'submitted_by', 'submitted_at', 'approved_by', 'approved_at', 'adjustment_document_id', 'unlocked_by', 'unlocked_at', 'cancelled_by', 'cancelled_at', 'review_note', 'note'])]
+#[Fillable(['doc_no', 'count_date', 'scope_type', 'scope_value', 'status', 'blind', 'lock_transactions', 'threshold_pct', 'cutoff_at', 'created_by', 'submitted_by', 'submitted_at', 'approved_by', 'approved_at', 'adjustment_document_id', 'unlocked_by', 'unlocked_at', 'locked_by', 'locked_at', 'cancelled_by', 'cancelled_at', 'review_note', 'note'])]
 class StockCount extends Model
 {
     public const STATUS = ['counting' => 'Sedang dihitung', 'review' => 'Tinjau', 'done' => 'Selesai', 'cancelled' => 'Dibatalkan'];
@@ -26,6 +26,7 @@ class StockCount extends Model
             'submitted_at' => 'datetime',
             'approved_at' => 'datetime',
             'unlocked_at' => 'datetime',
+            'locked_at' => 'datetime',
             'cancelled_at' => 'datetime',
         ];
     }
@@ -53,6 +54,11 @@ class StockCount extends Model
     public function unlocker(): BelongsTo
     {
         return $this->belongsTo(User::class, 'unlocked_by');
+    }
+
+    public function locker(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'locked_by');
     }
 
     public function adjustmentDocument(): BelongsTo
