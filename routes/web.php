@@ -13,6 +13,7 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\HpController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\PasswordResetController;
@@ -50,6 +51,10 @@ Route::middleware(['auth', 'active', 'module'])->group(function () {
     Route::get('reorder-orders/{order}', [ReorderOrderController::class, 'show'])->name('reorder-orders.show');
     Route::post('reorder-orders/{order}/close', [ReorderOrderController::class, 'close'])->name('reorder-orders.close');
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
+    // Tampilan HP / Desktop (cookie ui) dan tampilan HP: kelompok modul, modul tanpa tampilan HP dibuka di dalam kerangka HP.
+    Route::post('ui', [HpController::class, 'setDevice'])->name('ui.set');
+    Route::get('m/group/{parent}', [HpController::class, 'group'])->name('hp.group');
+    Route::get('m/open/{code}', [HpController::class, 'open'])->name('hp.open');
     // Ping x-dl::idle-logout: permintaan ini memperpanjang sesi; ikut EnsureActive (akun nonaktif ditolak), tanpa kode modul.
     Route::get('session/ping', fn () => response()->noContent())->name('session.ping');
     // HELP: User's Guide (Indonesia) untuk semua yang login; Technical Guide (English) hanya Administrator (grup di bawah).
@@ -137,6 +142,10 @@ Route::middleware(['auth', 'active', 'module'])->group(function () {
         Route::get('{document}', 'show')->name('docs.show');
         Route::put('{document}', 'update')->name('docs.update');
     });
+
+    // Stok Opname tampilan HP (modul SO): daftar dan layar hitung satu barang per kartu.
+    Route::get('m/counts', [StockCountController::class, 'phoneIndex'])->name('hp.counts');
+    Route::get('m/counts/{count}', [StockCountController::class, 'phone'])->name('hp.count');
 
     // Stok Opname: modul SO (lihat, isi hasil hitung, cetak lembar = akses modul; Data Entry boleh). Mulai, tinjau, setujui, batalkan, buka kunci = Supervisor.
     Route::prefix('stock-counts')->controller(StockCountController::class)->group(function () {

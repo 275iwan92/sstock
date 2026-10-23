@@ -1,0 +1,119 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\User;
+use App\Models\UserGroup;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+/* REMARK
+ * Tujuan       : Menjaga tampilan HP: tebakan perangkat dan pilihan di halaman login (cookie ui, pilihan pengguna menang atas tebakan), saklar di Menu / profil, Beranda HP, kerangka HP dengan modul menurut akses, dan tampilan desktop yang tidak berubah.
+ * Dipakai oleh : php artisan test.
+ * Status       : Aktif.
+ */
+class PhoneViewTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private const PHONE = 'Mozilla/5.0 (Linux; Android 15; CPH2700) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36';
+
+    private const PC = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36';
+
+    public function test_login_page_offers_both_views_preselected_by_device_and_cookie(): void
+    {
+        $phone = $this->withHeader('User-Agent', self::PHONE)->get('/login')->assertOk()->assertSee('name="ui"', false)->getContent();
+        $this->assertMatchesRegularExpression('/value="hp" checked/', $phone);
+        $this->assertStringContainsString('Tampilan HP', $phone);
+        $this->assertStringContainsString('Tampilan Desktop', $phone);
+
+        $pc = $this->withHeader('User-Agent', self::PC)->get('/login')->getContent();
+        $this->assertMatchesRegularExpression('/value="desktop" checked/', $pc);
+
+        // pilihan pengguna (cookie) menang atas tebakan
+        $chosen = $this->withHeader('User-Agent', self::PHONE)->withCookie('ui', 'desktop')->get('/login')->getContent();
+        $this->assertMatchesRegularExpression('/value="desktop" checked/', $chosen);
+    }
+
+    public function test_login_stores_the_chosen_view_in_the_ui_cookie(): void
+    {
+        User::factory()->create(['username' => 'ani', 'password' => bcrypt('rahasia123')]);
+
+        $this->post('/login', ['login' => 'ani', 'password' => 'rahasia123', 'ui' => 'hp'])->assertRedirect()->assertCookie('ui', 'hp');
+        auth()->logout();
+        $this->flushSession();
+        $this->post('/login', ['login' => 'ani', 'password' => 'rahasia123', 'ui' => 'bogus'])->assertRedirect()->assertCookieMissing('ui');
+    }
+
+    public function test_home_follows_the_cookie_then_the_device_guess_and_desktop_is_untouched(): void
+    {
+        $sup = User::factory()->supervisor()->create();
+
+        $desktop = $this->actingAs($sup)->withHeader('User-Agent', self::PC)->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('dl-shell', $desktop);
+        $this->assertStringNotContainsString('dl-phone', $desktop);
+
+        $phone = $this->actingAs($sup)->withHeader('User-Agent', self::PHONE)->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('dl-phone__tabs', $phone);
+        $this->assertStringNotContainsString('dl-shell', $phone);
+
+        // pilihan pengguna menang atas tebakan, ke dua arah
+        $this->actingAs($sup)->withHeader('User-Agent', self::PHONE)->withCookie('ui', 'desktop')->get('/')->assertSee('dl-shell', false)->assertDontSee('dl-phone__tabs', false);
+        $this->actingAs($sup)->withHeader('User-Agent', self::PC)->withCookie('ui', 'hp')->get('/')->assertSee('dl-phone__tabs', false);
+    }
+
+    public function test_desktop_home_gets_one_extra_profile_action_phone_view(): void
+    {
+        $html = $this->actingAs(User::factory()->supervisor()->create())->withHeader('User-Agent', self::PC)->get('/')->getContent();
+        $this->assertStringContainsString('data-lm-act="device"', $html);
+        $this->assertStringContainsString('data-dl-device', $html);
+    }
+
+    public function test_switch_saves_the_cookie_and_rejects_other_values(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->post(route('ui.set'), ['ui' => 'desktop'])->assertRedirect(route('home'))->assertCookie('ui', 'desktop');
+        $this->actingAs($user)->post(route('ui.set'), ['ui' => 'tablet'])->assertSessionHasErrors('ui');
+    }
+
+    public function test_phone_shell_menu_lists_only_modules_the_user_may_open(): void
+    {
+        $entry = User::factory()->create();
+        $html = $this->actingAs($entry)->withCookie('ui', 'hp')->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('Penerimaan Barang', $html);
+        $this->assertStringNotContainsString('>Pengguna<', $html);
+        $this->assertStringNotContainsString('Daftar Modul', $html);
+        $this->assertStringContainsString('action="'.route('ui.set').'"', $html);
+
+        $admin = User::factory()->administrator()->create();
+        $this->actingAs($admin)->withCookie('ui', 'hp')->get('/')->assertSee('Pengguna');
+    }
+
+    public function test_module_without_a_phone_screen_opens_its_desktop_page_inside_the_frame(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->withCookie('ui', 'hp')->get(route('hp.open', 'ITM'))->assertOk()->assertSee('<iframe class="dl-phone__frame" src="'.route('products.index').'"', false);
+        $this->actingAs($user)->get(route('hp.open', 'USR'))->assertForbidden();
+        $this->actingAs($user)->get(route('hp.open', 'XXX'))->assertNotFound();
+    }
+
+    public function test_transaction_tab_lists_accessible_transaction_modules(): void
+    {
+        $entry = User::factory()->create();
+        $this->actingAs($entry)->get(route('hp.group', 'TRX'))->assertOk()->assertSee('Penerimaan Barang')->assertSee('Pengeluaran Barang')->assertDontSee('Saldo Awal')->assertDontSee('Penyesuaian Stok');
+        $this->actingAs($entry)->get(route('hp.group', 'NOPE'))->assertNotFound();
+    }
+
+    public function test_opname_tab_is_hidden_and_the_count_screen_refused_without_the_so_module(): void
+    {
+        $group = UserGroup::create(['code' => 'NOSO', 'name' => 'Tanpa opname']);
+        $group->syncAccess(['RCV' => 'rw']);
+        $user = User::factory()->create(['group_id' => $group->id]);
+
+        $html = $this->actingAs($user)->withCookie('ui', 'hp')->get('/')->getContent();
+        $this->assertStringNotContainsString(route('hp.counts'), $html);
+        $this->actingAs($user)->get(route('hp.counts'))->assertForbidden();
+    }
+}

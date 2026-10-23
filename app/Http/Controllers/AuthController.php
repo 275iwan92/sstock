@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Support\Wallpapers;
+use Devlib\Device;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,6 +12,7 @@ use Illuminate\Support\Str;
 
 /* REMARK
  * Tujuan       : Login / logout. Username atau e-mail + password (tanpa "ingat saya": sesi habis sesuai SESSION_LIFETIME); akun nonaktif ditolak; percobaan dibatasi per login + IP.
+ * Tampilan     : kolom ui (hp | desktop) dari halaman login disimpan di cookie ui.
  * Output       : redirect sesuai peran: Supervisor ke dashboard, Data Entry ke layar Receiving.
  * Dipakai oleh : routes/web.php; tampilan: resources/views/login.blade.php.
  * Status       : Aktif.
@@ -46,8 +48,10 @@ class AuthController extends Controller
         RateLimiter::clear($key);
         $request->session()->regenerate();
 
-        // fresh: buang tab kerja sisa user sebelumnya di browser yang sama.
-        return redirect()->intended($request->user()->isSupervisor() ? route('home') : route('home', ['open' => 'RCV']))->with('fresh', true);
+        // fresh: buang tab kerja sisa user sebelumnya di browser yang sama. ui: pilihan Tampilan HP / Desktop di halaman login disimpan di cookie (pilihan pengguna menang atas tebakan perangkat).
+        $response = redirect()->intended($request->user()->isSupervisor() ? route('home') : route('home', ['open' => 'RCV']))->with('fresh', true);
+
+        return in_array($request->input('ui'), Device::CHOICES, true) ? $response->withCookie(cookie(Device::COOKIE, $request->input('ui'), 60 * 24 * 365)) : $response;
     }
 
     public function logout(Request $request): RedirectResponse
@@ -61,6 +65,6 @@ class AuthController extends Controller
 
     private function fail(Request $request, string $message): RedirectResponse
     {
-        return back()->withInput($request->only('login'))->with('error', $message);
+        return back()->withInput($request->only('login', 'ui'))->with('error', $message);
     }
 }

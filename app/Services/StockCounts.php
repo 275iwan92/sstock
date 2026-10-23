@@ -272,16 +272,17 @@ final class StockCounts
     }
 
     /**
-     * Baris lembar input (x-dl::sheet). Hitung buta: stok sistem TIDAK ikut dikirim ke browser.
+     * Baris lembar input (x-dl::sheet). Hitung buta: stok sistem TIDAK ikut dikirim ke browser. $trace (tampilan HP): ikut siapa (by_id, by) dan jam (at) terakhir yang mengisi baris, untuk peringatan lunak.
      *
      * @return array<int, array<string, mixed>>
      */
-    public function entryRows(StockCount $count): array
+    public function entryRows(StockCount $count, bool $trace = false): array
     {
         return $this->ordered($count)->map(fn (StockCountLine $l) => [
             'id' => $l->id, 'code' => $l->item->code, 'name' => $l->item->name, 'batch' => $this->batch($l->item), 'location' => $l->item->location ?? '', 'unit' => $l->item->unit,
             'counted_qty' => $l->counted_qty ?? '', 'counted_by' => $l->counted_by ?? '', 'skipped' => $l->skipped, 'note' => $l->note ?? '', 'filled' => $l->isComplete() ? 'yes' : 'no', 'rev' => $l->rev,
-        ] + ($count->blind ? [] : ['system_qty' => $l->system_qty, 'diff' => $l->finalQty() === null ? '' : $l->diff()]))->values()->all();
+        ] + ($count->blind ? [] : ['system_qty' => $l->system_qty, 'diff' => $l->finalQty() === null ? '' : $l->diff()])
+            + ($trace ? ['by_id' => $l->entered_by, 'by' => $l->enteredBy?->name ?? '', 'at' => $l->entered_at?->format('H:i') ?? ''] : []))->values()->all();
     }
 
     /**

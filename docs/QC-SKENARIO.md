@@ -378,6 +378,29 @@ Peran: Supervisor mengisi. Kop (bagian atas kertas) semua cetakan mengikuti menu
 | CMP-10 | Saat logo ada, buka alamat logo (`/company/logo`) di jendela privat tanpa masuk. Hapus logo lalu buka alamat itu lagi. | Gambar logo tampil tanpa login. Setelah logo dihapus: halaman tidak ditemukan (404). | | |
 | CMP-11 | Beri Grup hak **Hanya baca (RO)** untuk Perusahaan, masuk sebagai anggotanya (peran Supervisor), buka layar dan coba Simpan. | Layar terbuka, tetapi Simpan ditolak dengan pesan akses hanya-baca (RO). | | |
 
+## 18. Tampilan HP (HPV)
+
+Peran: semua. Uji di HP sungguhan (Chrome Android, potret, sekitar 360 x 800) dan sekali di komputer. Siapkan satu opname berstatus Sedang dihitung (bagian 15).
+
+| No | Langkah | Hasil yang diharapkan | Lulus/Gagal | Catatan |
+|---|---|---|---|---|
+| HPV-01 | Di HP, buka halaman Masuk. | Ada pilihan **Tampilan HP** dan **Tampilan Desktop**; Tampilan HP terpilih lebih dulu. Di komputer: Tampilan Desktop terpilih. | | |
+| HPV-02 | Di HP, masuk dengan Tampilan HP. | Beranda HP: kartu ringkasan besar dan lima tombol di bawah: Beranda, Stok, Transaksi, Opname, Menu. Tidak ada yang terpotong; tidak ada gulir ke samping pada halaman. | | |
+| HPV-03 | Tekan **Menu**. | Lembar naik dari bawah berisi semua menu yang boleh dibuka akun itu (Data Master, Transaksi, Laporan). Sebagai `entry` tidak ada Keamanan. Tekan Menu lagi atau area gelap: lembar menutup. | | |
+| HPV-04 | Pilih menu **Barang**. | Halaman Barang (tampilan komputer) terbuka di dalam kerangka HP; tabel lebar bisa digeser ke samping di dalamnya. Tombol kembali di atas ke Beranda. | | |
+| HPV-05 | Di ujung Menu pilih **Tampilan Desktop**, tekan **Terapkan**. Muat ulang. | Tampilan Desktop (menu kiri). Tutup browser lalu buka lagi: tetap Tampilan Desktop (pilihan pengguna menang atas deteksi). Di menu profil desktop ada **Tampilan HP** untuk kembali. | | |
+| HPV-06 | Keluar. Di halaman Masuk pilih Tampilan Desktop di HP lalu masuk. Ulangi dengan Tampilan HP di komputer. | Tampilan mengikuti pilihan di halaman Masuk, bukan perangkat. | | |
+| HPV-07 | Buka tab **Opname**, tekan **Hitung sekarang**. | Satu barang per kartu: nama, kode, rak; kolom jumlah besar dengan satuan; **Barang 1 / N**; tombol Sebelumnya dan Barang berikutnya menempel di bawah. Keyboard HP angka dengan koma desimal. Opname hitung buta: tidak ada stok sistem. | | |
+| HPV-08 | Ketik 12,5 lalu Enter. | Pindah ke barang 2; tertulis Tersimpan; terisi bertambah. Di komputer, baris itu berisi 12,5. | | |
+| HPV-09 | Pada barang 3 kosongkan jumlah dan tekan Barang berikutnya; pada barang 4 isi 0. | Barang 3 tetap Belum dihitung. Barang 4 dihitung nol (terisi). | | |
+| HPV-10 | Pada barang 5 centang **Tidak dihitung** tanpa catatan. | Tertulis perlu catatan; baris belum dihitung terisi sampai catatan diisi. | | |
+| HPV-11 | Ketik sebagian kode barang di kolom Cari lalu pilih hasilnya. Lalu ketik kode lengkap dan Enter (atau pindai barcode bila ada pemindai). | Melompat ke barang itu dan kolom jumlah siap diisi. Kode yang tidak ada: tertulis Tidak ketemu. | | |
+| HPV-12 | Nyalakan mode pesawat, isi satu barang lalu pindah. Matikan mode pesawat. | Status merah **Gagal menyimpan**, isian tetap tampil. Sinyal kembali: terkirim sendiri atau lewat Coba lagi; berubah Tersimpan. | | |
+| HPV-13 | Buka opname yang sama di komputer (akun lain), isi barang X. Di HP (belum dimuat ulang) isi barang X angka lain. | Peringatan: baris sudah diubah akun itu; wajib alasan untuk Timpa, atau Buang isian saya. | | |
+| HPV-14 | Buka barang yang sudah diisi akun lain (muat ulang HP). | Peringatan kuning di kartu: siapa dan jam berapa mengisinya. | | |
+| HPV-15 | Isi semua barang sampai barang terakhir lalu Barang berikutnya. | Ringkasan: N dari N terisi dan tombol **Selesai Hitung**. Bila ada yang belum: daftarnya, bisa disentuh. Selesai Hitung (OK): kembali ke daftar Opname HP; status Tinjau. | | |
+| HPV-16 | Di komputer pastikan tampilan desktop (menu kiri, Beranda, Stok Opname) sama seperti sebelumnya. | Tidak ada perubahan, kecuali satu item **Tampilan HP** di menu profil. | | |
+
 ---
 
 ## Hal yang sengaja belum ada
@@ -388,7 +411,8 @@ Fitur berikut **memang belum dibuat** (mungkin ditambah nanti). Jangan dilaporka
 - **Retur** (retur ke supplier atau retur dari penerima). Koreksi dilakukan lewat Penyesuaian Stok atau pembatalan dokumen.
 - **Nomor lot/batch milik pemasok.** Batch di Stoku hanya menurut tanggal kedaluwarsa (kode `KODEBARANG-YYMMDD`).
 - **Ekspor dan impor data** selain yang ada: tombol Export CSV pada grid dan Cetak pada laporan dan dokumen. Belum ada impor barang/transaksi dari Excel atau CSV.
-- **Barcode** (membaca atau mencetak barcode/QR).
+- **Barcode** (mencetak barcode/QR; kamera HP sebagai pemindai). Pemindai Bluetooth/USB yang bertingkah seperti keyboard sudah bisa dipakai di kolom Cari layar hitung HP.
+- **Tampilan HP tahap 1 hanya Beranda, Menu, dan Hitung Stok Opname.** Layar lain (master, transaksi, laporan) di HP masih tampilan komputer di dalam kerangka HP; perapiannya menyusul. "Tambah barang" (barang ketemu fisik tapi tak ada di lembar) di layar hitung HP belum ada: pakai Tampilan Desktop.
 - **Notifikasi e-mail / WhatsApp untuk jadwal Stok Opname.** Pengingat hanya tampil di Beranda dan lencana menu. Baris selisih besar ditandai kolom Besar dan kotak penyaring, belum diberi warna baris.
 - **Mengubah atau menghapus catatan pesanan.** Riwayat Pemesanan hanya membaca dan punya Tutup Pesanan. Salah catat: tutup pesanan, lalu catat yang baru.
 - **Logo hitam-putih khusus Hemat Tinta** dan kop kedua untuk dokumen ber-PPN. Satu logo dan satu kop dipakai di semua cetakan.

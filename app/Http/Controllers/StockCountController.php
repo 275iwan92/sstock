@@ -97,6 +97,8 @@ class StockCountController extends Controller
     public function saveLines(Request $request, StockCount $count): JsonResponse
     {
         $key = "stock-count.{$count->id}.counter";
+        $compact = $request->boolean('compact');
+        $ids = array_map(fn ($r) => (int) ($r['id'] ?? 0), (array) $request->input('changed', []));
         $overwrite = filled($request->input('reason'));   // layar menjawab peringatan "baris sudah diubah orang lain" dengan alasan = menimpa
         try {
             DB::transaction(function () use ($request, $count, $key, $overwrite) {
@@ -108,10 +110,40 @@ class StockCountController extends Controller
                 }
             });
         } catch (StockCountRowChanged $e) {
-            return response()->json(['reason_required' => true, 'error' => $e->getMessage()], 409);
+            return response()->json(['reason_required' => true, 'error' => $e->getMessage()] + ($compact ? ['row' => $this->phoneRows($count, $ids)[0] ?? null] : []), 409);
         }
 
-        return response()->json(['rows' => $this->counts->entryRows($count)]);
+        return response()->json(['rows' => $compact ? $this->phoneRows($count, $ids) : $this->counts->entryRows($count)]);
+    }
+
+    // Tampilan HP menyimpan satu barang per permintaan dan hanya butuh barisnya sendiri (compact=1): jawabannya baris itu saja, lengkap dengan jejak siapa / jam.
+    private function phoneRows(StockCount $count, array $ids): array
+    {
+        return array_values(array_filter($this->counts->entryRows($count, true), fn (array $r) => in_array($r['id'], $ids, true)));
+    }
+
+    // Tampilan HP: daftar opname sebagai kartu (tab Opname).
+    public function phoneIndex(Request $request)
+    {
+        $filled = fn ($q) => $q->where(fn ($w) => $w->where('skipped', true)->orWhereNotNull('counted_qty')->orWhereNotNull('recount_qty'));
+        $counts = StockCount::query()->withCount(['lines', 'lines as filled_lines_count' => $filled])->latest('count_date')->latest('id')->limit(30)->get()
+            ->map(fn (StockCount $c) => [
+                'id' => $c->id, 'doc_no' => $c->doc_no, 'date' => $c->count_date->format('d-m-Y'), 'scope' => $c->scopeLabel(), 'status' => $c->statusLabel(),
+                'tone' => ['counting' => 'warn', 'review' => 'info', 'done' => 'success', 'cancelled' => 'danger'][$c->status] ?? 'neutral',
+                'progress' => $c->filled_lines_count.' / '.$c->lines_count, 'counting' => $c->status === 'counting',
+            ])->all();
+
+        return view('hp.counts', ['counts' => $counts, 'sup' => $request->user()->isSupervisor()]);
+    }
+
+    // Tampilan HP: layar hitung satu barang per kartu. Hanya saat Sedang dihitung; selain itu kembali ke daftar. Pengendali, aturan, dan endpoint simpan sama dengan layar desktop.
+    public function phone(Request $request, StockCount $count)
+    {
+        if ($count->status !== 'counting') {
+            return redirect()->route('hp.counts')->with('status', "{$count->doc_no} sudah tidak dalam penghitungan ({$count->statusLabel()}).");
+        }
+
+        return view('hp.count', ['count' => $count, 'rows' => $this->counts->entryRows($count, true), 'me' => $request->user()->id]);
     }
 
     // Tambah barang / batch yang ditemukan fisik tetapi tidak ada di lembar.
@@ -175,7 +207,8 @@ class StockCountController extends Controller
     {
         $this->counts->finish($count, $request->user());
 
-        return redirect()->route('stock-counts.show', $count)->with('status', "Penghitungan {$count->doc_no} selesai. Menunggu tinjauan Supervisor; stok belum berubah.");
+        // hp=1: dikirim dari tampilan HP, kembali ke daftar opname HP (bukan layar desktop).
+        return redirect()->route($request->boolean('hp') ? 'hp.counts' : 'stock-counts.show', $request->boolean('hp') ? [] : $count)->with('status', "Penghitungan {$count->doc_no} selesai. Menunggu tinjauan Supervisor; stok belum berubah.");
     }
 
     public function cancel(StockCount $count): RedirectResponse

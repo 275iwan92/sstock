@@ -2,3 +2,6 @@
 document.addEventListener('dl:sheet-save', (e) => {
     if (e.target.closest('[data-reload-on-save]')) setTimeout(() => location.reload(), 600);
 });
+
+// Hitung Opname tampilan HP (aktif hanya di halaman yang punya [data-hp-count]).
+import './hp-count';

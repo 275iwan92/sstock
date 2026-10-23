@@ -40,7 +40,7 @@ final class Modules
             'RCV' => ['TRX', 'Penerimaan Barang', 'fa-solid fa-truck-ramp-box', 'grid', ['docs.index', 'receiving'], 'entry', []],
             'ISS' => ['TRX', 'Pengeluaran Barang', 'fa-solid fa-dolly', 'grid', ['docs.index', 'issuance'], 'entry', []],
             'ADJ' => ['TRX', 'Penyesuaian Stok', 'fa-solid fa-scale-balanced', 'grid', ['docs.index', 'adjustment'], 'supervisor', []],
-            'SO' => ['TRX', 'Stok Opname', 'fa-solid fa-clipboard-check', 'grid', 'stock-counts.index', 'entry', ['stock-counts.']],
+            'SO' => ['TRX', 'Stok Opname', 'fa-solid fa-clipboard-check', 'grid', 'stock-counts.index', 'entry', ['stock-counts.', 'hp.count']],
             'ORD' => ['TRX', 'Riwayat Pemesanan', 'fa-solid fa-clock-rotate-left', 'grid', 'reorder-orders.index', 'entry', ['reorder-orders.']],
             'R-CARD' => ['RPT', 'Kartu Stok', 'fa-solid fa-clipboard-list', 'report', 'reports.stock-card', 'entry', ['reports.stock-card']],
             'R-SUM' => ['RPT', 'Ringkasan Stok', 'fa-solid fa-table-list', 'report', 'reports.summary', 'entry', ['reports.summary']],

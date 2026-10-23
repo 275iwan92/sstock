@@ -251,6 +251,19 @@
 @endif
 
 @if ($can('ORD'))
+<h4 id="so-hp">Menghitung di HP</h4>
+<p>Pakai <b>Opname</b> di bilah bawah (Tampilan HP). Opname yang sedang dihitung punya tombol <b>Hitung sekarang</b>. Aturannya sama dengan di komputer; hanya tampilannya satu barang per kartu.</p>
+<ol class="g-steps">
+    <li>Kartu menampilkan nama, kode, tanggal kedaluwarsa, dan rak. Ketik hasil hitung di kolom besar. Satuan stok tertulis di sampingnya. Desimal pakai koma, tanpa pemisah ribuan.</li>
+    <li>Tekan <b>Enter</b> di keyboard HP atau <b>Barang berikutnya</b>. Isian tersimpan per barang dan layar pindah ke barang berikutnya. <b>Sebelumnya</b> kembali satu barang. Penanda <b>Barang 5 / 120</b> dan jumlah yang sudah terisi tampil di atas.</li>
+    <li><b>Kosong = belum dihitung. 0 = barang memang kosong.</b> Barang tidak ketemu: centang <b>Tidak dihitung</b> dan isi catatan.</li>
+    <li>Kolom <b>Cari</b> di atas melompat ke barang: ketik sebagian kode atau nama lalu pilih. Pemindai barcode Bluetooth atau USB (bertingkah seperti keyboard) cukup memindai ke kolom Cari: kode yang pas langsung membuka barangnya. Tulisan tangan dengan pen (mis. S Pen) bisa dipakai di kolom isian mana pun.</li>
+    <li>Tulisan di atas menunjukkan <b>Tersimpan</b>. Bila sinyal putus, tertulis <b>Gagal menyimpan</b> dan isian tertahan di HP, lalu dikirim ulang sendiri atau lewat <b>Coba lagi</b>. Jangan menutup halaman sebelum tertulis Tersimpan.</li>
+    <li>Bila barang itu sudah diisi orang lain, kartu memberi peringatan kuning (siapa dan jam berapa). Bila orang lain mengubahnya sejak layar Anda dibuka, Stoku meminta alasan untuk menimpa, atau pilih <b>Buang isian saya</b>.</li>
+    <li>Sesudah barang terakhir muncul <b>Ringkasan</b> (juga lewat tombol Ringkasan di atas). Semua terisi: tekan <b>Selesai Hitung</b>. Yang belum terisi tampil sebagai daftar; sentuh untuk membukanya.</li>
+</ol>
+<p>Pada opname <b>hitung buta</b> stok sistem tidak ditampilkan sama sekali, seperti di komputer.</p>
+
 <h3 id="t-ord">Riwayat Pemesanan</h3>
 <h4>Untuk apa</h4>
 <p>Melihat semua catatan <a href="#catat-pemesanan">Catat Pemesanan</a>, termasuk yang sudah tertutup. Di Beranda hanya pesanan yang masih terbuka tampil. Di sini Anda juga melihat pesanan <b>Selesai</b> dan <b>Ditutup manual</b>, dan penerimaan mana yang memenuhinya. Layar ini tidak memuat harga atau nilai uang.</p>

@@ -11,6 +11,7 @@ use App\Services\CountSchedule;
 use App\Services\LeadTimes;
 use App\Services\StockValuation;
 use App\Support\Menu;
+use Devlib\Device;
 use Illuminate\Http\Request;
 
 /* REMARK
@@ -24,6 +25,9 @@ class HomeController extends Controller
 {
     public function __invoke(Request $request)
     {
+        if (Device::fromRequest($request) === Device::HP) {
+            return app(HpController::class)->home($request);
+        }
         $user = $request->user();
         $below = Product::query()->belowReorderPoint()->withAvailable()->with('category', 'openOrder.creator', 'openOrder.supplier')->orderByRaw(Product::availableSql().' / products.reorder_point', [Item::usableFrom()])->get();
 

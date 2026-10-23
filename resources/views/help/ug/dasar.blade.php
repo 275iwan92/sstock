@@ -98,6 +98,16 @@
     <li>Tombol <b>F1</b> di layar mana pun membuka panduan ini.</li>
 </ul>
 
+<h3 id="tampilan-hp">Tampilan HP dan Tampilan Desktop</h3>
+<p>Stoku punya dua tampilan. <b>Tampilan Desktop</b> untuk komputer. <b>Tampilan HP</b> untuk ponsel dipegang tegak: bilah atas kecil, isi selebar layar, dan lima tombol di bawah layar: <b>Beranda</b>, <b>Stok</b>, <b>Transaksi</b>, <b>Opname</b>, dan <b>Menu</b>.</p>
+<ul class="g-list">
+    <li>Di halaman <b>Masuk</b> ada dua pilihan, <b>Tampilan HP</b> dan <b>Tampilan Desktop</b>. Yang terpilih lebih dulu mengikuti perangkat Anda (ponsel = Tampilan HP). Ubah bila perlu sebelum menekan Masuk. Pilihan Anda diingat di perangkat itu.</li>
+    <li>Ganti kapan saja: di Tampilan HP buka <b>Menu</b>, geser ke bawah, pilih tampilan, tekan <b>Terapkan</b>. Di Tampilan Desktop buka menu profil, pilih <b>Tampilan HP</b>.</li>
+    <li>Tombol <b>Menu</b> membuka daftar semua menu yang boleh Anda buka. Hak akses sama dengan di komputer: menu yang tidak boleh Anda buka tidak tampil.</li>
+    <li>Tablet dan ponsel yang memakai &quot;situs desktop&quot; dianggap komputer. Pilih Tampilan HP di halaman Masuk bila ingin tampilan ponsel.</li>
+    <li>Layar yang belum punya tampilan HP (mis. Barang, laporan) dibuka dengan tampilan komputernya di dalam kerangka HP. Tabel lebar bisa digeser ke samping. Hitung Stok Opname sudah punya tampilan HP sendiri (lihat bagian Stok Opname).</li>
+</ul>
+
 <h2 id="grid">4. Cara memakai Grid</h2>
 <p><b>Grid</b> adalah daftar data: barang, supplier, dokumen, dan seterusnya. Semua grid bekerja dengan cara yang sama.</p>
 <table class="g-table">
