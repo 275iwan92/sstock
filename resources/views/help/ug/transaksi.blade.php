@@ -252,7 +252,7 @@
 
 @if ($can('ORD'))
 <h4 id="so-hp">Menghitung di HP</h4>
-<p>Ketuk <b>&#8801;</b> sampai muncul menu utama, lalu <b>Opname</b> (Tampilan HP). Opname yang sedang dihitung punya tombol <b>Hitung sekarang</b>. Aturannya sama dengan di komputer; hanya tampilannya satu barang per kartu.</p>
+<p>Ketuk <b>&#8801;</b> (di layar yang punya aksi: ketuk <b>Menu</b> di bilah), lalu <b>Opname</b> (Tampilan HP). Opname yang sedang dihitung punya tombol <b>Hitung sekarang</b>. Aturannya sama dengan di komputer; hanya tampilannya satu barang per kartu.</p>
 <ol class="g-steps">
     <li>Kartu menampilkan nama, kode, tanggal kedaluwarsa, dan rak. Ketik hasil hitung di kolom besar. Satuan stok tertulis di sampingnya. Desimal pakai koma, tanpa pemisah ribuan.</li>
     <li>Tekan <b>Enter</b> di keyboard HP atau <b>Barang berikutnya</b>. Isian tersimpan per barang dan layar pindah ke barang berikutnya. <b>Sebelumnya</b> kembali satu barang. Penanda <b>Barang 5 / 120</b> dan jumlah yang sudah terisi tampil di atas.</li>
