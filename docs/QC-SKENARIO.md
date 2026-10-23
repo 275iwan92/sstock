@@ -317,6 +317,7 @@ Peran: semua. Uji di komputer dan di HP (sekitar 360 x 790). Cuaca butuh interne
 | BRN-08 | Putuskan server (hentikan situs atau cabut kabel jaringan server) dan tunggu sekitar 15 detik. | IP server berkedip merah muda dan tertulis "Server tidak terjangkau". Hidupkan kembali: tulisan hilang sendiri dalam beberapa detik. Masa masuk tidak bertambah (keluar otomatis tetap 30 menit). | | |
 | BRN-09 | Matikan Wi-Fi perangkat (mode pesawat). Lalu nyalakan lagi. | IP perangkat berkedip kuning dan tertulis "Perangkat offline"; kembali normal sendiri setelah tersambung. | | |
 | BRN-10 | Nyalakan pengaturan sistem "kurangi gerakan", ulangi BRN-08. | Tidak ada kedipan; warna dan tulisan status tetap muncul. | | |
+| BRN-11 | Lihat judul logo di panel kiri dan halaman masuk (komputer dan HP). Sentuh tulisan versinya. Lalu buat satu commit baru (atau minta pengembang) dan muat ulang. | Tulisan kecil dan pudar seperti `ver 0.133 A` di samping STOKU (panel kiri) dan di bawah formulir masuk; tooltip `alpha`. Angka naik satu setiap commit baru tanpa menyunting berkas. | | |
 
 ## 14. Pengaturan ulang data contoh (RST)
 

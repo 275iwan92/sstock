@@ -96,4 +96,18 @@ class HomeGreetingTest extends TestCase
         Constants::forget();
         $this->assertNull(Company::weather());
     }
+
+    public function test_the_version_label_is_in_the_logo_title_and_under_the_login_form(): void
+    {
+        $count = trim((string) shell_exec('git -C '.escapeshellarg(base_path()).' rev-list --count HEAD'));
+        $this->assertMatchesRegularExpression('/^\d+$/', $count);
+
+        $home = $this->home()->getContent();
+        $this->assertMatchesRegularExpression('/dl-envbadge--version[^>]*title="alpha"[^>]*>ver 0\.'.$count.'\s*<span class="dl-envbadge__stage">A<\/span>/', $home);
+
+        $this->post('/logout');
+        $login = $this->get(route('login'))->getContent();
+        $this->assertStringContainsString('dl-envbadge--loginver', $login);
+        $this->assertStringContainsString('ver 0.'.$count, $login);
+    }
 }

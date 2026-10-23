@@ -11,6 +11,7 @@
     <x-dl::frame bg="sstock" bg-order="random" box="right" color="light" widgets="brand@top-left, clock@top-right, quote@bottom-left" quotes="motivasi.txt">
         @if (session('status'))<x-dl::alert tone="success" :message="session('status')" />@endif
         <x-dl::login-box show="brand, title, username, password, forgot, button" :forgot-url="route('password.request')" :action="route('login.attempt')" :error="$error ?? ($errors->first() ?: null)" :username="$username" :brand="config('devlib.brand.name')" :tagline="config('devlib.brand.tagline')" />
+        <x-dl::env-badge part="version" variant="loginver" />
     </x-dl::frame>
     {{-- Layar sempit (<= 760 px) tanpa pilihan tampilan: popup menawarkan Tampilan HP; di layar lebar tidak pernah terlihat. --}}
     <x-dl::phone-offer :action="route('ui.set')" />

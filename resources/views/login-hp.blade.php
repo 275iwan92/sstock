@@ -10,5 +10,6 @@
 @section('body')
     <x-dl::phone-login :action="route('login.attempt')" :error="$error ?? ($errors->first() ?: null)" :username="$username" :forgot-url="route('password.request')" :brand="config('devlib.brand.name')" :tagline="config('devlib.brand.tagline')" :device-action="route('ui.set')">
         @if (session('status'))<x-dl::alert tone="success" :message="session('status')" />@endif
+        <x-dl::env-badge part="version" variant="loginver" />
     </x-dl::phone-login>
 @endsection

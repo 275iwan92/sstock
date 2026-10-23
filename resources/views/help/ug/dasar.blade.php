@@ -56,6 +56,9 @@
     <li>Tidak ada internet atau layanan cuaca tidak menjawab: kartu cuaca diam atau tidak tampil. Pekerjaan lain tidak terganggu.</li>
 </ul>
 
+<h3 id="versi">Versi Stoku</h3>
+<p>Di samping nama <b>STOKU</b> (panel kiri dan halaman masuk) ada tulisan kecil dan pudar, misalnya <b>ver 0.133 A</b>. Angkanya naik sendiri setiap kali Stoku diperbarui. Huruf di belakangnya adalah tahap: <b>A</b> (alpha, masih dibangun dan dicoba tim sendiri), <b>B</b> (beta, uji coba dengan pengguna sungguhan, fitur dibekukan), <b>RC</b> (calon rilis). Setelah rilis resmi huruf hilang dan versinya menjadi seperti <b>ver 1.0.0</b>. Sentuh tulisannya untuk melihat nama tahap lengkap. Sebutkan versi ini saat melapor masalah.</p>
+
 <h3 id="status-koneksi">Baris jaringan di bawah nama Anda</h3>
 <p>Di bawah nama Anda (kiri bawah di komputer; di HP pada daftar <b>Menu</b>) ada satu baris kecil dan pudar, misalnya <b>10.238.189.21 &rarr; 10.238.189.159</b>. Angka pertama adalah alamat jaringan perangkat Anda, angka kedua alamat server Stoku. Sentuh atau arahkan kursor ke baris itu untuk melihat nama komputernya. Bila Anda melapor masalah, sebutkan kedua angka ini supaya penyebabnya mudah dicari.</p>
 <ul class="g-list">
