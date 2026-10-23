@@ -29,6 +29,9 @@ use App\Http\Controllers\UnitController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
+// Pilihan tampilan HP / Desktop (cookie ui): juga dipakai tamu (popup dan halaman login HP); tanpa login karena hanya menyimpan cookie.
+Route::post('ui', [HpController::class, 'setDevice'])->name('ui.set');
+
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthController::class, 'show'])->name('login');
     Route::post('login', [AuthController::class, 'login'])->name('login.attempt');
@@ -51,8 +54,7 @@ Route::middleware(['auth', 'active', 'module'])->group(function () {
     Route::get('reorder-orders/{order}', [ReorderOrderController::class, 'show'])->name('reorder-orders.show');
     Route::post('reorder-orders/{order}/close', [ReorderOrderController::class, 'close'])->name('reorder-orders.close');
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
-    // Tampilan HP / Desktop (cookie ui) dan tampilan HP: kelompok modul, modul tanpa tampilan HP dibuka di dalam kerangka HP.
-    Route::post('ui', [HpController::class, 'setDevice'])->name('ui.set');
+    // Tampilan HP: kelompok modul, modul tanpa tampilan HP dibuka di dalam kerangka HP.
     Route::get('m/group/{parent}', [HpController::class, 'group'])->name('hp.group');
     Route::get('m/open/{code}', [HpController::class, 'open'])->name('hp.open');
     // Ping x-dl::idle-logout: permintaan ini memperpanjang sesi; ikut EnsureActive (akun nonaktif ditolak), tanpa kode modul.

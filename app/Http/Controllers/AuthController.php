@@ -23,7 +23,8 @@ class AuthController extends Controller
     {
         defer(fn () => Wallpapers::sync());   // sesudah respons terkirim: login tidak menunggu konversi
 
-        return view('login', ['error' => session('error'), 'username' => old('login', '')]);
+        // Ponsel (atau pilihan pengguna) = halaman login HP; selain itu login desktop (di layar sempit dengan popup tawaran tampilan HP).
+        return view(Device::fromRequest(request()) === Device::HP ? 'login-hp' : 'login', ['error' => session('error'), 'username' => old('login', '')]);
     }
 
     public function login(Request $request): RedirectResponse

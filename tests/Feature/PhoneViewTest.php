@@ -20,19 +20,33 @@ class PhoneViewTest extends TestCase
 
     private const PC = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36';
 
-    public function test_login_page_offers_both_views_preselected_by_device_and_cookie(): void
+    public function test_login_page_follows_device_and_cookie_and_offers_the_phone_view_popup_on_desktop_only(): void
     {
-        $phone = $this->withHeader('User-Agent', self::PHONE)->get('/login')->assertOk()->assertSee('name="ui"', false)->getContent();
-        $this->assertMatchesRegularExpression('/value="hp" checked/', $phone);
-        $this->assertStringContainsString('Tampilan HP', $phone);
-        $this->assertStringContainsString('Tampilan Desktop', $phone);
+        // ponsel: halaman login HP (tanpa popup), dengan jalan kembali ke tampilan desktop
+        $phone = $this->withHeader('User-Agent', self::PHONE)->get('/login')->assertOk()->getContent();
+        $this->assertStringContainsString('sstock-hplogin', $phone);
+        $this->assertStringNotContainsString('dl-phoneoffer', $phone);
+        $this->assertStringContainsString('name="ui" value="desktop"', $phone);
 
+        // komputer tanpa pilihan: login desktop + popup tawaran (CSS menampilkannya hanya <= 760 px)
         $pc = $this->withHeader('User-Agent', self::PC)->get('/login')->getContent();
-        $this->assertMatchesRegularExpression('/value="desktop" checked/', $pc);
+        $this->assertStringNotContainsString('sstock-hplogin', $pc);
+        $this->assertStringContainsString('dl-phoneoffer', $pc);
+        $this->assertStringContainsString('Ingin tampilan yang lebih nyaman di smartphone?', $pc);
+        $this->assertStringContainsString('Tetap desktop', $pc);
 
-        // pilihan pengguna (cookie) menang atas tebakan
+        // pilihan pengguna (cookie) menang atas tebakan; popup tidak muncul lagi bila sudah memilih
         $chosen = $this->withHeader('User-Agent', self::PHONE)->withCookie('ui', 'desktop')->get('/login')->getContent();
-        $this->assertMatchesRegularExpression('/value="desktop" checked/', $chosen);
+        $this->assertStringNotContainsString('sstock-hplogin', $chosen);
+        $this->assertStringNotContainsString('dl-phoneoffer', $chosen);
+        $this->assertStringContainsString('sstock-hplogin', $this->withHeader('User-Agent', self::PC)->withCookie('ui', 'hp')->get('/login')->getContent());
+    }
+
+    public function test_guest_can_save_the_view_choice_from_the_popup_and_the_phone_login(): void
+    {
+        $this->withHeader('User-Agent', self::PC)->post(route('ui.set'), ['ui' => 'hp'])->assertRedirect()->assertCookie('ui', 'hp');
+        $this->withHeader('User-Agent', self::PHONE)->post(route('ui.set'), ['ui' => 'desktop'])->assertRedirect()->assertCookie('ui', 'desktop');
+        $this->post(route('ui.set'), ['ui' => 'tablet'])->assertSessionHasErrors('ui');
     }
 
     public function test_login_stores_the_chosen_view_in_the_ui_cookie(): void

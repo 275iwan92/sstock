@@ -101,7 +101,7 @@
 <h3 id="tampilan-hp">Tampilan HP dan Tampilan Desktop</h3>
 <p>Stoku punya dua tampilan. <b>Tampilan Desktop</b> untuk komputer. <b>Tampilan HP</b> untuk ponsel dipegang tegak: bilah atas kecil, isi selebar layar, dan lima tombol di bawah layar: <b>Beranda</b>, <b>Stok</b>, <b>Transaksi</b>, <b>Opname</b>, dan <b>Menu</b>.</p>
 <ul class="g-list">
-    <li>Di halaman <b>Masuk</b> ada dua pilihan, <b>Tampilan HP</b> dan <b>Tampilan Desktop</b>. Yang terpilih lebih dulu mengikuti perangkat Anda (ponsel = Tampilan HP). Ubah bila perlu sebelum menekan Masuk. Pilihan Anda diingat di perangkat itu.</li>
+    <li>Di <b>ponsel</b>, halaman Masuk langsung tampil dalam Tampilan HP (isian dan tombol besar). Tautan kecil <b>Tampilan Desktop</b> di bawahnya kembali ke tampilan komputer. Di layar sempit pada komputer atau tablet, halaman Masuk menampilkan pertanyaan <b>Ingin tampilan yang lebih nyaman di smartphone?</b>: <b>Ketuk di sini</b> beralih ke Tampilan HP, <b>Tetap desktop</b> menutupnya dan pilihan itu diingat. Di layar lebar pertanyaan itu tidak tampil. Pilihan Anda diingat di perangkat itu.</li>
     <li>Ganti kapan saja: di Tampilan HP buka <b>Menu</b>, geser ke bawah, pilih tampilan, tekan <b>Terapkan</b>. Di Tampilan Desktop buka menu profil, pilih <b>Tampilan HP</b>.</li>
     <li>Tombol <b>Menu</b> membuka daftar semua menu yang boleh Anda buka. Hak akses sama dengan di komputer: menu yang tidak boleh Anda buka tidak tampil.</li>
     <li>Tablet dan ponsel yang memakai &quot;situs desktop&quot; dianggap komputer. Pilih Tampilan HP di halaman Masuk bila ingin tampilan ponsel.</li>

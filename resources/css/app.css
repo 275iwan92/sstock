@@ -230,3 +230,15 @@ body.dl-body:has(.sstock-guide) { overflow-y: auto; }
 .sstock-hpc__open { min-height: 48px; padding: 6px 12px; border: 1px solid var(--dl-border); border-radius: var(--dl-radius-md, 10px); background: var(--dl-surface); font: inherit; font-size: 15px; text-align: left; color: var(--dl-ink); cursor: pointer; }
 
 [data-finish] p { margin: 8px 0 12px; }
+
+/* Login HP: satu kolom mengalir 320 sampai ~440 px, tanpa titik patah; isian 16px dan sasaran sentuh >= 52px; tepi aman */
+.sstock-hplogin { box-sizing: border-box; height: 100vh; height: 100dvh; overflow-y: auto; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; justify-content: center; gap: 12px; width: 100%; max-width: 440px; margin: 0 auto; padding: max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left)); background: var(--dl-bg); }
+.sstock-hplogin .dl-loginbox { width: 100%; }
+.sstock-hplogin .dl-input { font-size: 16px; min-height: 52px; }
+.sstock-hplogin .dl-btn { min-height: 54px; font-size: 17px; }
+.sstock-hplogin .dl-loginbox__forgot { min-height: 44px; display: inline-flex; align-items: center; font-size: 15px; }
+.sstock-hplogin__desk { display: flex; justify-content: center; margin: 0; }
+.sstock-hplogin__desk button { min-height: 44px; padding: 0 16px; border: 0; background: none; color: var(--dl-accent); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+.sstock-hplogin .dl-loginbox label, .sstock-hplogin .dl-field__label { font-size: 15px; }
+.sstock-hplogin .dl-loginbox__sub { font-size: 16px; }
+.sstock-hplogin .dl-loginbox { height: auto; flex: none; }

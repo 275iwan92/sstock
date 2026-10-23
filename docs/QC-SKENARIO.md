@@ -384,12 +384,12 @@ Peran: semua. Uji di HP sungguhan (Chrome Android, potret, sekitar 360 x 800) da
 
 | No | Langkah | Hasil yang diharapkan | Lulus/Gagal | Catatan |
 |---|---|---|---|---|
-| HPV-01 | Di HP, buka halaman Masuk. | Ada pilihan **Tampilan HP** dan **Tampilan Desktop**; Tampilan HP terpilih lebih dulu. Di komputer: Tampilan Desktop terpilih. | | |
+| HPV-01 | Di HP, buka halaman Masuk. Lalu di komputer, kecilkan jendela browser sampai lebarnya kurang dari 760 px dan muat ulang. | HP: halaman Masuk khusus HP (satu kolom, isian dan tombol besar, tautan kecil **Tampilan Desktop** di bawah). Komputer sempit: login desktop dengan popup **Ingin tampilan yang lebih nyaman di smartphone?** (Ketuk di sini / Tetap desktop). Komputer lebar: tanpa popup. | | |
 | HPV-02 | Di HP, masuk dengan Tampilan HP. | Beranda HP: kartu ringkasan besar dan lima tombol di bawah: Beranda, Stok, Transaksi, Opname, Menu. Tidak ada yang terpotong; tidak ada gulir ke samping pada halaman. | | |
 | HPV-03 | Tekan **Menu**. | Lembar naik dari bawah berisi semua menu yang boleh dibuka akun itu (Data Master, Transaksi, Laporan). Sebagai `entry` tidak ada Keamanan. Tekan Menu lagi atau area gelap: lembar menutup. | | |
 | HPV-04 | Pilih menu **Barang**. | Halaman Barang (tampilan komputer) terbuka di dalam kerangka HP; tabel lebar bisa digeser ke samping di dalamnya. Tombol kembali di atas ke Beranda. | | |
 | HPV-05 | Di ujung Menu pilih **Tampilan Desktop**, tekan **Terapkan**. Muat ulang. | Tampilan Desktop (menu kiri). Tutup browser lalu buka lagi: tetap Tampilan Desktop (pilihan pengguna menang atas deteksi). Di menu profil desktop ada **Tampilan HP** untuk kembali. | | |
-| HPV-06 | Keluar. Di halaman Masuk pilih Tampilan Desktop di HP lalu masuk. Ulangi dengan Tampilan HP di komputer. | Tampilan mengikuti pilihan di halaman Masuk, bukan perangkat. | | |
+| HPV-06 | Keluar. Di komputer sempit, tekan **Ketuk di sini** pada popup; lalu di halaman Masuk HP tekan **Tampilan Desktop**; lalu ulangi dan pilih **Tetap desktop**. | Ketuk di sini: halaman Masuk berubah menjadi versi HP. Tampilan Desktop: kembali ke login desktop tanpa popup lagi. Tetap desktop: popup tertutup dan tidak muncul lagi pada kunjungan berikutnya. | | |
 | HPV-07 | Buka tab **Opname**, tekan **Hitung sekarang**. | Satu barang per kartu: nama, kode, rak; kolom jumlah besar dengan satuan; **Barang 1 / N**; tombol Sebelumnya dan Barang berikutnya menempel di bawah. Keyboard HP angka dengan koma desimal. Opname hitung buta: tidak ada stok sistem. | | |
 | HPV-08 | Ketik 12,5 lalu Enter. | Pindah ke barang 2; tertulis Tersimpan; terisi bertambah. Di komputer, baris itu berisi 12,5. | | |
 | HPV-09 | Pada barang 3 kosongkan jumlah dan tekan Barang berikutnya; pada barang 4 isi 0. | Barang 3 tetap Belum dihitung. Barang 4 dihitung nol (terisi). | | |
