@@ -6,5 +6,4 @@
  Dipakai oleh : route hp.open.
  Status       : Aktif.
 --}}
-{{-- Layar tingkat atas (tab Stok / Transaksi / Opname) = hamburger; modul dari Menu = layar anak dengan tombol kembali. --}}
-@extends('hp.layout', ['back' => ($active ?? '') === 'menu' ? route('home') : null])
+@extends('hp.layout', ['back' => route('home')])

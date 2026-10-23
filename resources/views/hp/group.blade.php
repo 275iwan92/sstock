@@ -6,7 +6,7 @@
  Dipakai oleh : route hp.group (tab Transaksi).
  Status       : Aktif.
 --}}
-@extends('hp.layout')
+@extends('hp.layout', ['back' => route('home')])
 @section('content')
     @forelse ($items as $it)
         <x-dl::phone-link :label="raw($it['label'])" :icon="$it['icon']" :url="$it['url']" :badge="$it['badge'] ?? null" />

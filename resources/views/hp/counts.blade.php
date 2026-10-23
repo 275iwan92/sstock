@@ -6,7 +6,7 @@
  Dipakai oleh : route hp.counts.
  Status       : Aktif.
 --}}
-@extends('hp.layout', ['title' => 'Stok Opname', 'active' => 'count'])
+@extends('hp.layout', ['title' => 'Stok Opname', 'active' => 'count', 'back' => route('home')])
 @section('content')
     @include('partials.flash')
     @forelse ($counts as $c)
