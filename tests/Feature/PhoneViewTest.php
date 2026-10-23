@@ -130,4 +130,12 @@ class PhoneViewTest extends TestCase
         $this->assertStringNotContainsString(route('hp.counts'), $html);
         $this->actingAs($user)->get(route('hp.counts'))->assertForbidden();
     }
+
+    public function test_desktop_pages_get_the_phone_body_class_only_when_the_device_is_hp(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->withCookie('ui', 'hp')->get(route('products.index'))->assertSee('dl-on-phone', false);
+        $this->actingAs($user)->withCookie('ui', 'desktop')->withHeader('User-Agent', self::PC)->get(route('products.index'))->assertDontSee('dl-on-phone', false);
+    }
 }

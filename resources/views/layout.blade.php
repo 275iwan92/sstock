@@ -19,7 +19,7 @@
     <script src="{{ \Devlib\DevlibServiceProvider::asset('devlib.js') }}" defer></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="dl-body {{ $bodyClass ?? '' }}">
+<body class="dl-body {{ $bodyClass ?? '' }} {{ \Devlib\Device::bodyClass(request()) }}">
     @yield('body')
     {{-- Logout otomatis: hanya halaman berlogin (tamu tidak punya sesi); lamanya = umur sesi server, ping memperpanjang sesi. --}}
     @auth
