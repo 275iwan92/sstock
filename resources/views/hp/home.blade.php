@@ -9,6 +9,7 @@
 @extends('hp.layout')
 @section('content')
     @include('partials.flash')
+    @include('partials.hello', ['name' => auth()->user()->name])
     @if ($countReminder)
         @php $r = $countReminder; @endphp
         <x-dl::phone-link icon="fa-solid fa-clipboard-check" :url="route('hp.counts')" :tone="$r['running'] ? 'info' : ($r['tone'] === 'neutral' ? 'info' : $r['tone'])"

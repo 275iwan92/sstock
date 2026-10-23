@@ -301,6 +301,23 @@ Peran: Administrator.
 | UMM-06 | Pada grid mana pun: klik judul kolom, ubah Tampil 10/25/50, pakai Kolom untuk menyembunyikan kolom. | Pengurutan, jumlah baris, dan kolom tampil berubah sesuai pilihan. | | |
 | UMM-07 | Ganti bahasa ke English lewat menu profil (Bahasa), lalu kembalikan ke Indonesia. | Tampilan berganti, lalu kembali. Tidak ada galat. | | |
 
+## 13b. Beranda: sapaan, cuaca, dan baris jaringan (BRN)
+
+Peran: semua. Uji di komputer dan di HP (sekitar 360 x 790). Cuaca butuh internet. Lokasi perangkat hanya bisa dipakai bila Stoku dibuka lewat HTTPS atau localhost; lewat `http://sstock.test` atau alamat IP yang dipakai adalah kota cadangan dari layar Perusahaan (CMP-12).
+
+| No | Langkah | Hasil yang diharapkan | Lulus/Gagal | Catatan |
+|---|---|---|---|---|
+| BRN-01 | Masuk, lihat bagian atas Beranda komputer. | Satu baris sapaan sesuai jam (misalnya "Selamat siang, Budi": nama depan, tanpa emoji) dan di bawahnya tanggal dan jam kecil ("Jumat, 23 Oktober 2026 · 15:13"). Tidak memakan banyak tinggi. | | |
+| BRN-02 | Kosongkan Kota, Lintang, Bujur di Perusahaan, lalu buka Beranda lewat `http://sstock.test` atau alamat IP. | Tidak ada kartu cuaca dan sapaan tetap rapi. | | |
+| BRN-03 | Isi Kota `Malang`, Lintang `-7.98`, Bujur `112.63` di Perusahaan, buka Beranda lewat `http://sstock.test`. | Kartu biru tua kecil di kanan sapaan: ikon, suhu, "Gerimis · Malang" (kondisi mengikuti cuaca sesungguhnya). Browser tidak meminta izin lokasi (alamat tanpa HTTPS). | | |
+| BRN-04 | Bila ada akses HTTPS: buka Beranda, tekan **Blokir** pada permintaan lokasi, lalu muat ulang beberapa kali. Lalu ubah izin menjadi Izinkan. | Saat diblokir: kartu memakai kota cadangan dan browser tidak menanyakan lagi. Saat diizinkan: kartu memakai kota posisi perangkat (nama kota dari posisi, bukan dari Perusahaan). | | |
+| BRN-05 | Matikan internet sebentar lalu muat ulang Beranda (cache lokasi satu jam dapat tampil). | Kartu cuaca diam atau tidak tampil; tidak ada pesan galat, pekerjaan lain tidak terganggu. | | |
+| BRN-06 | Di HP buka Beranda. | Sapaan satu baris; di bawahnya tanggal singkat ("Jum, 23 Okt 2026 · 15:13") dengan label kecil cuaca ("25°C · Malang") di sebelahnya bila ada cuaca; tidak tertutup tombol hamburger; tidak ada gulir ke samping. | | |
+| BRN-07 | Di komputer lihat bawah nama pengguna di kiri bawah; ketuk nama untuk membuka panel profil. Di HP ketuk hamburger, lalu Menu. | Satu baris kecil dan pudar "IP perangkat → IP server" di bawah nama dan jabatan, juga terlihat di bawah panel profil. Di HP baris itu ada di bawah nama pada daftar Menu. Sentuh atau arahkan: nama komputer muncul sebagai tooltip. Semua pengguna melihatnya. | | |
+| BRN-08 | Putuskan server (hentikan situs atau cabut kabel jaringan server) dan tunggu sekitar 15 detik. | IP server berkedip merah muda dan tertulis "Server tidak terjangkau". Hidupkan kembali: tulisan hilang sendiri dalam beberapa detik. Masa masuk tidak bertambah (keluar otomatis tetap 30 menit). | | |
+| BRN-09 | Matikan Wi-Fi perangkat (mode pesawat). Lalu nyalakan lagi. | IP perangkat berkedip kuning dan tertulis "Perangkat offline"; kembali normal sendiri setelah tersambung. | | |
+| BRN-10 | Nyalakan pengaturan sistem "kurangi gerakan", ulangi BRN-08. | Tidak ada kedipan; warna dan tulisan status tetap muncul. | | |
+
 ## 14. Pengaturan ulang data contoh (RST)
 
 Kasus ini **menghapus semua data**. Kerjakan terakhir. Layar Data Contoh hanya berfungsi bila `.env` berisi `SSTOCK_SAMPLE_REFRESH=true` (lihat README Langkah 4).
@@ -377,6 +394,7 @@ Peran: Supervisor mengisi. Kop (bagian atas kertas) semua cetakan mengikuti menu
 | CMP-09 | Cetak Ringkasan Stok, Lembar Hitung dan Berita Acara Stok Opname (bagian 15). | Kop sama dengan cetakan dokumen: nama, nama PT, dan (bila dipilih gaya itu) logo dan alamat. NPWP hanya ada di cetakan dokumen stok. | | |
 | CMP-10 | Saat logo ada, buka alamat logo (`/company/logo`) di jendela privat tanpa masuk. Hapus logo lalu buka alamat itu lagi. | Gambar logo tampil tanpa login. Setelah logo dihapus: halaman tidak ditemukan (404). | | |
 | CMP-11 | Beri Grup hak **Hanya baca (RO)** untuk Perusahaan, masuk sebagai anggotanya (peran Supervisor), buka layar dan coba Simpan. | Layar terbuka, tetapi Simpan ditolak dengan pesan akses hanya-baca (RO). | | |
+| CMP-12 | Di layar Perusahaan isi **Kota untuk cuaca** `Malang`, **Lintang** `-7,98`, **Bujur** `112.63`, Simpan. Lalu coba Lintang `95`, Bujur kosong (dengan lintang terisi), dan huruf `abc`. | Nilai sah tersimpan (koma desimal diterima) dan terbaca lagi di formulir. Lintang di luar -90..90, bujur kosong saat lintang terisi, dan huruf ditolak dengan pesan merah. | | |
 
 ## 18. Tampilan HP (HPV)
 

@@ -1,0 +1,99 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\User;
+use App\Support\Company;
+use App\Support\Constants;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+/* REMARK
+ * Tujuan       : Menjaga Beranda: sapaan satu baris (nama depan) + tanggal / jam kecil, kartu cuaca di desktop dan chip di HP, tempat cadangan cuaca dari layar Perusahaan (tanpa cadangan kartu tersembunyi),
+ *                dan baris jaringan x-dl::net-line di bawah nama (desktop dan daftar Menu HP) untuk semua pengguna, dengan rute ping DevLib tanpa sesi (bukan session.ping yang memperpanjang sesi).
+ * Dipakai oleh : php artisan test.
+ * Status       : Aktif.
+ */
+class HomeGreetingTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private const PHONE = 'Mozilla/5.0 (Linux; Android 15; CPH2700) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36';
+
+    private function home(string $role = 'data_entry', ?string $ua = null)
+    {
+        $user = $role === 'supervisor' ? User::factory()->supervisor()->create(['name' => 'Budi Santoso']) : User::factory()->create(['name' => 'Budi Santoso']);
+
+        return $this->actingAs($user)->withHeader('User-Agent', $ua ?? 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/141.0.0.0 Safari/537.36')->get(route('home'))->assertOk();
+    }
+
+    public function test_desktop_home_has_a_one_line_greeting_with_the_first_name_and_a_date_line(): void
+    {
+        $html = $this->home()->getContent();
+
+        $this->assertStringContainsString('data-dl-greeting data-name="Budi"', $html);
+        $this->assertStringContainsString('dl-clock dl-clock--line', $html);
+        $this->assertStringNotContainsString('👋', $html);
+        $this->assertStringContainsString('dl-weather dl-weather--card', $html);
+    }
+
+    public function test_without_a_fallback_place_the_weather_card_is_hidden_and_with_one_it_carries_it(): void
+    {
+        $this->assertMatchesRegularExpression('/data-dl-weather data-locate="1"\s+hidden/', $this->home()->getContent());
+
+        Constants::set('company.weather_city', 'Malang', 'company');
+        Constants::set('company.weather_lat', '-7.98', 'company');
+        Constants::set('company.weather_lon', '112.63', 'company');
+        Constants::forget();
+        $html = $this->home()->getContent();
+
+        $this->assertStringContainsString('data-lat="-7.98" data-lon="112.63" data-city="Malang"', $html);
+        $this->assertSame(['city' => 'Malang', 'lat' => -7.98, 'lon' => 112.63], Company::weather());
+    }
+
+    public function test_phone_home_has_the_greeting_and_a_weather_chip(): void
+    {
+        $html = $this->home('data_entry', self::PHONE)->getContent();
+
+        $this->assertStringContainsString('sstock-hello--hp', $html);
+        $this->assertStringContainsString('data-dl-greeting data-name="Budi"', $html);
+        $this->assertStringContainsString('dl-weather dl-weather--chip', $html);
+        $this->assertStringNotContainsString('dl-weather--card', $html);
+    }
+
+    public function test_every_user_gets_the_network_line_on_desktop_and_in_the_phone_menu_with_the_devlib_ping(): void
+    {
+        $desktop = $this->home()->getContent();
+        $this->assertStringContainsString('data-dl-net-line', $desktop);
+        $this->assertStringContainsString('data-ping="'.route('devlib.ping').'"', $desktop);
+        $this->assertStringNotContainsString('data-ping="'.route('session.ping').'"', $desktop);
+
+        $this->assertStringContainsString('data-dl-net-line', $this->home('supervisor', self::PHONE)->getContent());
+    }
+
+    public function test_the_devlib_ping_route_answers_without_a_session_so_it_cannot_extend_it(): void
+    {
+        $r = $this->get('/devlib/ping');
+
+        $r->assertNoContent();
+        $this->assertEmpty($r->headers->getCookies());
+    }
+
+    public function test_the_fallback_place_is_validated_and_accepts_a_decimal_comma(): void
+    {
+        $sup = User::factory()->supervisor()->create();
+        $base = ['name' => 'Maju Jaya', 'kop_style' => 'name'];
+
+        $this->actingAs($sup)->put(route('company.update'), $base + ['weather_lat' => '95', 'weather_lon' => '112'])->assertSessionHasErrors('weather_lat');
+        $this->actingAs($sup)->put(route('company.update'), $base + ['weather_lat' => '-7,98'])->assertSessionHasErrors('weather_lon');
+        $this->actingAs($sup)->put(route('company.update'), $base + ['weather_lat' => 'abc', 'weather_lon' => '112'])->assertSessionHasErrors('weather_lat');
+
+        $this->actingAs($sup)->put(route('company.update'), $base + ['weather_city' => 'Malang', 'weather_lat' => '-7,98', 'weather_lon' => '112.63'])->assertSessionHasNoErrors();
+        Constants::forget();
+        $this->assertSame(['city' => 'Malang', 'lat' => -7.98, 'lon' => 112.63], Company::weather());
+
+        $this->actingAs($sup)->put(route('company.update'), $base)->assertSessionHasNoErrors();
+        Constants::forget();
+        $this->assertNull(Company::weather());
+    }
+}

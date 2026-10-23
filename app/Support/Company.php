@@ -10,7 +10,8 @@ use Illuminate\Validation\ValidationException;
  *                Satu-satunya sumber kop: kop() dipasang ke DevLib (Document::companyUsing) dan report() dikirim ke x-dl::report. Aplikasi tetap bernama STOKU (login, menu, judul); hanya kop cetakan yang berubah.
  *                Data ada di tabel constants (company.name, legal_name, address, phone, email, npwp, logo, kop_style). Belum pernah diisi: nama = config devlib.company.name, gaya = logo + nama bila ada logo, selain itu nama saja.
  *                Logo: PNG / JPG / WebP (bukan SVG), diperiksa menurut ISI berkas, diubah ke PNG selebar paling 600 px dan disimpan sebagai storage/app/company/logo.png (nama tidak pernah dari pengguna); disajikan rute company.logo.
- * Output       : get(), save(), kop(), report(), logoPath(), logoUrl(), style().
+ *                Cuaca Beranda: Kota / Lintang / Bujur (company.weather_city, weather_lat, weather_lon) = tempat CADANGAN cuaca, dipakai bila lokasi perangkat tidak bisa dipakai (izin ditolak, situs belum HTTPS, timeout). Kosong = tanpa cadangan.
+ * Output       : get(), save(), kop(), report(), logoPath(), logoUrl(), style(), weather().
  * Dipakai oleh : AppServiceProvider (Document::companyUsing), CompanyController, view laporan (x-dl::report), StockCountPrint dan StockDocumentPrint (lewat DevLib).
  * Status       : Aktif.
  */
@@ -18,7 +19,7 @@ final class Company
 {
     public const STYLES = ['logo_name_address', 'logo_name', 'name'];
 
-    public const FIELDS = ['name', 'legal_name', 'address', 'phone', 'email', 'npwp'];
+    public const FIELDS = ['name', 'legal_name', 'address', 'phone', 'email', 'npwp', 'weather_city', 'weather_lat', 'weather_lon'];
 
     public const LOGO_FILE = 'logo.png';
 
@@ -58,6 +59,19 @@ final class Company
         $c['kop_style'] = self::style();
 
         return $c;
+    }
+
+    /** Tempat cadangan cuaca Beranda ['city' => ?string, 'lat' => float, 'lon' => float]; null bila Lintang / Bujur belum diisi. */
+    public static function weather(): ?array
+    {
+        $lat = trim((string) Constants::get('company.weather_lat', ''));
+        $lon = trim((string) Constants::get('company.weather_lon', ''));
+        if (! is_numeric($lat) || ! is_numeric($lon)) {
+            return null;
+        }
+        $city = trim((string) Constants::get('company.weather_city', ''));
+
+        return ['city' => $city !== '' ? $city : null, 'lat' => (float) $lat, 'lon' => (float) $lon];
     }
 
     /** Gaya tersimpan; belum ada / tidak sah = logo + nama bila ada logo, selain itu nama saja. */

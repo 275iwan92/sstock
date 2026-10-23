@@ -36,6 +36,13 @@
                 <x-dl::field.checkbox name="remove_logo" label="Hapus logo" text="Hapus logo saat ini" :value="false" />
             @endif
         </x-dl::form.row>
+        <x-dl::divider label="Cuaca di Beranda" />
+        <x-dl::form.row :cols="3">
+            <x-dl::field.text name="weather_city" label="Weather City" :value="$v('weather_city')" maxlength="80" :error="$e('weather_city')" hint="Nama yang ditampilkan di kartu cuaca, mis. Malang." />
+            <x-dl::field.text name="weather_lat" label="Latitude" :value="$v('weather_lat')" maxlength="12" :error="$e('weather_lat')" hint="-90 sampai 90, mis. -7.98." />
+            <x-dl::field.text name="weather_lon" label="Longitude" :value="$v('weather_lon')" maxlength="12" :error="$e('weather_lon')" hint="-180 sampai 180, mis. 112.63." />
+        </x-dl::form.row>
+        <p class="dl-note">Cuaca di Beranda mengikuti posisi perangkat. Isian ini hanya CADANGAN bila lokasi perangkat tidak bisa dipakai (izin ditolak atau situs belum memakai HTTPS). Dikosongkan = tanpa cadangan: kartu cuaca tidak tampil.</p>
         <x-dl::form.row>
             <x-dl::field.radio name="kop_style" label="Print Header Style" :options="$styles" :value="$v('kop_style')" required :error="$e('kop_style')" />
         </x-dl::form.row>

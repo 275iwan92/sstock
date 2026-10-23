@@ -24,6 +24,9 @@ class AppServiceProvider extends ServiceProvider
         GeoLookup::register();
         Indonesian::register();
         Document::companyUsing(fn () => Company::kop());   // satu sumber kop semua cetakan: layar Perusahaan
+        // Baris jaringan x-dl::net-line (IP client -> IP server + status koneksi) di bawah nama pengguna, semua pengguna: keluhan bisa ditelusuri dari mana asalnya.
+        // Ping memakai rute bawaan DevLib /devlib/ping (tanpa sesi): session.ping memperpanjang sesi 30 menit dan login-redirect-nya bisa tampak sebagai gagal.
+        $this->app->bind('devlib.net', fn () => \Devlib\NetworkInfo::of(request()));
 
         // E-mail reset password berbahasa Indonesia; tautan ke layar password baru, berlaku sesuai config auth.passwords.users.expire.
         ResetPassword::toMailUsing(function (object $user, string $token) {

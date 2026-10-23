@@ -12,6 +12,7 @@
     <x-dl::layer-shell :classic="false" :without="['chat', 'ai', 'theme']" :help-url="route('help.user-guide')" :modules="$modules" :user="$user" :logout-action="route('logout')" :device-action="route('ui.set')" :open="$open" :fresh="$fresh" menu-source="App\Support\Menu">
         <x-slot:dashboard>
             @include('partials.flash')
+            @include('partials.hello', ['name' => $user['name']])
             <x-dl::quote :quotes="\Devlib\Components\Frame::textLines('motivasi-harian.txt')" order="day" />
             @include('partials.count-reminder')
             <x-dl::kpi-row>

@@ -29,6 +29,8 @@
 <h3 id="beranda">Beranda</h3>
 <p>Setelah masuk Anda melihat <b>Beranda</b>. Beranda memberi peringatan supaya Anda tahu apa yang perlu dikerjakan.</p>
 <ul class="g-list">
+    <li><b>Sapaan.</b> Satu baris di paling atas, misalnya &quot;Selamat siang, Budi&quot; (nama depan Anda), dengan tanggal dan jam kecil di bawahnya. Di HP tanggalnya ditulis singkat.</li>
+    <li><b>Cuaca.</b> Kartu kecil di kanan sapaan (di HP berupa label kecil di samping tanggal), misalnya &quot;Gerimis · Malang&quot;. Cuaca mengikuti <b>posisi perangkat Anda</b>: saat Beranda dibuka, browser bisa meminta izin lokasi, tekan <b>Izinkan</b>. Bila Anda menolak, bila lokasi tidak bisa dipakai, atau bila Stoku dibuka lewat alamat tanpa HTTPS, cuaca memakai kota yang diisi Supervisor di menu <b>Perusahaan</b>. Bila itu juga kosong, kartu cuaca tidak tampil dan Beranda tetap rapi. Kartu ini mengambil data dari internet lewat browser Anda (lihat catatan di bawah).</li>
     <li><b>Kata motivasi</b> di bagian atas.</li>
     @if ($can('SO'))
         <li><b>Pengingat Stok Opname.</b> Kalimatnya &quot;Stok Opname terakhir ... Berikutnya ...&quot;. Warna biasa berarti jadwalnya masih jauh. Kuning berarti jadwalnya tinggal 3 hari atau kurang, sampai hari jadwalnya. Merah berarti terlambat. Bila ada opname yang sedang berjalan, tertulis &quot;Stok Opname SO-... sedang berjalan (terisi N dari M)&quot;. Tombol <b>Buka Stok Opname</b> membuka menunya. Tombol <b>Mulai Opname</b> hanya untuk Supervisor.</li>
@@ -44,6 +46,24 @@
     <li><b>Peringatan titik pesan ulang.</b> Daftar barang yang <b>stok tersedia</b>-nya sama dengan atau di bawah <b>Titik Pesan Ulang</b>. Stok tersedia adalah jumlah semua batch yang belum kedaluwarsa. Kolom <b>Status Pesanan</b> menunjukkan apakah barang sudah Anda pesan. Cara mencatatnya ada di bagian <a href="#catat-pemesanan">Catat Pemesanan</a>.</li>
     <li><b>Peringatan kedaluwarsa.</b> Batch yang masih ada stoknya dan sudah atau hampir kedaluwarsa (kurang dari 30 hari). Yang paling dulu ada di atas. Tombol <b>Laporan Kedaluwarsa</b> membuka laporannya.</li>
     <li><span class="g-role">hanya Supervisor</span> <b>Nilai Stok.</b> Grafik nilai stok per minggu dalam satu bulan. Tombol <b>Bulan lalu</b> dan <b>Bulan depan</b> berpindah bulan.</li>
+</ul>
+
+<h4>Catatan cuaca</h4>
+<ul class="g-list">
+    <li>Browser Anda mengirim posisi perangkat (dibulatkan, kira-kira ketelitian kota) ke layanan cuaca <b>Open-Meteo</b> dan ke layanan nama kota <b>BigDataCloud</b>. Stoku sendiri tidak menyimpan posisi Anda. Hasilnya diingat di browser selama satu jam supaya tidak meminta berulang.</li>
+    <li>Di komputer, posisinya berasal dari Wi-Fi atau alamat jaringan, jadi kira-kira tepat sampai tingkat kota, bukan alamat Anda.</li>
+    <li>Menolak izin lokasi tidak mengganggu pekerjaan: browser mengingat penolakan itu dan Stoku tidak menanyakannya lagi selama seminggu. Mengubah izin: pengaturan situs di browser.</li>
+    <li>Tidak ada internet atau layanan cuaca tidak menjawab: kartu cuaca diam atau tidak tampil. Pekerjaan lain tidak terganggu.</li>
+</ul>
+
+<h3 id="status-koneksi">Baris jaringan di bawah nama Anda</h3>
+<p>Di bawah nama Anda (kiri bawah di komputer; di HP pada daftar <b>Menu</b>) ada satu baris kecil dan pudar, misalnya <b>10.238.189.21 &rarr; 10.238.189.159</b>. Angka pertama adalah alamat jaringan perangkat Anda, angka kedua alamat server Stoku. Sentuh atau arahkan kursor ke baris itu untuk melihat nama komputernya. Bila Anda melapor masalah, sebutkan kedua angka ini supaya penyebabnya mudah dicari.</p>
+<ul class="g-list">
+    <li><b>Normal.</b> Hanya baris angka itu.</li>
+    <li><b>&quot;Server tidak terjangkau&quot;.</b> Alamat server berkedip merah muda dan tulisan kecil muncul. Browser Anda tidak mendapat jawaban dari server dua kali berturut-turut. Penyebabnya bisa server mati, kabel atau Wi-Fi putus, atau jaringan kantor bermasalah (browser tidak bisa membedakannya). Tulisan hilang sendiri begitu server menjawab lagi. Menunggu sebentar biasanya cukup; bila lama, hubungi pengelola.</li>
+    <li><b>&quot;Perangkat offline&quot;.</b> Alamat perangkat Anda berkedip kuning. Perangkat Anda sendiri tidak punya jaringan (Wi-Fi atau data mati). Nyalakan jaringan, lalu halaman pulih sendiri.</li>
+    <li>Pemeriksaan dilakukan ringan setiap 10 detik selama halaman terlihat. Pemeriksaan ini tidak memperpanjang masa masuk Anda (tetap keluar otomatis setelah 30 menit tanpa aktivitas).</li>
+    <li>Bila pengaturan &quot;kurangi gerakan&quot; di perangkat Anda menyala, alamat tidak berkedip; hanya warna dan tulisannya yang berubah.</li>
 </ul>
 
 <h3 id="catat-pemesanan">Catat Pemesanan</h3>

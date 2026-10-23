@@ -161,7 +161,7 @@ final class Indonesian
         'Open' => 'Terbuka', 'Closed manually' => 'Ditutup manual', 'Search item, supplier, reference...' => 'Cari barang, supplier, referensi...',
 
         // Perusahaan (kop cetakan)
-        'Company' => 'Perusahaan', 'Company Name' => 'Nama Perusahaan', 'Legal Entity Name' => 'Nama PT / CV', 'Tax ID (NPWP)' => 'NPWP', 'Phone' => 'Telepon', 'Company Address' => 'Alamat', 'Print Header Style' => 'Tampilan kop',
+        'Company' => 'Perusahaan', 'Company Name' => 'Nama Perusahaan', 'Weather City' => 'Kota untuk cuaca', 'Latitude' => 'Lintang', 'Longitude' => 'Bujur', 'Legal Entity Name' => 'Nama PT / CV', 'Tax ID (NPWP)' => 'NPWP', 'Phone' => 'Telepon', 'Company Address' => 'Alamat', 'Print Header Style' => 'Tampilan kop',
 
         // Login / umum
         'Supervisor Gudang' => 'Supervisor Gudang',

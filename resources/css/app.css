@@ -56,6 +56,12 @@ body.dl-body:not(.sstock-bare) { padding: 0 16px 16px; }
 .sstock-link:hover, .sstock-link:focus-visible { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(15, 23, 42, .12); outline: none; }
 
 /* Opening screen: peringatan pesan ulang (tabel ringkas, huruf besar) di kiri, grafik nilai stok di kanan; menumpuk di layar sempit. */
+/* Sapaan Beranda: satu baris sapaan + tanggal dan jam kecil, cuaca di ruang kosong kanan (desktop) atau chip kecil di samping tanggal (HP). */
+.sstock-hello { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 0 0 12px; }
+.sstock-hello .dl-greeting { font-size: 22px; line-height: 1.2; color: var(--dl-ink-strong); text-shadow: none; }
+.sstock-hello__meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.sstock-hello--hp { flex-direction: column; align-items: flex-start; gap: 4px; margin: 2px 0 14px; }
+.sstock-hello--hp .dl-greeting { font-size: 20px; }
 .sstock-split { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 16px; align-items: start; margin-top: 12px; }
 .sstock-split > :only-child { grid-column: 1 / -1; }
 .sstock-box { background: var(--dl-surface); border: 1px solid var(--dl-border); border-radius: var(--dl-radius-md, 12px); padding: 14px 16px; }

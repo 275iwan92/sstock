@@ -244,6 +244,7 @@
     <li>Isi <b>Nama PT / CV</b> bila ada. Ini nama badan hukum untuk urusan pajak. Ia dicetak kecil di bawah nama perusahaan.</li>
     <li>Isi <b>NPWP</b>, <b>Telepon</b>, dan <b>Email</b> bila perlu.</li>
     <li>Isi <b>Alamat</b>. Tulis satu baris alamat per baris.</li>
+    <li>Di bagian <b>Cuaca di Beranda</b> isi <b>Kota untuk cuaca</b>, <b>Lintang</b>, dan <b>Bujur</b> (misalnya Malang, -7.98, 112.63; koma desimal boleh). Ini kota <b>cadangan</b> untuk kartu cuaca Beranda, dipakai bila lokasi perangkat pengguna tidak bisa dipakai (izin ditolak atau Stoku dibuka tanpa HTTPS). Kosong semua = tanpa cadangan: kartu cuaca hanya tampil bila lokasi perangkat bisa dipakai. Lintang dan Bujur harus diisi berpasangan; lintang -90 sampai 90, bujur -180 sampai 180.</li>
     <li>Pada <b>Logo</b>, pilih berkas gambar dari komputer Anda. Tekan <b>Hapus logo</b> bila ingin membuang logo yang sudah ada.</li>
     <li>Pilih <b>Tampilan kop</b>: <b>Logo + Nama + Alamat</b>, <b>Logo + Nama</b>, atau <b>Nama saja</b>.</li>
     <li>Lihat <b>Pratinjau kop</b> di bawah isian. Pratinjau berubah langsung saat Anda mengetik atau memilih.</li>
@@ -264,6 +265,7 @@
 <ul class="g-list">
     <li><b>Logo ditolak.</b> Periksa jenis berkasnya (PNG, JPG, atau WebP), ukurannya (paling besar 1 MB), dan sisi gambarnya (32 sampai 4000 piksel). Berkas yang namanya berakhiran .png tetapi bukan gambar juga ditolak.</li>
     <li><b>Kop cetakan tidak berubah.</b> Muat ulang halaman cetak. Pastikan Anda sudah menekan <b>Simpan</b> dan pesan hijau muncul.</li>
+    <li><b>Lintang atau Bujur ditolak.</b> Isi angka saja (boleh minus dan titik atau koma desimal), keduanya berpasangan, dalam batasnya (-90 sampai 90 dan -180 sampai 180). Koordinat kota bisa dilihat di peta (klik kanan pada kota, salin angkanya).</li>
     <li><b>Menu Perusahaan tidak ada.</b> Menu ini hanya untuk Supervisor dan Administrator.</li>
 </ul>
 @endif
