@@ -32,6 +32,9 @@ use Illuminate\Support\Facades\Route;
 // Pilihan tampilan HP / Desktop (cookie ui): juga dipakai tamu (popup dan halaman login HP); tanpa login karena hanya menyimpan cookie.
 Route::post('ui', [HpController::class, 'setDevice'])->name('ui.set');
 
+// Ukur layar (x-dl::screen-info): publik, murni sisi klien, tanpa data server; dibuka dari HP untuk mengukur layar sungguhan.
+Route::view('ukur', 'ukur')->name('ukur');
+
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthController::class, 'show'])->name('login');
     Route::post('login', [AuthController::class, 'login'])->name('login.attempt');

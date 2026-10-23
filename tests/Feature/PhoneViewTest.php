@@ -28,7 +28,7 @@ class PhoneViewTest extends TestCase
         $this->assertStringNotContainsString('dl-phoneoffer', $phone);
         $this->assertStringContainsString('name="ui" value="desktop"', $phone);
 
-        // komputer tanpa pilihan: login desktop + popup tawaran (CSS menampilkannya hanya <= 760 px)
+        // komputer tanpa pilihan: login desktop + popup tawaran (CSS menampilkannya hanya pada layar phone: lebar < 600 px, atau HP landscape)
         $pc = $this->withHeader('User-Agent', self::PC)->get('/login')->getContent();
         $this->assertStringNotContainsString('dl-plogin', $pc);
         $this->assertStringContainsString('dl-phoneoffer', $pc);
