@@ -53,7 +53,7 @@ class HpController extends Controller
         abort_unless(isset(Modules::PARENTS[$parent]), 404);
         $items = collect(HpShell::modules($request->user()))->firstWhere('code', $parent)['children'] ?? [];
 
-        return view('hp.group', ['title' => Modules::PARENTS[$parent][0], 'active' => $parent === 'TRX' ? 'trx' : 'menu', 'items' => $items]);
+        return view('hp.group', ['title' => Modules::PARENTS[$parent][0], 'active' => ['TRX' => 'trx', 'RPT' => 'report'][$parent] ?? '', 'items' => $items]);
     }
 
     // Modul tanpa tampilan HP: halaman desktop modul itu di dalam kerangka HP. Hak akses dijaga dua kali: di sini (modul boleh dibuka) dan oleh rute halaman desktop itu sendiri.

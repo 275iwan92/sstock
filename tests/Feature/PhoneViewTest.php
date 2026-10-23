@@ -68,12 +68,12 @@ class PhoneViewTest extends TestCase
         $this->assertStringNotContainsString('dl-phone', $desktop);
 
         $phone = $this->actingAs($sup)->withHeader('User-Agent', self::PHONE)->get('/')->assertOk()->getContent();
-        $this->assertStringContainsString('dl-phone__tabs', $phone);
+        $this->assertStringContainsString('dl-phone__burger', $phone);
         $this->assertStringNotContainsString('dl-shell', $phone);
 
         // pilihan pengguna menang atas tebakan, ke dua arah
-        $this->actingAs($sup)->withHeader('User-Agent', self::PHONE)->withCookie('ui', 'desktop')->get('/')->assertSee('dl-shell', false)->assertDontSee('dl-phone__tabs', false);
-        $this->actingAs($sup)->withHeader('User-Agent', self::PC)->withCookie('ui', 'hp')->get('/')->assertSee('dl-phone__tabs', false);
+        $this->actingAs($sup)->withHeader('User-Agent', self::PHONE)->withCookie('ui', 'desktop')->get('/')->assertSee('dl-shell', false)->assertDontSee('dl-phone__burger', false);
+        $this->actingAs($sup)->withHeader('User-Agent', self::PC)->withCookie('ui', 'hp')->get('/')->assertSee('dl-phone__burger', false);
     }
 
     public function test_desktop_home_gets_one_extra_profile_action_phone_view(): void

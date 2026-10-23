@@ -1,5 +1,5 @@
 {{-- REMARK
- Tujuan       : Kerangka semua layar tampilan HP Stoku: x-dl::phone-shell (bilah atas, tab bawah Beranda / Stok / Transaksi / Opname / Menu) dengan isi dari @yield('content').
+ Tujuan       : Kerangka semua layar tampilan HP Stoku: x-dl::phone-shell (bilah atas dengan satu tombol hamburger; panel menu: menu utama Beranda / Stok / Transaksi / Opname / Laporan) dengan isi dari @yield('content').
  Sumber hulu  : App\Support\HpShell (tab, modul lembar Menu menurut akses pengguna).
  Input        : title, back (alamat tombol kembali, kosong = layar utama), active (kunci tab), frame (alamat layar desktop yang dibuka di dalam kerangka).
  Output       : halaman penuh dengan x-dl::phone-shell; pilihan Tampilan HP / Desktop dan Keluar ada di lembar Menu.

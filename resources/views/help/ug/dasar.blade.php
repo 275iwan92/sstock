@@ -99,11 +99,11 @@
 </ul>
 
 <h3 id="tampilan-hp">Tampilan HP dan Tampilan Desktop</h3>
-<p>Stoku punya dua tampilan. <b>Tampilan Desktop</b> untuk komputer. <b>Tampilan HP</b> untuk ponsel dipegang tegak: bilah atas kecil, isi selebar layar, dan lima tombol di bawah layar: <b>Beranda</b>, <b>Stok</b>, <b>Transaksi</b>, <b>Opname</b>, dan <b>Menu</b>.</p>
+<p>Stoku punya dua tampilan. <b>Tampilan Desktop</b> untuk komputer. <b>Tampilan HP</b> untuk ponsel dipegang tegak: bilah atas kecil dengan satu tombol <b>&#8801;</b> (menu) di kiri atas, dan isi selebar layar. Tidak ada bilah di bawah layar.</p>
 <ul class="g-list">
     <li>Di <b>ponsel</b>, halaman Masuk langsung tampil dalam Tampilan HP (isian dan tombol besar). Tautan kecil <b>Tampilan Desktop</b> di bawahnya kembali ke tampilan komputer. Di layar sempit pada komputer atau tablet, halaman Masuk menampilkan pertanyaan <b>Ingin tampilan yang lebih nyaman di smartphone?</b>: <b>Ketuk di sini</b> beralih ke Tampilan HP, <b>Tetap desktop</b> menutupnya dan pilihan itu diingat. Di layar lebar pertanyaan itu tidak tampil. Pilihan Anda diingat di perangkat itu.</li>
-    <li>Ganti kapan saja: di Tampilan HP buka <b>Menu</b>, geser ke bawah, pilih tampilan, tekan <b>Terapkan</b>. Di Tampilan Desktop buka menu profil, pilih <b>Tampilan HP</b>.</li>
-    <li>Tombol <b>Menu</b> membuka daftar semua menu yang boleh Anda buka. Hak akses sama dengan di komputer: menu yang tidak boleh Anda buka tidak tampil.</li>
+    <li>Ganti kapan saja: di Tampilan HP ketuk <b>&#8801;</b>, geser ke bawah, tekan <b>Tampilan Desktop</b>. Di Tampilan Desktop buka menu profil, pilih <b>Tampilan HP</b>.</li>
+    <li>Tombol <b>&#8801;</b> membuka panel menu yang menutupi layar: menu utama (<b>Beranda</b>, <b>Stok</b>, <b>Transaksi</b>, <b>Opname</b>, <b>Laporan</b>) tampil besar di atas, lalu semua menu lain yang boleh Anda buka. Tutup dengan <b>X</b>, ketuk di luar panel, atau pilih satu layar. Hak akses sama dengan di komputer: menu yang tidak boleh Anda buka tidak tampil. Pada layar anak (mis. detail barang) ada juga tombol kembali di sebelah &#8801;.</li>
     <li>Tablet dan ponsel yang memakai &quot;situs desktop&quot; dianggap komputer. Pilih Tampilan HP di halaman Masuk bila ingin tampilan ponsel.</li>
     <li>Layar yang belum punya tampilan HP (mis. Barang, laporan) dibuka dengan tampilan komputernya di dalam kerangka HP. Tabel lebar bisa digeser ke samping. Hitung Stok Opname sudah punya tampilan HP sendiri (lihat bagian Stok Opname).</li>
 </ul>
