@@ -32,5 +32,7 @@
             ['label' => 'Reorder', 'where' => ['level' => 'PESAN ULANG'], 'tone' => 'danger'],
             ['label' => 'Inactive', 'where' => ['active' => false], 'tone' => 'warn'],
         ]"
-        :filters="['category' => 'Category', 'unit' => 'Unit']" />
+        :filters="['category' => 'Category', 'unit' => 'Unit']"
+        {{-- Tampilan HP: daftar kartu (nama + kode, lencana Level, stok + satuan, lokasi, kedaluwarsa); desktop tetap tabel. --}}
+        :phone-cards="['title' => 'name', 'sub' => 'code', 'badge' => 'level', 'tones' => ['AMAN' => 'success', 'PESAN ULANG' => 'danger'], 'meta' => ['stock', 'unit', 'available', 'location', 'expiry']]" />
 @endsection

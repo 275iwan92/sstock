@@ -138,4 +138,11 @@ class PhoneViewTest extends TestCase
         $this->actingAs($user)->withCookie('ui', 'hp')->get(route('products.index'))->assertSee('dl-on-phone', false);
         $this->actingAs($user)->withCookie('ui', 'desktop')->withHeader('User-Agent', self::PC)->get(route('products.index'))->assertDontSee('dl-on-phone', false);
     }
+
+    public function test_items_grid_declares_phone_cards_without_a_desktop_view_switch(): void
+    {
+        $html = $this->actingAs(User::factory()->create())->get(route('products.index'))->getContent();
+        $this->assertStringContainsString('phoneCards', $html);
+        $this->assertStringNotContainsString('data-g-view', $html);
+    }
 }
