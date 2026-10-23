@@ -24,7 +24,7 @@ class AuthController extends Controller
         defer(fn () => Wallpapers::sync());   // sesudah respons terkirim: login tidak menunggu konversi
 
         // Ponsel (atau pilihan pengguna) = halaman login HP; selain itu login desktop (di layar sempit dengan popup tawaran tampilan HP).
-        return view(Device::fromRequest(request()) === Device::HP ? 'login-hp' : 'login', ['error' => session('error'), 'username' => old('login', '')]);
+        return view(Device::view(request()) === Device::PHONE ? 'login-hp' : 'login', ['error' => session('error'), 'username' => old('login', '')]);
     }
 
     public function login(Request $request): RedirectResponse
@@ -52,7 +52,7 @@ class AuthController extends Controller
         // fresh: buang tab kerja sisa user sebelumnya di browser yang sama. ui: pilihan Tampilan HP / Desktop di halaman login disimpan di cookie (pilihan pengguna menang atas tebakan perangkat).
         $response = redirect()->intended($request->user()->isSupervisor() ? route('home') : route('home', ['open' => 'RCV']))->with('fresh', true);
 
-        return in_array($request->input('ui'), Device::CHOICES, true) ? $response->withCookie(cookie(Device::COOKIE, $request->input('ui'), 60 * 24 * 365)) : $response;
+        return ($ui = Device::normalize($request->input('ui'))) ? $response->withCookie(cookie(Device::COOKIE, $ui, 60 * 24 * 365)) : $response;
     }
 
     public function logout(Request $request): RedirectResponse

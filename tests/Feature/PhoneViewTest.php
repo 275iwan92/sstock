@@ -44,7 +44,7 @@ class PhoneViewTest extends TestCase
 
     public function test_guest_can_save_the_view_choice_from_the_popup_and_the_phone_login(): void
     {
-        $this->withHeader('User-Agent', self::PC)->post(route('ui.set'), ['ui' => 'hp'])->assertRedirect()->assertCookie('ui', 'hp');
+        $this->withHeader('User-Agent', self::PC)->post(route('ui.set'), ['ui' => 'hp'])->assertRedirect()->assertCookie('ui', 'phone');
         $this->withHeader('User-Agent', self::PHONE)->post(route('ui.set'), ['ui' => 'desktop'])->assertRedirect()->assertCookie('ui', 'desktop');
         $this->post(route('ui.set'), ['ui' => 'tablet'])->assertSessionHasErrors('ui');
     }
@@ -53,7 +53,7 @@ class PhoneViewTest extends TestCase
     {
         User::factory()->create(['username' => 'ani', 'password' => bcrypt('rahasia123')]);
 
-        $this->post('/login', ['login' => 'ani', 'password' => 'rahasia123', 'ui' => 'hp'])->assertRedirect()->assertCookie('ui', 'hp');
+        $this->post('/login', ['login' => 'ani', 'password' => 'rahasia123', 'ui' => 'phone'])->assertRedirect()->assertCookie('ui', 'phone');
         auth()->logout();
         $this->flushSession();
         $this->post('/login', ['login' => 'ani', 'password' => 'rahasia123', 'ui' => 'bogus'])->assertRedirect()->assertCookieMissing('ui');

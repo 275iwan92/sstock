@@ -69,11 +69,11 @@ class HpController extends Controller
         ]);
     }
 
-    // Simpan pilihan tampilan (hp | desktop) di cookie `ui`; pilihan pengguna selalu menang atas tebakan perangkat.
+    // Simpan pilihan tampilan (phone | desktop; nilai lama hp = phone) di cookie `ui`; pilihan pengguna selalu menang atas tebakan perangkat.
     public function setDevice(Request $request): RedirectResponse
     {
-        $ui = $request->validate(['ui' => ['required', Rule::in(Device::CHOICES)]])['ui'];
+        $ui = $request->validate(['ui' => ['required', Rule::in([...Device::CHOICES, ...array_keys(Device::ALIASES)])]])['ui'];
 
-        return redirect()->route('home')->withCookie(cookie(Device::COOKIE, $ui, 60 * 24 * 365));
+        return redirect()->route('home')->withCookie(cookie(Device::COOKIE, Device::normalize($ui), 60 * 24 * 365));
     }
 }

@@ -25,7 +25,7 @@ class HomeController extends Controller
 {
     public function __invoke(Request $request)
     {
-        if (Device::fromRequest($request) === Device::HP) {
+        if (Device::view($request) === Device::PHONE) {
             return app(HpController::class)->home($request);
         }
         $user = $request->user();
