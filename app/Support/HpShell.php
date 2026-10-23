@@ -5,7 +5,7 @@ namespace App\Support;
 use App\Models\User;
 
 /* REMARK
- * Tujuan       : Data kerangka tampilan HP (x-dl::phone-shell): menu utama besar di panel Menu (Beranda, Stok, Transaksi, Opname, Laporan bila ada) dan modul panel Menu, disaring menurut akses pengguna.
+ * Tujuan       : Data kerangka tampilan HP (x-dl::phone-shell): menu utama besar di panel Menu (Beranda, Stok, Transaksi, Opname; tombol kelima Menu = semua modul) dan modul panel Menu, disaring menurut akses pengguna.
  *                Modul yang belum punya tampilan HP dibuka lewat hp.open (halaman desktop di dalam kerangka); Stok Opname punya tampilan HP sendiri (hp.counts).
  * Sumber hulu  : Modules (daftar modul), Menu (modul menurut akses), User::canAccess.
  * Output       : tabs(), modules(), url(kode), tabFor(kode).
@@ -36,7 +36,6 @@ final class HpShell
             $stok ? ['key' => 'stock', 'label' => 'Stok', 'icon' => 'fa-solid fa-boxes-stacked', 'url' => self::url($stok)] : null,
             ['key' => 'trx', 'label' => 'Transaksi', 'icon' => 'fa-solid fa-right-left', 'url' => route('hp.group', 'TRX')],
             $user->canAccess('SO') ? ['key' => 'count', 'label' => 'Opname', 'icon' => 'fa-solid fa-clipboard-check', 'url' => route('hp.counts')] : null,
-            collect(Modules::all())->contains(fn ($m, $code) => $m[0] === 'RPT' && $user->canAccess($code)) ? ['key' => 'report', 'label' => 'Laporan', 'icon' => Modules::PARENTS['RPT'][1], 'url' => route('hp.group', 'RPT')] : null,
         ];
 
         return array_values(array_filter($tabs));
