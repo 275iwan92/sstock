@@ -30,7 +30,7 @@
                     <div class="sstock-hpc__hits" data-hits hidden></div>
                 </div>
 
-                <article class="sstock-hp-card sstock-hpc__card" data-card>
+                <article class="dl-phone-card sstock-hpc__card" data-card>
                     <h2 class="sstock-hpc__name" data-name></h2>
                     <p class="sstock-hpc__meta" data-meta></p>
                     <p class="sstock-hpc__sys" data-system hidden></p>
@@ -63,13 +63,13 @@
                     </details>
                 </article>
 
-                <div class="sstock-hpc__nav">
+                <x-dl::phone-bar columns="1fr 1.5fr">
                     <button type="button" class="sstock-hpc__btn" data-prev>‹ Sebelumnya</button>
                     <button type="button" class="sstock-hpc__btn sstock-hpc__btn--go" data-next>Barang berikutnya</button>
-                </div>
+                </x-dl::phone-bar>
             </div>
 
-            <section class="sstock-hp-card" data-summary hidden>
+            <section class="dl-phone-card" data-summary hidden>
                 <h2 class="sstock-hpc__name">Ringkasan</h2>
                 <p data-sum-line></p>
                 <p class="sstock-hpc__meta" data-not-yet>Barang yang belum terisi (sentuh untuk membuka):</p>

@@ -24,22 +24,22 @@ class PhoneViewTest extends TestCase
     {
         // ponsel: halaman login HP (tanpa popup), dengan jalan kembali ke tampilan desktop
         $phone = $this->withHeader('User-Agent', self::PHONE)->get('/login')->assertOk()->getContent();
-        $this->assertStringContainsString('sstock-hplogin', $phone);
+        $this->assertStringContainsString('dl-plogin', $phone);
         $this->assertStringNotContainsString('dl-phoneoffer', $phone);
         $this->assertStringContainsString('name="ui" value="desktop"', $phone);
 
         // komputer tanpa pilihan: login desktop + popup tawaran (CSS menampilkannya hanya <= 760 px)
         $pc = $this->withHeader('User-Agent', self::PC)->get('/login')->getContent();
-        $this->assertStringNotContainsString('sstock-hplogin', $pc);
+        $this->assertStringNotContainsString('dl-plogin', $pc);
         $this->assertStringContainsString('dl-phoneoffer', $pc);
         $this->assertStringContainsString('Ingin tampilan yang lebih nyaman di smartphone?', $pc);
         $this->assertStringContainsString('Tetap desktop', $pc);
 
         // pilihan pengguna (cookie) menang atas tebakan; popup tidak muncul lagi bila sudah memilih
         $chosen = $this->withHeader('User-Agent', self::PHONE)->withCookie('ui', 'desktop')->get('/login')->getContent();
-        $this->assertStringNotContainsString('sstock-hplogin', $chosen);
+        $this->assertStringNotContainsString('dl-plogin', $chosen);
         $this->assertStringNotContainsString('dl-phoneoffer', $chosen);
-        $this->assertStringContainsString('sstock-hplogin', $this->withHeader('User-Agent', self::PC)->withCookie('ui', 'hp')->get('/login')->getContent());
+        $this->assertStringContainsString('dl-plogin', $this->withHeader('User-Agent', self::PC)->withCookie('ui', 'hp')->get('/login')->getContent());
     }
 
     public function test_guest_can_save_the_view_choice_from_the_popup_and_the_phone_login(): void

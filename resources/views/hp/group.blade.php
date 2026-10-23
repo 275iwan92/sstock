@@ -9,11 +9,7 @@
 @extends('hp.layout', ['back' => route('home')])
 @section('content')
     @forelse ($items as $it)
-        <a class="sstock-hp-card sstock-hp-link" href="{{ $it['url'] }}">
-            <i class="{{ $it['icon'] }}" aria-hidden="true"></i>
-            <span>{{ $it['label'] }}</span>
-            @if (! empty($it['badge']))<em>{{ $it['badge'] }}</em>@endif
-        </a>
+        <x-dl::phone-link :label="raw($it['label'])" :icon="$it['icon']" :url="$it['url']" :badge="$it['badge'] ?? null" />
     @empty
         <x-dl::alert tone="info" message="Tidak ada modul yang bisa Anda buka di kelompok ini." />
     @endforelse

@@ -11,18 +11,12 @@
     @include('partials.flash')
     @if ($countReminder)
         @php $r = $countReminder; @endphp
-        <a class="sstock-hp-card sstock-hp-link sstock-hp-tone-{{ $r['running'] ? 'info' : ($r['tone'] === 'neutral' ? 'info' : $r['tone']) }}" href="{{ route('hp.counts') }}">
-            <i class="fa-solid fa-clipboard-check" aria-hidden="true"></i>
-            <span>{{ $r['running'] ? 'Stok Opname '.$r['running']->doc_no.' sedang berjalan ('.$r['running']->statusLabel().', terisi '.$r['running_progress'].')' : $r['headline'].' '.$r['detail'] }}</span>
-        </a>
+        <x-dl::phone-link icon="fa-solid fa-clipboard-check" :url="route('hp.counts')" :tone="$r['running'] ? 'info' : ($r['tone'] === 'neutral' ? 'info' : $r['tone'])"
+            :label="raw($r['running'] ? 'Stok Opname '.$r['running']->doc_no.' sedang berjalan ('.$r['running']->statusLabel().', terisi '.$r['running_progress'].')' : $r['headline'].' '.$r['detail'])" />
     @endif
-    <div class="sstock-hp-cards">
+    <x-dl::phone-tiles>
         @foreach ($cards as $c)
-            <a class="sstock-hp-card sstock-hp-kpi sstock-hp-tone-{{ $c['tone'] ?? '' }}" href="{{ \App\Support\HpShell::url($c['code']) }}">
-                <i class="{{ $c['icon'] }}" aria-hidden="true"></i>
-                <strong>{{ \Devlib\Locale::number($c['value'], 0) }}</strong>
-                <span>{{ $c['label'] }}</span>
-            </a>
+            <x-dl::phone-tile :label="raw($c['label'])" :value="\Devlib\Locale::number($c['value'], 0)" :icon="$c['icon']" :url="\App\Support\HpShell::url($c['code'])" :tone="$c['tone'] ?? ''" />
         @endforeach
-    </div>
+    </x-dl::phone-tiles>
 @endsection
