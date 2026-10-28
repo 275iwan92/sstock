@@ -111,6 +111,22 @@ class PhoneViewTest extends TestCase
         $this->withHeader('User-Agent', self::PC)->post(route('ui.set'), ['ui' => 'desktop'])->assertCookie('ui', 'desktop');
     }
 
+    public function test_automatic_switch_is_marked_and_a_user_choice_removes_the_mark(): void
+    {
+        $user = User::factory()->supervisor()->create();
+
+        $this->actingAs($user)->post(route('ui.set'), ['ui' => 'phone', 'auto' => 1])->assertCookie('ui', 'phone')->assertCookie('ui_auto', '1');
+        $res = $this->actingAs($user)->post(route('ui.set'), ['ui' => 'desktop']);
+        $res->assertCookie('ui', 'desktop');
+        $this->assertTrue(collect($res->headers->getCookies())->contains(fn ($c) => $c->getName() === 'ui_auto' && $c->isCleared()), 'pilihan pengguna membuang penanda otomatis');
+
+        // ui hasil otomatis dianggap belum dipilih: Beranda desktop memuat popup lagi; kerangka HP kembali sendiri hanya untuk pilihan otomatis
+        $this->actingAs($user)->withHeader('User-Agent', self::PC)->withCookie('ui', 'desktop')->withCookie('ui_auto', '1')->get('/')->assertSee('dl-phoneoffer', false);
+        $this->actingAs($user)->withCookie('ui', 'phone')->withCookie('ui_auto', '1')->get('/')->assertSee('data-auto-return', false);
+        $this->defaultCookies = ['ui_ver' => '2'];   // withCookie bertahan antar permintaan: buang ui_auto dari yang sebelumnya
+        $this->actingAs($user)->withCookie('ui', 'phone')->get('/')->assertDontSee('data-auto-return', false);
+    }
+
     public function test_desktop_home_gets_one_extra_profile_action_phone_view(): void
     {
         $html = $this->actingAs(User::factory()->supervisor()->create())->withHeader('User-Agent', self::PC)->get('/')->getContent();

@@ -12,6 +12,7 @@ use App\Support\Modules;
 use Devlib\Device;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Validation\Rule;
 
 /* REMARK
@@ -70,10 +71,13 @@ class HpController extends Controller
     }
 
     // Simpan pilihan tampilan (phone | desktop; nilai lama hp = phone) di cookie `ui`; pilihan pengguna selalu menang atas tebakan perangkat.
+    // auto=1 (x-dl::phone-offer auto / x-dl::phone-shell autoReturn) = peralihan otomatis karena lebar layar: cookie ui_auto menandainya sebagai BUKAN pilihan pengguna; tanpa auto, penanda dibuang.
     public function setDevice(Request $request): RedirectResponse
     {
-        $ui = $request->validate(['ui' => ['required', Rule::in([...Device::CHOICES, ...array_keys(Device::ALIASES)])]])['ui'];
+        $data = $request->validate(['ui' => ['required', Rule::in([...Device::CHOICES, ...array_keys(Device::ALIASES)])], 'auto' => ['sometimes', 'boolean']]);
 
-        return redirect()->route('home')->withCookie(cookie(Device::COOKIE, Device::normalize($ui), 60 * 24 * 365));
+        return redirect()->route('home')
+            ->withCookie(cookie(Device::COOKIE, Device::normalize($data['ui']), 60 * 24 * 365))
+            ->withCookie($request->boolean('auto') ? cookie(Device::AUTO_COOKIE, '1', 60 * 24 * 365) : Cookie::forget(Device::AUTO_COOKIE));
     }
 }

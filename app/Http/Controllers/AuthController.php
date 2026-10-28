@@ -7,6 +7,7 @@ use Devlib\Device;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 
@@ -52,7 +53,7 @@ class AuthController extends Controller
         // fresh: buang tab kerja sisa user sebelumnya di browser yang sama. ui: pilihan Tampilan HP / Desktop di halaman login disimpan di cookie (pilihan pengguna menang atas tebakan perangkat).
         $response = redirect()->intended($request->user()->isSupervisor() ? route('home') : route('home', ['open' => 'RCV']))->with('fresh', true);
 
-        return ($ui = Device::normalize($request->input('ui'))) ? $response->withCookie(cookie(Device::COOKIE, $ui, 60 * 24 * 365)) : $response;
+        return ($ui = Device::normalize($request->input('ui'))) ? $response->withCookie(cookie(Device::COOKIE, $ui, 60 * 24 * 365))->withCookie(Cookie::forget(Device::AUTO_COOKIE)) : $response;
     }
 
     public function logout(Request $request): RedirectResponse
