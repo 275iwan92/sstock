@@ -399,7 +399,7 @@ Peran: Supervisor mengisi. Kop (bagian atas kertas) semua cetakan mengikuti menu
 
 ## 18. Tampilan HP (HPV)
 
-Peran: semua. Uji di HP sungguhan (Chrome Android, potret, sekitar 360 x 800) dan sekali di komputer. Siapkan satu opname berstatus Sedang dihitung (bagian 15).
+Peran: semua. Uji di HP sungguhan (Chrome Android, potret, sekitar 360 x 800) dan sekali di komputer. Siapkan satu opname berstatus Sedang dihitung (bagian 15). Urutan uji yang ringkas dengan kolom Android / iPhone: `docs/LEMBAR-UJI-HP.md`.
 
 | No | Langkah | Hasil yang diharapkan | Lulus/Gagal | Catatan |
 |---|---|---|---|---|
