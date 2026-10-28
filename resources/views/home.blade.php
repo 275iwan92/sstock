@@ -57,8 +57,8 @@
             </div>
         </x-slot:dashboard>
     </x-dl::layer-shell>
-    {{-- Jendela / layar sempit tanpa pilihan tampilan (mis. login lewat tab lama atau mode Responsive DevTools): tawarkan Tampilan HP di Beranda juga; hanya Beranda, tab-tab di dalamnya adalah iframe. --}}
-    <x-dl::phone-offer :action="route('ui.set')" />
+    {{-- Jendela / layar sempit tanpa pilihan tampilan (mis. login lewat tab lama atau mode Responsive DevTools): pindah ke Tampilan HP di Beranda juga (auto); hanya Beranda, tab-tab di dalamnya adalah iframe. --}}
+    <x-dl::phone-offer :action="route('ui.set')" auto />
     {{-- Kotak ringkasan dan tombol ber-data-open-tab membuka menu yang sama sebagai tab kerja Layer Shell (pesan open-tab ke Shell). --}}
     <script>
         const openTab = el => window.postMessage({dl: 'open-tab', code: el.dataset.openTab}, location.origin);

@@ -34,6 +34,7 @@ class PhoneViewTest extends TestCase
         $this->assertStringContainsString('dl-phoneoffer', $pc);
         $this->assertStringContainsString('Ingin tampilan yang lebih nyaman di smartphone?', $pc);
         $this->assertStringContainsString('Tetap desktop', $pc);
+        $this->assertStringContainsString('data-auto', $pc, 'layar phone langsung ke Tampilan HP (DevLib phone-offer auto)');
 
         // pilihan pengguna (cookie) menang atas tebakan; popup tidak muncul lagi bila sudah memilih
         $chosen = $this->withHeader('User-Agent', self::PHONE)->withCookie('ui', 'desktop')->get('/login')->getContent();
@@ -80,7 +81,7 @@ class PhoneViewTest extends TestCase
     {
         $sup = User::factory()->supervisor()->create();
 
-        $this->actingAs($sup)->withHeader('User-Agent', self::PC)->get('/')->assertSee('dl-phoneoffer', false)->assertSee('Ingin tampilan yang lebih nyaman di smartphone?');
+        $this->actingAs($sup)->withHeader('User-Agent', self::PC)->get('/')->assertSee('dl-phoneoffer', false)->assertSee('data-auto', false)->assertSee('Ingin tampilan yang lebih nyaman di smartphone?');
         $this->actingAs($sup)->withHeader('User-Agent', self::PC)->withCookie('ui', 'desktop')->get('/')->assertDontSee('dl-phoneoffer', false);
         $this->actingAs($sup)->withHeader('User-Agent', self::PHONE)->get('/')->assertDontSee('dl-phoneoffer', false);
     }
