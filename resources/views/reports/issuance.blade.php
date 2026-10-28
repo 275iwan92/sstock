@@ -11,7 +11,7 @@
     <x-report-filter :from="$from" :to="$to">
         <x-dl::field.text name="who" label="Recipient / Department" :value="request('who')" :case-toggle="false" />
     </x-report-filter>
-    <x-dl::report title="Issuance Report" subtitle="Goods issued for maintenance / ATK" :company="\App\Support\Company::report()" :printed-by="raw(auth()->user()->name)" paper="a4l"
+    <x-dl::report phone-list title="Issuance Report" subtitle="Goods issued for maintenance / ATK" :company="\App\Support\Company::report()" :printed-by="raw(auth()->user()->name)" paper="a4l"
         :criteria="['Period' => raw(Devlib\Locale::d($from).' — '.Devlib\Locale::d($to)), 'Recipient / Department' => raw(request('who') ?: 'Semua')]"
         group-by="dept" :groups="['dept' => 'Per Department', 'party' => 'Per Recipient', 'month' => 'Per Month']"
         :summary="array_values(array_filter([['label' => 'Baris dikeluarkan', 'value' => count($rows)], $sup ? ['label' => 'Total Biaya Keluar', 'sum' => 'amount'] : null]))"
