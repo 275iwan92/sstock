@@ -60,6 +60,9 @@ Route::middleware(['auth', 'active', 'module'])->group(function () {
     // Tampilan HP: kelompok modul, modul tanpa tampilan HP dibuka di dalam kerangka HP.
     Route::get('m/group/{parent}', [HpController::class, 'group'])->name('hp.group');
     Route::get('m/open/{code}', [HpController::class, 'open'])->name('hp.open');
+    // Cari Barang tampilan HP (modul ITM, dijaga awalan nama rute hp.find): kolom cari/pindai -> kartu barang -> stok per batch FEFO.
+    Route::get('m/find', [HpController::class, 'find'])->name('hp.find');
+    Route::get('m/find/{product}', [HpController::class, 'product'])->name('hp.find.show');
     // Ping x-dl::idle-logout: permintaan ini memperpanjang sesi; ikut EnsureActive (akun nonaktif ditolak), tanpa kode modul.
     Route::get('session/ping', fn () => response()->noContent())->name('session.ping');
     // HELP: User's Guide (Indonesia) untuk semua yang login; Technical Guide (English) hanya Administrator (grup di bawah).

@@ -15,6 +15,9 @@
         <x-dl::phone-link icon="fa-solid fa-clipboard-check" :url="route('hp.counts')" :tone="$r['running'] ? 'info' : ($r['tone'] === 'neutral' ? 'info' : $r['tone'])"
             :label="raw($r['running'] ? 'Stok Opname '.$r['running']->doc_no.' sedang berjalan ('.$r['running']->statusLabel().', terisi '.$r['running_progress'].')' : $r['headline'].' '.$r['detail'])" />
     @endif
+    @if (auth()->user()->canAccess('ITM'))
+        <x-dl::phone-link icon="fa-solid fa-magnifying-glass" :url="route('hp.find')" label="Cari Barang" badge="Ketik / pindai" />
+    @endif
     <x-dl::phone-tiles>
         @foreach ($cards as $c)
             <x-dl::phone-tile :label="raw($c['label'])" :value="\Devlib\Locale::number($c['value'], 0)" :icon="$c['icon']" :url="\App\Support\HpShell::url($c['code'])" :tone="$c['tone'] ?? ''" />

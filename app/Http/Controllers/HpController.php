@@ -19,12 +19,14 @@ use Illuminate\Validation\Rule;
  * Tujuan       : Tampilan HP (smartphone potret) selain Hitung Opname: Beranda ringkas, daftar modul satu kelompok, modul yang belum punya tampilan HP dibuka (halaman desktop) di dalam kerangka HP, dan penyimpan pilihan tampilan.
  *                Logika dan hak akses tidak berubah: layar desktop tetap jalan; ini hanya tampilan lain untuk perangkat yang berbeda.
  * Sumber hulu  : HpShell (tab / modul), Modules (kode modul, hak), Device (cookie ui).
- * Output       : hp.home (dipanggil HomeController bila perangkat = hp), hp.group, hp.frame; cookie ui.
- * Dipakai oleh : routes/web.php (hp.group, hp.open, ui.set), HomeController.
+ * Output       : hp.home (dipanggil HomeController bila perangkat = hp), hp.group, hp.frame, hp.find / hp.find.show (Cari Barang, modul ITM); cookie ui.
+ * Dipakai oleh : routes/web.php (hp.group, hp.open, hp.find, ui.set), HomeController.
  * Status       : Aktif.
  */
 class HpController extends Controller
 {
+    private const FIND_LIMIT = 30;
+
     // Beranda HP: ringkasan sebagai kartu yang membuka modulnya. Angka sama dengan Beranda desktop (kecuali nilai stok & menunggu persetujuan hanya Supervisor).
     public function home(Request $request)
     {
@@ -67,6 +69,40 @@ class HpController extends Controller
         return view('hp.frame', [
             'title' => $module[1], 'active' => HpShell::tabFor($code),
             'frame' => is_array($module[4]) ? route($module[4][0], $module[4][1]) : route($module[4]),
+        ]);
+    }
+
+    // Cari Barang: kode produk / kode batch / nama / kode lokasi. Kode lengkap (produk atau batch) langsung membuka barangnya, selain itu kartu hasil. Pemindai barcode = keyboard + Enter.
+    public function find(Request $request)
+    {
+        $q = trim((string) $request->query('q', ''));
+        $products = null;
+        if ($q !== '') {
+            $exact = Product::query()->where('is_active', true)->whereRaw('lower(code) = ?', [mb_strtolower($q)])->first();
+            $batch = $exact ? null : Item::query()->whereHas('product', fn ($w) => $w->where('is_active', true))->whereRaw('lower(code) = ?', [mb_strtolower($q)])->first();
+            if ($exact || $batch) {
+                return redirect()->route('hp.find.show', ['product' => $exact?->id ?? $batch->product_id, 'b' => $batch?->code]);
+            }
+            $products = Product::query()->withAvailable()->where('is_active', true)
+                ->where(fn ($w) => $w->where('name', 'like', "%{$q}%")->orWhere('code', 'like', "%{$q}%")->orWhere('location', 'like', "%{$q}%")
+                    ->orWhereHas('items', fn ($i) => $i->where('code', 'like', "%{$q}%")))
+                ->orderBy('name')->limit(self::FIND_LIMIT)->get();
+        }
+
+        return view('hp.find', ['title' => 'Cari Barang', 'active' => 'stock', 'back' => route('home'), 'q' => $q, 'products' => $products, 'limit' => self::FIND_LIMIT]);
+    }
+
+    // Stok satu barang per batch, urutan FEFO (kedaluwarsa paling awal dulu, tanpa tanggal terakhir). Nilai uang hanya untuk Supervisor.
+    public function product(Request $request, Product $product)
+    {
+        abort_unless($product->is_active, 404);
+        $product = Product::query()->withAvailable()->findOrFail($product->id);
+        $batches = $product->items()->where('is_active', true)->where('stock_qty', '>', 0)->orderByRaw('expiry_date is null')->orderBy('expiry_date')->orderBy('id')->get();
+
+        return view('hp.find-show', [
+            'title' => $product->name, 'active' => 'stock', 'back' => route('hp.find'),
+            'product' => $product, 'batches' => $batches, 'scanned' => $request->query('b'),
+            'value' => $request->user()->isSupervisor() ? $batches->sum(fn (Item $i) => $i->stockValue()) : null,
         ]);
     }
 

@@ -5,3 +5,6 @@ document.addEventListener('dl:sheet-save', (e) => {
 
 // Hitung Opname tampilan HP (aktif hanya di halaman yang punya [data-hp-count]).
 import './hp-count';
+
+// Cari Barang tampilan HP: isi kolom terpilih saat fokus supaya pindai berikutnya menimpa.
+import './hp-find';
