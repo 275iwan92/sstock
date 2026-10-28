@@ -421,6 +421,7 @@ Peran: semua. Uji di HP sungguhan (Chrome Android, potret, sekitar 360 x 800) da
 | HPV-15 | Isi semua barang sampai barang terakhir lalu Barang berikutnya. | Ringkasan: N dari N terisi dan tombol **Selesai Hitung**. Bila ada yang belum: daftarnya, bisa disentuh. Selesai Hitung (OK): kembali ke daftar Opname HP; status Tinjau. | | |
 | HPV-16 | Di komputer pastikan tampilan desktop (menu kiri, Beranda, Stok Opname) sama seperti sebelumnya. | Tidak ada perubahan, kecuali satu item **Tampilan HP** di menu profil. | | |
 | HPV-17 | Di HP buka alamat server diikuti **/ukur** (tanpa masuk). Putar layar ke mendatar lalu kembali tegak. Ketuk **Salin hasil**, tempel ke chat. | Kotak ringkasan di atas (mis. `360 x 791 - DPR 3 - potret - phone`); angkanya berubah saat layar diputar. Tombol menyalin satu blok teks yang baris pertamanya sama dengan ringkasan. Pada alamat http tanpa https: teks hasil terbuka dan terpilih bila penyalinan otomatis tidak bisa. Tidak ada menu dan tidak ada data pengguna di halaman. | | |
+| HPV-18 | Di HP buka Penerimaan > Data Baru (atau Pengeluaran), isi Penerima / Supplier, lalu lihat bagian Barang. Ketuk **+ Tambah Barang** sekali. | Tiap barang berupa satu kartu: nomor di kiri atas dengan tombol Simpan / Urungkan di kanan atas; Barang selebar layar; Tanggal Kedaluwarsa dan Jml sebaris, Satuan dan Harga Beli sebaris, Catatan Baris di bawahnya. Tidak ada gulir ke samping, huruf isian tidak membuat layar membesar (iOS), tombol mudah diketuk. Tampilan komputer tetap berupa tabel. | | |
 
 ---
 
