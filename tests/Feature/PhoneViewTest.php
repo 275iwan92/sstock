@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Middleware\ResetViewChoice;
 use App\Models\User;
 use App\Models\UserGroup;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -22,7 +23,7 @@ class PhoneViewTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withCookie('ui_ver', '2');
+        $this->withCookie('ui_ver', ResetViewChoice::VERSION);
     }
 
     private const PC = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36';
@@ -101,11 +102,11 @@ class PhoneViewTest extends TestCase
 
         // browser lama: cookie ui = desktop, belum ada ui_ver -> dilupakan, Beranda memuat popup auto, ui_ver dipasang
         $res = $this->actingAs($sup)->withHeader('User-Agent', self::PC)->withCookie('ui', 'desktop')->get('/');
-        $res->assertSee('data-auto', false)->assertCookie('ui_ver', '2');
+        $res->assertSee('data-auto', false)->assertCookie('ui_ver', ResetViewChoice::VERSION);
         $this->assertTrue(collect($res->headers->getCookies())->contains(fn ($c) => $c->getName() === 'ui' && $c->isCleared()));
 
         // sudah ber-ui_ver: pilihan pengguna menang lagi
-        $this->actingAs($sup)->withHeader('User-Agent', self::PC)->withCookie('ui', 'desktop')->withCookie('ui_ver', '2')->get('/')->assertDontSee('dl-phoneoffer', false);
+        $this->actingAs($sup)->withHeader('User-Agent', self::PC)->withCookie('ui', 'desktop')->withCookie('ui_ver', ResetViewChoice::VERSION)->get('/')->assertDontSee('dl-phoneoffer', false);
 
         // permintaan POST (memilih) tidak dihapus
         $this->withHeader('User-Agent', self::PC)->post(route('ui.set'), ['ui' => 'desktop'])->assertCookie('ui', 'desktop');
@@ -123,7 +124,7 @@ class PhoneViewTest extends TestCase
         // ui hasil otomatis dianggap belum dipilih: Beranda desktop memuat popup lagi; kerangka HP kembali sendiri hanya untuk pilihan otomatis
         $this->actingAs($user)->withHeader('User-Agent', self::PC)->withCookie('ui', 'desktop')->withCookie('ui_auto', '1')->get('/')->assertSee('dl-phoneoffer', false);
         $this->actingAs($user)->withCookie('ui', 'phone')->withCookie('ui_auto', '1')->get('/')->assertSee('data-auto-return', false);
-        $this->defaultCookies = ['ui_ver' => '2'];   // withCookie bertahan antar permintaan: buang ui_auto dari yang sebelumnya
+        $this->defaultCookies = ['ui_ver' => ResetViewChoice::VERSION];   // withCookie bertahan antar permintaan: buang ui_auto dari yang sebelumnya
         $this->actingAs($user)->withCookie('ui', 'phone')->get('/')->assertDontSee('data-auto-return', false);
     }
 

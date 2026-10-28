@@ -17,7 +17,8 @@ use Illuminate\Support\Facades\Cookie;
  */
 class ResetViewChoice
 {
-    private const VERSION = '2';
+    // Naik ke 3: pilihan phone yang tersimpan oleh peralihan otomatis versi lama (tanpa penanda ui_auto) dianggap pilihan pengguna dan tidak kembali ke desktop saat layar melebar.
+    public const VERSION = '3';
 
     public function handle(Request $request, Closure $next)
     {
