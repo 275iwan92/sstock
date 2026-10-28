@@ -65,7 +65,7 @@ class PhoneViewTest extends TestCase
 
         $desktop = $this->actingAs($sup)->withHeader('User-Agent', self::PC)->get('/')->assertOk()->getContent();
         $this->assertStringContainsString('dl-shell', $desktop);
-        $this->assertStringNotContainsString('dl-phone', $desktop);
+        $this->assertStringNotContainsString('dl-phone__burger', $desktop);
 
         $phone = $this->actingAs($sup)->withHeader('User-Agent', self::PHONE)->get('/')->assertOk()->getContent();
         $this->assertStringContainsString('dl-phone__burger', $phone);
@@ -74,6 +74,15 @@ class PhoneViewTest extends TestCase
         // pilihan pengguna menang atas tebakan, ke dua arah
         $this->actingAs($sup)->withHeader('User-Agent', self::PHONE)->withCookie('ui', 'desktop')->get('/')->assertSee('dl-shell', false)->assertDontSee('dl-phone__burger', false);
         $this->actingAs($sup)->withHeader('User-Agent', self::PC)->withCookie('ui', 'hp')->get('/')->assertSee('dl-phone__burger', false);
+    }
+
+    public function test_desktop_home_offers_the_phone_view_popup_only_until_the_user_has_chosen(): void
+    {
+        $sup = User::factory()->supervisor()->create();
+
+        $this->actingAs($sup)->withHeader('User-Agent', self::PC)->get('/')->assertSee('dl-phoneoffer', false)->assertSee('Ingin tampilan yang lebih nyaman di smartphone?');
+        $this->actingAs($sup)->withHeader('User-Agent', self::PC)->withCookie('ui', 'desktop')->get('/')->assertDontSee('dl-phoneoffer', false);
+        $this->actingAs($sup)->withHeader('User-Agent', self::PHONE)->get('/')->assertDontSee('dl-phoneoffer', false);
     }
 
     public function test_desktop_home_gets_one_extra_profile_action_phone_view(): void
