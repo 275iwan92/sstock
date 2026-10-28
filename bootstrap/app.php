@@ -4,6 +4,7 @@ use App\Http\Middleware\EnsureActive;
 use App\Http\Middleware\EnsureAdministrator;
 use App\Http\Middleware\EnsureModuleAccess;
 use App\Http\Middleware\EnsureSupervisor;
+use App\Http\Middleware\ResetViewChoice;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias(['active' => EnsureActive::class, 'supervisor' => EnsureSupervisor::class, 'administrator' => EnsureAdministrator::class, 'module' => EnsureModuleAccess::class]);
+        $middleware->web(append: [ResetViewChoice::class]);
         $middleware->redirectGuestsTo(fn () => route('login'));
         $middleware->redirectUsersTo(fn () => route('home'));
     })

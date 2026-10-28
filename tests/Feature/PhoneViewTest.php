@@ -18,6 +18,13 @@ class PhoneViewTest extends TestCase
 
     private const PHONE = 'Mozilla/5.0 (Linux; Android 15; CPH2700) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36';
 
+    // Semua tes di sini menganggap browser sudah melewati reset pilihan tampilan satu kali (ResetViewChoice).
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->withCookie('ui_ver', '2');
+    }
+
     private const PC = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36';
 
     public function test_login_page_follows_device_and_cookie_and_offers_the_phone_view_popup_on_desktop_only(): void
@@ -85,6 +92,23 @@ class PhoneViewTest extends TestCase
         $this->actingAs($sup)->withHeader('User-Agent', self::PC)->get('/')->assertSee('dl-phoneoffer', false)->assertSee('data-auto', false)->assertSee('Ingin tampilan yang lebih nyaman di smartphone?');
         $this->actingAs($sup)->withHeader('User-Agent', self::PC)->withCookie('ui', 'desktop')->get('/')->assertDontSee('dl-phoneoffer', false);
         $this->actingAs($sup)->withHeader('User-Agent', self::PHONE)->get('/')->assertDontSee('dl-phoneoffer', false);
+    }
+
+    public function test_an_old_view_choice_is_forgotten_once_so_the_auto_switch_can_work(): void
+    {
+        $sup = User::factory()->supervisor()->create();
+        $this->defaultCookies = [];   // tanpa ui_ver dari setUp
+
+        // browser lama: cookie ui = desktop, belum ada ui_ver -> dilupakan, Beranda memuat popup auto, ui_ver dipasang
+        $res = $this->actingAs($sup)->withHeader('User-Agent', self::PC)->withCookie('ui', 'desktop')->get('/');
+        $res->assertSee('data-auto', false)->assertCookie('ui_ver', '2');
+        $this->assertTrue(collect($res->headers->getCookies())->contains(fn ($c) => $c->getName() === 'ui' && $c->isCleared()));
+
+        // sudah ber-ui_ver: pilihan pengguna menang lagi
+        $this->actingAs($sup)->withHeader('User-Agent', self::PC)->withCookie('ui', 'desktop')->withCookie('ui_ver', '2')->get('/')->assertDontSee('dl-phoneoffer', false);
+
+        // permintaan POST (memilih) tidak dihapus
+        $this->withHeader('User-Agent', self::PC)->post(route('ui.set'), ['ui' => 'desktop'])->assertCookie('ui', 'desktop');
     }
 
     public function test_desktop_home_gets_one_extra_profile_action_phone_view(): void
