@@ -162,7 +162,7 @@
 <ul class="g-list">
     <li><b>Kamera belum ada.</b> Pemindaian memakai alat pemindai barcode (Bluetooth / USB). Kamera dan pemasangan Stoku sebagai aplikasi di layar utama butuh alamat <b>https</b>.</li>
     <li><b>Hitung Stok Opname</b> menyimpan isian yang belum terkirim di HP dan mengirimnya lagi bila sinyal kembali, tetapi belum ada mode offline penuh.</li>
-    <li>Formulir <b>Grup</b> menampilkan 24 modul sebagai kartu yang panjang, dan Daftar Modul masih punya penghitung dan penomoran halaman yang kecil. Keduanya tetap bisa dipakai.</li>
+    <li>Formulir <b>Grup</b> menampilkan 24 modul sebagai kartu yang panjang (satu per modul); tetap bisa dipakai, hanya perlu menggulir cukup jauh.</li>
     <li>Tampilan HP baru diuji di emulasi browser pada lebar 360, 393, dan 430 px. Bila ada layar yang terpotong atau tombol yang sulit diketuk di HP Anda, buka halaman <b>/ukur</b> (bagian berikut), salin hasilnya, dan kirim bersama nama layar yang bermasalah.</li>
 </ul>
 
