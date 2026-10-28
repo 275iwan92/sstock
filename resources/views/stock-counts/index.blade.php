@@ -23,6 +23,7 @@
         </x-dl::action-form>
     @endif
     <x-dl::grid id="stock-counts" actions="worklist" :rows="$rows" :new-record="$sup ? 'Start Count' : null" :new-url="$sup ? route('stock-counts.create') : null" :open-url="url('stock-counts/{id}')" search="Search count, scope..."
+        :phone-cards="['title' => 'doc_no', 'sub' => 'scope', 'badge' => 'status', 'tones' => ['Sedang dihitung' => 'warn', 'Tinjau' => 'info', 'Selesai' => 'success', 'Dibatalkan' => 'danger'], 'meta' => ['count_date', 'progress', 'adjustment', 'user']]"
         :columns="[
             ['key' => 'doc_no', 'label' => 'Document', 'type' => 'identity', 'code' => 'scope', 'avatar' => false],
             ['key' => 'count_date', 'label' => 'Count Date', 'type' => 'date'],

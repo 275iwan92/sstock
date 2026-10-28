@@ -13,6 +13,7 @@
     <div style="max-width: 820px">
     <x-dl::grid id="units" :rows="$rows" actions="master" :new-url="route('units.create')" :open-url="url('units/{id}')" :toggle-url="url('units/{id}/toggle')"
         search="Search code or name..."
+        :phone-cards="['title' => 'name', 'sub' => 'code', 'meta' => ['kind', 'conv', 'items']]"
         :columns="[
             ['key' => 'name', 'label' => 'Unit', 'type' => 'identity', 'code' => 'code', 'hue' => 'hue', 'box' => true],
             ['key' => 'kind', 'label' => 'Type'],

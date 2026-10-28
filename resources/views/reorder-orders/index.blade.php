@@ -23,6 +23,7 @@
         </x-dl::action-bar>
     </x-dl::action-form>
     <x-dl::grid id="reorder-orders" actions="worklist" :rows="$rows" :open-url="url('reorder-orders/{id}')" search="Search item, supplier, reference..."
+        :phone-cards="['title' => 'product', 'sub' => 'code', 'badge' => 'status', 'tones' => ['Dipesan' => 'success', 'Diterima sebagian' => 'warn', 'Selesai' => 'info', 'Ditutup manual' => 'neutral'], 'meta' => ['ordered_at', 'supplier', 'qty', 'received', 'remaining']]"
         :columns="[
             ['key' => 'ordered_at', 'label' => 'Order Date', 'type' => 'date'],
             ['key' => 'ref_no', 'label' => 'Order Reference No.'],

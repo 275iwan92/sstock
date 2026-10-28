@@ -197,4 +197,18 @@ class PhoneViewTest extends TestCase
         $this->assertStringContainsString('phoneCards', $html);
         $this->assertStringNotContainsString('data-g-view', $html);
     }
+
+    public function test_every_list_screen_declares_phone_cards_so_phones_do_not_scroll_tables_sideways(): void
+    {
+        $sup = User::factory()->supervisor()->create();
+        $screens = [
+            'products.index' => [], 'suppliers.index' => [], 'units.index' => [], 'categories.index' => [], 'locations.index' => [],
+            'departments.index' => [], 'recipients.index' => [], 'reorder-orders.index' => [], 'stock-counts.index' => [],
+            'docs.index' => ['receiving'], 'docs.index ' => ['issuance'], 'docs.index  ' => ['opening'], 'docs.index   ' => ['adjustment'],
+        ];
+        foreach ($screens as $name => $params) {
+            $html = $this->actingAs($sup)->get(route(trim($name), $params))->assertOk()->getContent();
+            $this->assertStringContainsString('phoneCards', $html, $name.' '.json_encode($params));
+        }
+    }
 }
