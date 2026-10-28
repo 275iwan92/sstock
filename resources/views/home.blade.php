@@ -13,7 +13,8 @@
         <x-slot:dashboard>
             @include('partials.flash')
             @include('partials.hello', ['name' => $user['name']])
-            <x-dl::quote :quotes="\Devlib\Components\Frame::textLines('motivasi-harian.txt')" order="day" />
+            {{-- Kutipan di latar terang: pembungkus dl-dash__quote seperti x-dl::dashboard (teks gelap, kartu tinta amber); tanpa pembungkus teksnya putih. --}}
+            <div class="dl-dash__quote"><x-dl::quote :quotes="\Devlib\Components\Frame::textLines('motivasi-harian.txt')" order="day" /></div>
             @include('partials.count-reminder')
             <x-dl::kpi-row>
                 <x-dl::kpi label="Active items" :value="$itemCount" icon="fa-boxes-stacked" data-open-tab="ITM" class="sstock-link" role="link" tabindex="0" />
