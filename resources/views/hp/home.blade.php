@@ -16,7 +16,7 @@
             :label="raw($r['running'] ? 'Stok Opname '.$r['running']->doc_no.' sedang berjalan ('.$r['running']->statusLabel().', terisi '.$r['running_progress'].')' : $r['headline'].' '.$r['detail'])" />
     @endif
     @if (auth()->user()->canAccess('ITM'))
-        <x-dl::phone-link icon="fa-solid fa-magnifying-glass" :url="route('hp.find')" label="Cari Barang" badge="Ketik / pindai" />
+        <x-dl::phone-link icon="fa-solid fa-magnifying-glass" :url="route('hp.find')" label="Cari Barang" />
     @endif
     <x-dl::phone-tiles>
         @foreach ($cards as $c)
