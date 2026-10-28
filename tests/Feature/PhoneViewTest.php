@@ -211,4 +211,12 @@ class PhoneViewTest extends TestCase
             $this->assertStringContainsString('phoneCards', $html, $name.' '.json_encode($params));
         }
     }
+
+    public function test_admin_list_screens_also_declare_phone_cards(): void
+    {
+        $admin = User::factory()->administrator()->create();
+        foreach (['users.index', 'groups.index', 'modules.index'] as $name) {
+            $this->actingAs($admin)->get(route($name))->assertOk()->assertSee('phoneCards', false);
+        }
+    }
 }

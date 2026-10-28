@@ -123,6 +123,7 @@ body.dl-body:not(.sstock-bare) { padding: 0 16px 16px; }
     .g-svg { min-width: 720px; }
     .g-tabs { padding: 10px 12px 0; }
     .sstock-guide .g-toc { position: static; }
+    .sstock-guide .g-toc a { display: flex; align-items: center; min-height: 44px; }
     .sstock-guide .g-row-3, .sstock-guide .g-row-5 { grid-template-columns: 1fr 1fr; }
 }
 

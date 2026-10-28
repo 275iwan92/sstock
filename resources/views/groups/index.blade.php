@@ -11,6 +11,7 @@
     @include('partials.flash')
     <x-dl::grid id="groups" :rows="$rows" actions="master" :new-url="route('groups.create')" :open-url="url('groups/{id}')" :toggle-url="url('groups/{id}/toggle')"
         search="Search code, name..."
+        :phone-cards="['title' => 'name', 'sub' => 'code', 'meta' => ['users', 'modules']]"
         :columns="[
             ['key' => 'name', 'label' => 'Group', 'type' => 'identity', 'code' => 'code', 'box' => true],
             ['key' => 'users', 'label' => 'Members', 'type' => 'number'],
