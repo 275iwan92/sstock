@@ -9,6 +9,7 @@
 @extends('layout', ['title' => 'Modules'])
 @section('body')
     <x-dl::grid id="modules" :rows="$rows" actions="none" search="Search code, module..."
+        :phone-cards="['title' => 'name', 'sub' => 'code', 'meta' => ['parent', 'level', 'groups']]"
         :columns="[
             ['key' => 'name', 'label' => 'Module', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
             ['key' => 'parent', 'label' => 'Menu'],

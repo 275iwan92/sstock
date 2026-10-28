@@ -28,6 +28,12 @@
         .sstock-advice__calc { display: flex; gap: 16px; flex-wrap: wrap; margin: 6px 0; }
         .sstock-advice__calc input { width: 64px; padding: 2px 6px; border: 1px solid var(--dl-border); border-radius: 6px; background: var(--dl-surface); color: inherit; }
         .sstock-advice__note { display: block; margin-top: 6px; }
+        /* Tampilan HP: teks 14px, isian angka 16px / 44px selebar kotak, tombol penuh selebar kotak. */
+        body.dl-on-phone .sstock-advice { font-size: 14px; }
+        body.dl-on-phone .sstock-advice__calc { flex-direction: column; gap: 10px; }
+        body.dl-on-phone .sstock-advice__calc label { display: flex; flex-direction: column; gap: 4px; font-weight: 600; }
+        body.dl-on-phone .sstock-advice__calc input { width: 100%; min-height: 44px; padding: 6px 10px; font-size: 16px; box-sizing: border-box; }
+        body.dl-on-phone .sstock-advice [data-advice-apply] { width: 100%; min-height: 48px; font-size: 16px; }
     </style>
     <script>
         (() => {

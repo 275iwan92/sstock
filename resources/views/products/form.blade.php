@@ -74,17 +74,17 @@
         @endif
         @unless ($isNew)
             <x-dl::divider label="Batches" />
-            <div class="dl-table-wrap">
+            <div class="dl-table-wrap dl-table--stack">
                 <table class="dl-table is-striped">
                     <thead><tr>@foreach (['Batch Code', 'Expiry Date', 'Stock', 'Status'] as $c)<th>{{ \Devlib\Lang::text($c) }}</th>@endforeach</tr></thead>
                     <tbody>
                         @foreach ($batches as $b)
                             @php($state = $b->expiryState())
                             <tr>
-                                <td>{{ $b->code }}</td>
-                                <td>{{ $b->expiry_date ? Locale::d($b->expiry_date) : '—' }}</td>
-                                <td>{{ Locale::number($b->stock_qty, 2) }} {{ $b->unit }}</td>
-                                <td>
+                                <td data-label="{{ \Devlib\Lang::text('Batch Code') }}">{{ $b->code }}</td>
+                                <td data-label="{{ \Devlib\Lang::text('Expiry Date') }}">{{ $b->expiry_date ? Locale::d($b->expiry_date) : '—' }}</td>
+                                <td data-label="{{ \Devlib\Lang::text('Stock') }}">{{ Locale::number($b->stock_qty, 2) }} {{ $b->unit }}</td>
+                                <td data-label="{{ \Devlib\Lang::text('Status') }}">
                                     @if ($state === 'KEDALUWARSA')
                                         <x-dl::badge tone="danger" icon="fa-triangle-exclamation" label="Kedaluwarsa" />
                                     @elseif ($state === 'HAMPIR')
@@ -103,7 +103,7 @@
             @endif
             <x-dl::divider label="Satuan masuk" />
             <p class="dl-note">Kemasan yang sah saat barang ini DITERIMA, mis. 1 dus = 12 {{ $product->unit }}. Penerimaan menawarkan satuan stok ({{ $product->unit }}) dan satuan di bawah ini; stok selalu dalam {{ $product->unit }}. Pengeluaran dan Penyesuaian selalu dalam {{ $product->unit }}.</p>
-            <x-dl::table :columns="['unit' => 'Satuan masuk', 'factor' => 'Faktor ke '.$product->unit, 'used' => 'Dipakai', 'by' => 'Diubah oleh', 'act' => '']" :rows="$packRows" empty="Belum ada satuan masuk: barang diterima dalam satuan stok atau satuan yang punya konversi umum." />
+            <x-dl::table :columns="['unit' => 'Satuan masuk', 'factor' => 'Faktor ke '.$product->unit, 'used' => 'Dipakai', 'by' => 'Diubah oleh', 'act' => '']" :rows="$packRows" :stack="true" empty="Belum ada satuan masuk: barang diterima dalam satuan stok atau satuan yang punya konversi umum." />
             <x-dl::button type="button" variant="secondary" size="sm" icon="new" label="Tambah Satuan Masuk" data-dl-open="pack-unit" />
         @endunless
     </x-dl::form>
