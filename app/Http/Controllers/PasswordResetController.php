@@ -33,7 +33,7 @@ class PasswordResetController extends Controller
         $data = $request->validate(['login' => ['required', 'string', 'max:150']], ['login.required' => 'Isi username atau e-mail Anda.']);
 
         $field = filter_var($data['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
-        $user = User::query()->where($field, Str::lower(trim($data['login'])))->where('is_active', true)->first();
+        $user = User::visible()->where($field, Str::lower(trim($data['login'])))->where('is_active', true)->first();
         if ($user) {
             Password::sendResetLink(['email' => $user->email]);
         }

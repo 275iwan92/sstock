@@ -17,8 +17,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->alias(['active' => EnsureActive::class, 'supervisor' => EnsureSupervisor::class, 'administrator' => EnsureAdministrator::class, 'module' => EnsureModuleAccess::class]);
-        $middleware->web(append: [ResetViewChoice::class]);
+        $middleware->alias(['active' => EnsureActive::class, 'supervisor' => EnsureSupervisor::class, 'administrator' => EnsureAdministrator::class, 'module' => EnsureModuleAccess::class, 'super' => \App\Http\Middleware\EnsureSuperAdmin::class]);
+        $middleware->web(append: [ResetViewChoice::class, \App\Http\Middleware\LogActivity::class]);
         $middleware->redirectGuestsTo(fn () => route('login'));
         $middleware->redirectUsersTo(fn () => route('home'));
     })

@@ -67,4 +67,57 @@ class SampleDataTest extends TestCase
         $this->post(route('sample.refresh'), ['confirm' => 'SEGARKAN'])->assertForbidden();
         $this->assertSame(1, User::count());
     }
+
+    private function withSuperAdmin(string $password = 'rahasia-uji'): void
+    {
+        config(['sstock.super_admin' => ['username' => 'johiwan', 'hash' => bcrypt($password)]]);
+    }
+
+    public function test_with_a_super_admin_only_that_account_can_refresh_even_in_production(): void
+    {
+        $this->withSuperAdmin();
+        config(['sstock.sample_refresh' => false]);
+        $super = User::factory()->administrator()->create(['username' => 'johiwan']);
+        $other = User::factory()->administrator()->create();
+
+        $this->actingAs($other)->post(route('sample.refresh'), ['confirm' => 'SEGARKAN'])->assertForbidden();
+        $this->assertSame(2, User::count());
+
+        $this->actingAs($super)->post(route('sample.refresh'), ['confirm' => 'SEGARKAN'])->assertRedirect(route('login'));
+        $this->assertSame(1, User::where('username', 'admin')->count());
+    }
+
+    public function test_the_super_admin_is_recreated_after_a_refresh_with_the_hash_from_env(): void
+    {
+        $this->withSuperAdmin('rahasia-uji');
+        $super = User::factory()->administrator()->create(['username' => 'johiwan']);
+
+        $this->actingAs($super)->post(route('sample.refresh'), ['confirm' => 'SEGARKAN']);
+
+        $again = User::where('username', 'johiwan')->first();
+        $this->assertNotNull($again);
+        $this->assertTrue($again->isAdministrator());
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('rahasia-uji', $again->password));
+    }
+
+    public function test_the_super_admin_is_hidden_from_users_groups_and_counts(): void
+    {
+        $this->withSuperAdmin();
+        $super = User::factory()->administrator()->create(['username' => 'johiwan', 'name' => 'Super Tersembunyi']);
+        $admin = User::factory()->administrator()->create(['username' => 'admin-biasa']);
+
+        $this->actingAs($admin)->get(route('users.index'))->assertOk()->assertSee('admin-biasa')->assertDontSee('johiwan');
+        $this->get(route('users.show', $super))->assertNotFound();
+        $this->put(route('users.update', $super), ['_action' => 'deactivate'])->assertNotFound();
+        $this->postJson(route('users.toggle', $super))->assertNotFound();
+        $this->get(route('sample.index'))->assertOk()->assertSee('Hanya super admin');
+        $this->assertSame(1, SampleData::counts()[array_search('users', array_keys(SampleData::COUNTED))]);
+    }
+
+    public function test_without_a_super_admin_the_old_rule_applies(): void
+    {
+        config(['sstock.super_admin' => ['username' => null, 'hash' => null]]);
+
+        $this->assertTrue(SampleData::allowed('siapa-saja') === SampleData::enabled());
+    }
 }

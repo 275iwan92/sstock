@@ -1,7 +1,7 @@
 {{-- REMARK
  Tujuan       : Layar Administrator "Data Contoh": isi database saat ini, apa yang terjadi saat disegarkan, dan tombol Segarkan (konfirmasi dengan mengetik SEGARKAN).
  Sumber hulu  : SampleDataController@index (enabled, counts, last, summary).
- Input        : enabled, counts, last, summary.
+ Input        : enabled (boleh menyegarkan: super admin bila terdaftar, selain itu sakelar config), superOnly, counts, last, summary.
  Output       : POST sample.refresh (semua data diganti data contoh, pengguna keluar lalu masuk ulang).
  Dipakai oleh : route sample.index (menu Keamanan > Data Contoh, Administrator).
  Status       : Aktif.
@@ -39,7 +39,7 @@
                 </x-dl::action-bar>
             </x-dl::action-form>
         @else
-            <x-dl::alert tone="warn" message="Dimatikan di lingkungan ini (production). Untuk menyalakannya, isi SSTOCK_SAMPLE_REFRESH=true di .env, lalu muat ulang konfigurasi." />
+            <x-dl::alert tone="warn" :message="$superOnly ? 'Hanya super admin yang boleh menyegarkan data contoh.' : 'Dimatikan di lingkungan ini (production). Untuk menyalakannya, isi SSTOCK_SAMPLE_REFRESH=true di .env, lalu muat ulang konfigurasi.'" />
         @endif
     </div>
 @endsection

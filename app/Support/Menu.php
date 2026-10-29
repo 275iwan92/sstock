@@ -26,6 +26,11 @@ final class Menu
                 + ($badge ? ['badge' => $badge['badge'], 'badgeTone' => $badge['tone'], 'badgeTitle' => $badge['title']] : []);
         }
 
+        if ($user->isSuperAdmin()) {   // menu super admin: tidak ada di Modules / matriks Grup, jadi tidak terlihat siapa pun yang lain
+            $parents['SEC'][] = ['code' => 'LOG', 'label' => 'Log Aktivitas', 'url' => route('super.log'), 'type' => 'grid', 'icon' => 'fa-solid fa-clock-rotate-left'];
+            $parents['SEC'][] = ['code' => 'UAT', 'label' => 'Akun UAT', 'url' => route('super.accounts'), 'type' => 'grid', 'icon' => 'fa-solid fa-key'];
+        }
+
         $out = [];
         foreach (Modules::PARENTS as $code => [$label, $icon]) {
             if (isset($parents[$code])) {

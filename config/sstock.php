@@ -3,7 +3,9 @@
 /* REMARK
  * Tujuan       : Pengaturan khas Stoku. sample_refresh = layar Administrator "Data Contoh" boleh menghapus seluruh data lalu mengisi ulang data contoh.
  *                Bawaan: aktif selain di production; di production wajib dinyalakan sengaja lewat SSTOCK_SAMPLE_REFRESH=true.
- * Dipakai oleh : App\Services\SampleData, SampleDataController.
+ *                super_admin = satu akun (username + hash kata sandi, dari .env) yang SATU-SATUNYA boleh menyegarkan data contoh, di lingkungan mana pun termasuk production;
+ *                dibuat ulang oleh UserSeeder setiap penyegaran. Kosong = aturan lama (sakelar sample_refresh, semua Administrator).
+ * Dipakai oleh : App\Services\SampleData, SampleDataController, UserSeeder, UserController.
  * Status       : Aktif.
  */
 return [
@@ -11,4 +13,6 @@ return [
     // Batch yang kedaluwarsa dalam N hari ke depan tidak dihitung sebagai stok tersedia untuk titik pesan ulang. 0 = hanya yang sudah lewat (bawaan).
     'reorder_exclude_days' => (int) env('SSTOCK_REORDER_EXCLUDE_DAYS', 0),
     'sample_refresh' => (bool) env('SSTOCK_SAMPLE_REFRESH', env('APP_ENV', 'production') !== 'production'),
+    'activity_dir' => storage_path('app/activity'),  // log aktivitas (CSV bulanan), di luar database sehingga tidak ikut terhapus saat data contoh disegarkan
+    'super_admin' => ['username' => env('SSTOCK_SUPER_ADMIN'), 'hash' => env('SSTOCK_SUPER_ADMIN_HASH')],
 ];

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\User;
 use Database\Seeders\ItemSeeder;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -25,9 +26,15 @@ final class SampleData
         return (bool) config('sstock.sample_refresh');
     }
 
+    // Super admin terdaftar (SSTOCK_SUPER_ADMIN) = hanya dia yang boleh, di lingkungan mana pun; belum terdaftar = sakelar sample_refresh seperti semula.
+    public static function allowed(?string $username): bool
+    {
+        return ($super = User::superAdminUsername()) !== null ? $username === $super : self::enabled();
+    }
+
     public static function counts(): array
     {
-        return array_map(fn ($t) => Schema::hasTable($t) ? DB::table($t)->count() : 0, array_keys(self::COUNTED));
+        return array_map(fn ($t) => ! Schema::hasTable($t) ? 0 : ($t === 'users' ? User::visible()->count() : DB::table($t)->count()), array_keys(self::COUNTED));
     }
 
     /** @return array{at: string, by: string}|null */
@@ -40,7 +47,7 @@ final class SampleData
 
     public static function refresh(string $by): void
     {
-        abort_unless(self::enabled(), 403, 'Penyegaran data contoh dimatikan di lingkungan ini.');
+        abort_unless(self::allowed($by), 403, 'Penyegaran data contoh dimatikan di lingkungan ini.');
         set_time_limit(0);
         ignore_user_abort(true);
 

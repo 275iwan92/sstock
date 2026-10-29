@@ -21,7 +21,7 @@ class GroupController extends Controller
 {
     public function index()
     {
-        $rows = UserGroup::query()->withCount('users')->orderBy('name')->get()->map(fn (UserGroup $g) => [
+        $rows = UserGroup::query()->withCount(['users' => fn ($q) => $q->visible()])->orderBy('name')->get()->map(fn (UserGroup $g) => [
             'id' => $g->id, 'code' => $g->code, 'name' => $g->name, 'users' => $g->users_count, 'modules' => count($g->moduleCodes()), 'active' => $g->is_active,
         ])->all();
 
@@ -35,7 +35,7 @@ class GroupController extends Controller
 
     public function show(UserGroup $group)
     {
-        return view('groups.form', ['group' => $group->loadCount('users'), 'rows' => $this->rows($group->moduleAccess())]);
+        return view('groups.form', ['group' => $group->loadCount(['users' => fn ($q) => $q->visible()]), 'rows' => $this->rows($group->moduleAccess())]);
     }
 
     public function store(Request $request): RedirectResponse

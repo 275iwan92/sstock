@@ -79,6 +79,22 @@ class User extends Authenticatable
         return $this->role === self::ROLE_ADMINISTRATOR;
     }
 
+    // Super admin (SSTOCK_SUPER_ADMIN): akun tersembunyi yang SATU-SATUNYA boleh menyegarkan data contoh; tidak tampil di layar Pengguna / Grup.
+    public static function superAdminUsername(): ?string
+    {
+        return config('sstock.super_admin.username') ?: null;
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return ($name = self::superAdminUsername()) !== null && $this->username === $name;
+    }
+
+    public function scopeVisible($query)
+    {
+        return ($name = self::superAdminUsername()) ? $query->where('username', '!=', $name) : $query;
+    }
+
     public function roleLabel(): string
     {
         return self::ROLES[$this->role] ?? 'Data Entry';

@@ -22,7 +22,7 @@ class UserController extends Controller
 {
     public function index()
     {
-        $rows = User::query()->orderBy('name')->get()->map(fn (User $u) => [
+        $rows = User::visible()->orderBy('name')->get()->map(fn (User $u) => [
             'id' => $u->id, 'name' => $u->name, 'username' => $u->username, 'email' => $u->email, 'role' => $u->roleLabel(), 'group' => $u->group?->name ?? '—', 'active' => $u->is_active,
         ])->all();
 
@@ -36,6 +36,7 @@ class UserController extends Controller
 
     public function show(User $user)
     {
+        abort_if($user->isSuperAdmin(), 404);
         return view('users.form', ['user' => $user, 'groups' => $this->groups($user->group_id)]);
     }
 
@@ -48,6 +49,7 @@ class UserController extends Controller
 
     public function update(UserRequest $request, User $user): RedirectResponse
     {
+        abort_if($user->isSuperAdmin(), 404);
         $action = $request->input('_action');
         if (in_array($action, ['activate', 'deactivate'], true)) {
             if ($action === 'deactivate') {
@@ -81,6 +83,7 @@ class UserController extends Controller
 
     public function toggle(Request $request, User $user): JsonResponse
     {
+        abort_if($user->isSuperAdmin(), 404);
         abort_if($user->is($request->user()), 422, 'Anda tidak bisa menonaktifkan akun sendiri.');
         if ($user->is_active) {
             abort_if($error = $this->deactivate($request, $user), 422, (string) $error);
@@ -97,7 +100,7 @@ class UserController extends Controller
         if ($user->is($request->user())) {
             return 'Anda tidak bisa menonaktifkan akun sendiri.';
         }
-        $otherAdmins = User::query()->where('role', User::ROLE_ADMINISTRATOR)->where('is_active', true)->whereKeyNot($user->id);
+        $otherAdmins = User::visible()->where('role', User::ROLE_ADMINISTRATOR)->where('is_active', true)->whereKeyNot($user->id);
         if ($user->isAdministrator() && ! $otherAdmins->exists()) {
             return 'Administrator aktif terakhir tidak bisa dinonaktifkan.';
         }

@@ -19,7 +19,12 @@ final class HpShell
 
     public static function url(string $code): string
     {
-        return isset(self::OWN[$code]) ? route(self::OWN[$code]) : route('hp.open', $code);
+        return match (true) {
+            isset(self::OWN[$code]) => route(self::OWN[$code]),
+            $code === 'LOG' => route('super.log'),   // layar super admin: halaman desktop langsung
+            $code === 'UAT' => route('super.accounts'),
+            default => route('hp.open', $code),
+        };
     }
 
     // Menu::modules dengan alamat tiap modul diganti alamat tampilan HP.

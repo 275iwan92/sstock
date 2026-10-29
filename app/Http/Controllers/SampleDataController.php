@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Services\SampleData;
 use Devlib\Locale;
 use Illuminate\Http\RedirectResponse;
@@ -19,12 +20,13 @@ use Illuminate\Support\Facades\Auth;
  */
 class SampleDataController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $last = SampleData::last();
 
         return view('sample.index', [
-            'enabled' => SampleData::enabled(),
+            'enabled' => SampleData::allowed($request->user()->username),
+            'superOnly' => User::superAdminUsername() !== null,
             'counts' => array_combine(array_values(SampleData::COUNTED), SampleData::counts()),
             'last' => $last ? Locale::stamp(Carbon::parse($last['at'])).' oleh '.$last['by'] : 'Belum pernah',
             'summary' => SampleData::summary(),
@@ -33,7 +35,7 @@ class SampleDataController extends Controller
 
     public function refresh(Request $request): RedirectResponse
     {
-        abort_unless(SampleData::enabled(), 403, 'Penyegaran data contoh dimatikan di lingkungan ini.');
+        abort_unless(SampleData::allowed($request->user()->username), 403, 'Penyegaran data contoh dimatikan di lingkungan ini.');
         $request->validate(['confirm' => ['required', 'in:SEGARKAN']], ['confirm.in' => 'Ketik SEGARKAN (huruf besar) untuk melanjutkan.', 'confirm.required' => 'Ketik SEGARKAN untuk melanjutkan.']);
 
         SampleData::refresh($request->user()->username);

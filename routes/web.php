@@ -91,6 +91,14 @@ Route::middleware(['auth', 'active', 'module'])->group(function () {
         Route::view('help/technical-guide', 'help.technical-guide')->name('help.technical-guide');
     });
 
+    // Super admin (SSTOCK_SUPER_ADMIN): log aktivitas dan akun UAT. Selain dia = 404.
+    Route::middleware('super')->prefix('super')->name('super.')->controller(\App\Http\Controllers\SuperAdminController::class)->group(function () {
+        Route::get('log', 'log')->name('log');
+        Route::get('log/unduh', 'download')->name('log.download');
+        Route::get('akun', 'accounts')->name('accounts');
+        Route::post('akun/{user}/password', 'password')->name('password');
+    });
+
     // Master Barang: semua boleh melihat dan menambah barang baru; ubah parameter dan aktif / nonaktif hanya Supervisor (dicek ProductRequest dan grup di bawah).
     Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
     Route::post('products', [ProductController::class, 'store'])->name('products.store');
