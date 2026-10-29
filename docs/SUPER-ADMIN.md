@@ -24,4 +24,4 @@ Kata sandi di database adalah hash dan **tidak bisa dibaca**; yang ditampilkan h
 
 - Berkas CSV per bulan: `storage/app/activity/YYYY-MM.csv` (`config sstock.activity_dir`). Dipilih CSV karena menulis = menambah satu baris di akhir berkas (tercepat), tanpa migrasi, mudah diunduh, dan **tidak ikut terhapus saat data contoh disegarkan** (database dibuang, berkas ini tidak).
 - Dicatat oleh middleware `LogActivity` sesudah respons terkirim (tidak memperlambat layar). Yang dicatat hanya nama rute, alamat tanpa query, dan kode status bila galat. **Isi formulir dan kata sandi tidak pernah dicatat.** Ping sesi, permintaan JSON baca, dan berkas statis tidak dicatat.
-- Di server, folder dan berkas harus bisa ditulis PHP-FPM (grup `www-data`): `storage/app/activity` bergrup `www-data`, mode `2775`.
+- Di server, folder dan berkas harus bisa ditulis PHP-FPM (grup `www-data`): `storage/app/activity` bergrup `www-data`, mode `775` (`sudo chgrp www-data storage/app/activity && sudo chmod 775 storage/app/activity`).
