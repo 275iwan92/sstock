@@ -10,7 +10,7 @@
 @section('body')
     @include('partials.flash')
     <div style="max-width: 980px">
-        <h2 style="margin: 4px 0 12px">Akun UAT</h2>
+        <h2 class="sstock-pagetitle" style="margin: 4px 0 12px">Akun UAT</h2>
         <p class="dl-note">Kata sandi di database disimpan sebagai hash dan tidak bisa dibaca. Kolom <b>Bawaan UAT</b> adalah nilai dari seeder: berlaku selama akun itu belum diubah (lewat layar ini, layar Pengguna, atau lupa password) dan hilang saat data contoh disegarkan, yang mengembalikannya ke nilai ini. Kata sandi baru yang Anda ketik di sini disimpan sebagai hash dan sesi lama akun itu keluar.</p>
         <div class="dl-table-wrap dl-table--stack">
             <table class="dl-table is-striped">

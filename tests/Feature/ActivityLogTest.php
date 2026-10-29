@@ -131,6 +131,19 @@ class ActivityLogTest extends TestCase
         $this->actingAs($admin)->get(route('super.log.download', ['month' => now()->format('Y-m')]))->assertNotFound();
     }
 
+    public function test_on_the_phone_the_super_screens_open_inside_the_shell_so_the_menu_button_stays(): void
+    {
+        $this->withCookie('ui_ver', \App\Http\Middleware\ResetViewChoice::VERSION);   // tanpa ini pilihan tampilan HP dilupakan sekali
+        $super = $this->super();
+        $menu = $this->actingAs($super)->withCookie('ui', 'hp')->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString(route('hp.open', 'LOG'), $menu);
+        $this->assertStringNotContainsString('href="'.route('super.log').'"', $menu, 'tidak lagi halaman mandiri tanpa kerangka');
+
+        $this->actingAs($super)->withCookie('ui', 'hp')->get(route('hp.open', 'LOG'))->assertOk()->assertSee('data-dl-phone-menu', false)->assertSee('<iframe class="dl-phone__frame" src="'.route('super.log').'"', false);
+        $this->actingAs($super)->withCookie('ui', 'hp')->get(route('hp.open', 'UAT'))->assertOk()->assertSee(route('super.accounts'), false);
+        $this->actingAs(User::factory()->administrator()->create())->get(route('hp.open', 'LOG'))->assertNotFound();
+    }
+
     public function test_the_menu_entries_exist_only_for_the_super_admin(): void
     {
         $this->actingAs(User::factory()->administrator()->create())->get('/')->assertDontSee('Log Aktivitas');

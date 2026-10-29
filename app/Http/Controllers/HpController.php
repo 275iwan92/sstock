@@ -25,6 +25,9 @@ use Illuminate\Validation\Rule;
  */
 class HpController extends Controller
 {
+    // Layar super admin yang dibuka lewat hp.open: kode => [judul, nama rute halaman desktopnya].
+    private const SUPER = ['LOG' => ['Log Aktivitas', 'super.log'], 'UAT' => ['Akun UAT', 'super.accounts']];
+
     private const FIND_LIMIT = 30;
 
     // Beranda HP: ringkasan sebagai kartu yang membuka modulnya. Angka sama dengan Beranda desktop (kecuali nilai stok & menunggu persetujuan hanya Supervisor).
@@ -62,6 +65,13 @@ class HpController extends Controller
     // Modul tanpa tampilan HP: halaman desktop modul itu di dalam kerangka HP. Hak akses dijaga dua kali: di sini (modul boleh dibuka) dan oleh rute halaman desktop itu sendiri.
     public function open(Request $request, string $code)
     {
+        // Layar super admin (tidak ada di Modules): juga dibuka di dalam kerangka HP supaya tombol menu tetap ada; selain super admin = 404.
+        if (isset(self::SUPER[$code])) {
+            abort_unless($request->user()->isSuperAdmin(), 404);
+
+            return view('hp.frame', ['title' => self::SUPER[$code][0], 'active' => '', 'frame' => route(self::SUPER[$code][1])]);
+        }
+
         $module = Modules::all()[$code] ?? null;
         abort_if($module === null, 404);
         abort_unless($request->user()->canAccess($code), 403, 'Anda tidak punya akses ke modul ini.');

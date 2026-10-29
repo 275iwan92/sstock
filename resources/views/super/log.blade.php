@@ -11,7 +11,7 @@
     @include('partials.flash')
     <div>
     <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 4px 0 10px">
-        <h2 style="margin: 0 12px 0 0">Log Aktivitas</h2>
+        <h2 class="sstock-pagetitle" style="margin: 0 12px 0 0">Log Aktivitas</h2>
         <form method="GET" action="{{ route('super.log') }}" style="display: flex; gap: 8px; align-items: center">
             <label for="month">Bulan</label>
             <select id="month" name="month" onchange="this.form.submit()">
