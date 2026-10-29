@@ -14,5 +14,8 @@ return [
     'reorder_exclude_days' => (int) env('SSTOCK_REORDER_EXCLUDE_DAYS', 0),
     'sample_refresh' => (bool) env('SSTOCK_SAMPLE_REFRESH', env('APP_ENV', 'production') !== 'production'),
     'activity_dir' => storage_path('app/activity'),  // log aktivitas (CSV bulanan), di luar database sehingga tidak ikut terhapus saat data contoh disegarkan
+    // Hanya dipakai perintah pemasangan (sstock:install, sstock:import-geo); di config agar tetap terbaca saat config:cache dipakai.
+    'geo_source_db' => env('GEO_SOURCE_DB', 'tm2mst'),
+    'db_admin' => ['username' => env('DB_ADMIN_USERNAME', 'root'), 'password' => env('DB_ADMIN_PASSWORD')],
     'super_admin' => ['username' => env('SSTOCK_SUPER_ADMIN'), 'hash' => env('SSTOCK_SUPER_ADMIN_HASH')],
 ];

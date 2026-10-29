@@ -46,7 +46,7 @@ class ImportGeoCommand extends Command
             return self::SUCCESS;
         }
 
-        $source = $this->option('source') ?: env('GEO_SOURCE_DB', 'tm2mst');
+        $source = $this->option('source') ?: config('sstock.geo_source_db');
         $target = $cfg['database'];
         foreach ([$source, $target] as $name) {
             if (! preg_match('/^[A-Za-z0-9_]{1,64}$/', $name)) {

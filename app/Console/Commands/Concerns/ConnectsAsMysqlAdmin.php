@@ -18,8 +18,8 @@ trait ConnectsAsMysqlAdmin
 
     private function adminConnection(array $cfg): ?PDO
     {
-        $user = $this->option('admin-user') ?: env('DB_ADMIN_USERNAME', 'root');
-        $pass = $this->option('admin-password') ?? (env('DB_ADMIN_PASSWORD') ?: null);
+        $user = $this->option('admin-user') ?: config('sstock.db_admin.username');
+        $pass = $this->option('admin-password') ?? (config('sstock.db_admin.password') ?: null);
         if ($pass === null) {
             $pass = $this->input->isInteractive() ? (string) $this->secret("Password MySQL admin '{$user}' (kosongkan bila tanpa password)") : '';
         }
