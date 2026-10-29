@@ -18,7 +18,8 @@ class ModuleController extends Controller
 
     public function index()
     {
-        $groups = UserGroup::query()->orderBy('name')->get()->mapWithKeys(fn (UserGroup $g) => [$g->id => [$g->name, $g->moduleAccess()]]);
+        $access = UserGroup::accessByGroup();
+        $groups = UserGroup::query()->orderBy('name')->get()->mapWithKeys(fn (UserGroup $g) => [$g->id => [$g->name, $access[$g->id] ?? []]]);
 
         $rows = collect(Modules::all())->map(fn ($m, $code) => [
             'id' => $code, 'code' => $code, 'name' => $m[1], 'parent' => Modules::PARENTS[$m[0]][0], 'level' => self::LEVEL_LABEL[$m[5]],

@@ -27,10 +27,15 @@ class UserGroup extends Model
         return DB::table('user_group_modules')->where('group_id', $this->id)->pluck('access', 'module')->all();
     }
 
-    /** @return array<int, string> kode modul grup ini */
-    public function moduleCodes(): array
+    /** Hak semua grup dengan satu kueri (untuk daftar), agar tidak satu kueri per grup. @return array<int, array<string, string>> id grup => (kode modul => 'rw'|'ro') */
+    public static function accessByGroup(): array
     {
-        return array_keys($this->moduleAccess());
+        $map = [];
+        foreach (DB::table('user_group_modules')->get(['group_id', 'module', 'access']) as $r) {
+            $map[$r->group_id][$r->module] = $r->access;
+        }
+
+        return $map;
     }
 
     /** @param  array<string, string>  $access  kode modul => 'rw'|'ro' (modul yang tidak ada = tanpa akses) */

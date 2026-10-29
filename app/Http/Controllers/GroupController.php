@@ -21,8 +21,9 @@ class GroupController extends Controller
 {
     public function index()
     {
+        $access = UserGroup::accessByGroup();
         $rows = UserGroup::query()->withCount(['users' => fn ($q) => $q->visible()])->orderBy('name')->get()->map(fn (UserGroup $g) => [
-            'id' => $g->id, 'code' => $g->code, 'name' => $g->name, 'users' => $g->users_count, 'modules' => count($g->moduleCodes()), 'active' => $g->is_active,
+            'id' => $g->id, 'code' => $g->code, 'name' => $g->name, 'users' => $g->users_count, 'modules' => count($access[$g->id] ?? []), 'active' => $g->is_active,
         ])->all();
 
         return view('groups.index', ['rows' => $rows]);
