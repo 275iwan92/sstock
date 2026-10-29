@@ -134,7 +134,7 @@
 <p>Ketuk tombol <b>&#8801;</b> (kotak membulat di kiri atas): tombolnya hilang dan <b>bilah di atas layar</b> muncul menggantikannya.</p>
 <ul class="g-list">
     <li><b>Layar yang punya aksi</b> menampilkan aksi layar itu: formulir (<b>Simpan</b> berwarna biru, <b>Urungkan</b>, <b>Kembali</b>, <b>Baru</b>), daftar (<b>Cari</b>, <b>Data Baru</b>, <b>Saring</b>, <b>Ekspor</b>; Saring dan Ekspor membuka panel dari atas, kolom diatur dari panel Saring), laporan (<b>Cetak</b>, <b>Kertas</b>, <b>Grup</b>, <b>Hemat tinta</b>).</li>
-    <li><b>Layar tanpa aksi</b> (mis. Beranda) langsung menampilkan <b>lima menu utama</b>: <b>Beranda</b>, <b>Stok</b>, <b>Transaksi</b>, <b>Opname</b>, dan <b>Menu</b> paling kanan. <b>Menu</b> membuka daftar semua menu yang boleh Anda buka, ditambah <b>Tampilan Desktop</b> dan Keluar.</li>
+    <li><b>Layar tanpa aksi</b> (mis. Beranda) langsung menampilkan <b>lima menu utama</b>: <b>Beranda</b>, <b>Stok</b>, <b>Transaksi</b>, <b>Opname</b>, dan <b>Menu</b> paling kanan. <b>Menu</b> membuka daftar semua menu yang boleh Anda buka, ditambah Keluar. Di jendela komputer yang dipersempit, ada juga <b>Tampilan Desktop</b> untuk kembali; di ponsel tombol itu tidak ada.</li>
     <li>Bilah menutup sendiri setelah Anda memilih, menggulir, mengetuk di luar, atau diam beberapa detik. Pengecualian: bilah aksi formulir tidak menutup selama isian belum disimpan. Titik kuning di tombol menandai isian yang belum disimpan, dan pindah layar saat itu meminta konfirmasi.</li>
     <li>Layar anak punya tombol kembali di baris judul.</li>
 </ul>
