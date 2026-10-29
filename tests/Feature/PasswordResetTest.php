@@ -5,6 +5,9 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 use Tests\TestCase;
@@ -65,5 +68,40 @@ class PasswordResetTest extends TestCase
 
         $this->post(route('login.attempt'), ['login' => 'budi', 'password' => 'baru12345'])->assertRedirect();
         $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_reset_mail_is_indonesian_and_uses_the_configured_app_name_and_sender(): void
+    {
+        config(['app.name' => 'StokuUji', 'mail.from.address' => 'noreply@stoku.test', 'mail.from.name' => 'StokuUji']);
+        User::factory()->create(['name' => 'Budi', 'username' => 'budi', 'email' => 'budi@x.test']);
+
+        $this->post(route('password.email'), ['login' => 'budi'])->assertSessionHas('status');
+
+        $sent = Mail::mailer()->getSymfonyTransport()->messages();   // MAIL_MAILER=array di phpunit.xml: surel sungguhan dirangkai, tidak dikirim
+        $this->assertCount(1, $sent);
+        $message = $sent[0]->getOriginalMessage();
+        $this->assertSame('noreply@stoku.test', $message->getFrom()[0]->getAddress());
+        $this->assertSame('StokuUji', $message->getFrom()[0]->getName());
+        $this->assertSame('budi@x.test', $message->getTo()[0]->getAddress());
+        $this->assertSame('Atur ulang password StokuUji', $message->getSubject());
+        $body = $message->getHtmlBody().$message->getTextBody();
+        $this->assertStringContainsString('Halo Budi,', $body);
+        $this->assertStringContainsString('mengatur ulang password akun StokuUji', $body);
+        $this->assertStringContainsString('/reset-password/', $body);
+    }
+
+    public function test_failed_delivery_shows_a_friendly_message_and_is_logged(): void
+    {
+        // Port 1 di localhost menolak sambungan: transport SMTP sungguhan melempar galat.
+        config(['mail.default' => 'failing', 'mail.mailers.failing' => ['transport' => 'smtp', 'host' => '127.0.0.1', 'port' => 1, 'timeout' => 2]]);
+        Log::spy();
+        User::factory()->create(['username' => 'budi', 'email' => 'budi@x.test']);
+
+        $this->from(route('password.request'))->post(route('password.email'), ['login' => 'budi'])
+            ->assertRedirect(route('password.request'))
+            ->assertSessionHasErrors(['login' => 'Surel belum bisa dikirim saat ini. Coba lagi nanti atau hubungi Administrator.']);
+
+        Log::shouldHaveReceived('error')->once();
+        $this->assertSame(0, DB::table('password_reset_tokens')->count());   // token dibuang: pengguna boleh minta lagi tanpa menunggu
     }
 }

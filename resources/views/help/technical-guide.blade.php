@@ -108,7 +108,7 @@
                 <tr><td>counting</td><td><code>finish()</code> (module RW)</td><td><span class="g-st g-yellow">review</span></td><td>None. Refused while any line is empty or skipped without a note</td></tr>
                 <tr><td>review</td><td><code>reviewLine()</code> (Supervisor): <code>recount_qty</code>, <code>reason</code></td><td>review</td><td>None. Final result = <code>recount_qty</code> if set, else <code>counted_qty</code></td></tr>
                 <tr><td>review</td><td><code>approve()</code> (Supervisor)</td><td><span class="g-st g-green">done</span></td><td>One approved ADJ document (<code>reason</code> = "Stok Opname SO-..."), posted by <code>StockLedger::post</code>; none if no line differs</td></tr>
-                <tr><td>review</td><td><code>reject()</code> with note, <code>refreshMoved()</code> (Supervisor)</td><td><span class="g-st g-yellow">counting</span></td><td>None. Refresh sets <code>system_qty</code> to current stock and clears the line</td></tr>
+                <tr><td>review</td><td><code>reject()</code> with note, <code>refreshMoved()</code> (all moved lines) or <code>refreshOne()</code> (one moved line) (Supervisor)</td><td><span class="g-st g-yellow">counting</span></td><td>None. Refresh sets <code>system_qty</code> to current stock and clears the line; <code>refreshOne()</code> refuses (422) a line whose stock did not move</td></tr>
                 <tr><td>counting, review</td><td><code>cancel()</code> (Supervisor)</td><td><span class="g-st g-red">cancelled</span></td><td>None; lock released</td></tr>
             </tbody>
         </table>
@@ -120,6 +120,9 @@
             <li><b>Schedule and reminder:</b> <code>App\Services\CountSchedule</code> keeps the schedule in the <code>constants</code> table through <code>App\Support\Constants</code> (<code>opname.frequency</code> weekly|monthly, <code>opname.weekday</code> 1..7, <code>opname.day_of_month</code> 1..31|last, <code>opname.schedule_set_at</code>); default monthly, end of month. Next date = first scheduled date after the last DONE count's <code>count_date</code> (cancelled ignored), else after <code>schedule_set_at</code>, else after today; short months clamp (Feb 28/29). <code>state()</code> feeds the Home reminder (<code>partials/count-reminder</code>, only for users with module SO; tone neutral / warn at H-3..today / danger when late) and <code>badge()</code> the menu badge (<code>Menu</code>; running or late). <code>available()</code> keeps Home and the menu alive before the migration is run. Changing the schedule is the Supervisor-only route <code>stock-counts.schedule</code>.</li>
             <li><b>Numbering:</b> <code>SO-YYMM-NNNN</code> per month; <code>doc_no</code> is unique and the creator retries on a collision, like document numbers.</li>
             <li><b>Screens:</b> the entry and review sheets are <code>x-dl::lookup-grid</code> in auto-save mode; each cell edit POSTs <code>{changed}</code> to <code>stock-counts.lines</code> / <code>stock-counts.review</code> and gets all rows back. The review screen reloads after a save (<code>resources/js/app.js</code>, attribute <code>data-reload-on-save</code>) so the server-calculated summary stays right; this needs <code>npm run build</code>.</li>
+            <li><b>Row colour (DevLib opt-in <code>row-tone</code>):</b> <code>x-dl::sheet</code> / <code>x-dl::lookup-grid</code> accept <code>row-tone="&lt;field&gt;"</code>; the row value (<code>danger</code> | <code>warn</code> | <code>success</code>) becomes the class <code>is-tone-*</code> on the <code>&lt;tr&gt;</code>. Without the prop the DevLib markup is unchanged (tmerp is not affected). <code>StockCounts::reviewRows()</code> sets <code>tone = danger</code> on rows over <code>threshold_pct</code>; <code>entryRows()</code> does the same only when the count is NOT blind, so a blind count never leaks the size of a difference through colour.</li>
+            <li><b>Backup Save:</b> the entry sheet saves per cell, so the button <i>Save Backup</i> (<code>data-count-save</code>, handler in <code>resources/js/app.js</code>) only confirms. It POSTs <code>{seen}</code> (rows with a count or Not counted, read from the sheet data) to <code>stock-counts.save</code>; <code>StockCounts::enteredCount()</code> counts the same rows in the database. Equal = 200 with a message; different = 409 (an unsaved cell, or another user filled other rows); not counting = 422. The script retries up to three times, 0.7 s apart, so a cell save still in flight can finish.</li>
+            <li><b>Refresh one line:</b> <code>POST stock-counts/{count}/lines/{line}/refresh</code> (<code>stock-counts.refresh-line</code>, supervisor middleware) calls <code>refreshOne()</code>, which only accepts a line in <code>movedLines()</code> and then reuses <code>refreshLine()</code>; the review alert shows one button per moved line (first 12) next to <i>Refresh Moved Lines</i>.</li>
             <li><b>Rights:</b> view, fill in, print the count sheet = module <code>SO</code> (RW to write); start, review, approve, return, cancel, unlock, minutes (Berita Acara) and every value = <code>supervisor</code> middleware. Values (difference x average cost) are shown to Supervisors only.</li>
         </ul>
 
@@ -346,7 +349,7 @@ npm run build      # required after editing resources/css/app.css</pre>
         <ul class="g-list">
             <li>Test accounts (development only; change before production): <code>admin</code>, <code>supervisor</code>, <code>entry</code> (see <code>UserSeeder</code>).</li>
             <li>Tests: see <a href="#testing">Testing</a> below.</li>
-            <li>Production: set SMTP (<code>MAIL_*</code>, currently <code>log</code>) and replace the test passwords. Migrations are the source of truth (the reference DDL <code>database/sql/sstock_mysql_ddl.sql</code> is regenerated only when needed).</li>
+            <li>Production: set SMTP (<a href="#mail">Mail</a>) and replace the test passwords. Migrations are the source of truth (the reference DDL <code>database/sql/sstock_mysql_ddl.sql</code> is regenerated only when needed).</li>
         </ul>
 
         <h3 id="install">Install steps</h3>
@@ -367,7 +370,8 @@ npm run build      # required after editing resources/css/app.css</pre>
             <tbody>
                 <tr><td><code>php artisan sstock:install</code></td><td>First deploy: creates the MySQL database and the <code>sstock_usr</code> user (needs a MySQL admin: <code>--admin-user / --admin-password</code>, or <code>DB_ADMIN_USERNAME / DB_ADMIN_PASSWORD</code>, or it asks), migrates, copies region data, seeds once. Safe to re-run (never overwrites data)</td></tr>
                 <tr><td><code>php artisan sstock:import-geo</code></td><td>Copies <code>geo_*</code> from a source MySQL database (<code>--source</code>, default env <code>GEO_SOURCE_DB</code> or <code>tm2mst</code>). Skipped if the tables are filled, unless <code>--fresh</code>. Needs a MySQL admin account</td></tr>
-                <tr><td><code>php artisan sstock:wallpapers</code></td><td>Converts new images dropped into <code>public/media/bg/sstock</code> to JPG (max width 2560, odd ratios cropped to 16:9, originals moved to <code>storage/app/wallpaper-source</code>). Also runs by itself after a login page response (<code>defer()</code>)</td></tr>
+                <tr><td><code>php artisan sstock:wallpapers</code></td><td>Converts new images dropped into <code>public/media/bg/sstock</code> to JPG (max width 2560, odd ratios cropped to 16:9, originals moved to <code>storage/app/wallpaper-source</code>). Also runs by itself after a login page response (<code>defer()</code>). Every landscape JPG gets a 9:16 twin <code>&lt;name&gt;-portrait.jpg</code> (width up to 1080, quality 82, cut at the most detailed strip of the photo; made once, delete it to remake it). A portrait photo dropped by hand as <code>&lt;name&gt;-portrait.png</code> (or WebP etc.) is converted the same way and replaces the automatic twin. Phone login pages (<code>login-hp</code>, forgot / reset password) draw one random photo through <code>x-hp-wallpaper</code> (<code>Wallpapers::random()</code>: the portrait twin, or the landscape photo if there is none, or no photo if the folder is empty) under a thin navy veil with the form as a surface card; the desktop login keeps <code>x-dl::frame</code>, which switches to the twin by itself when the window is taller than wide. Phone data screens (shell, Home) show no photo. Test: <code>WallpapersTest</code></td></tr>
+                <tr><td><code>php artisan sstock:mail-test you@example.com</code></td><td>Sends one test mail through the active <code>MAIL_*</code> settings; exit code 1 and the transport error when it fails (see <a href="#mail">Mail</a>)</td></tr>
                 <tr><td><code>php artisan migrate --force</code></td><td>Apply migrations on a server</td></tr>
                 <tr><td><code>composer dev</code></td><td>Local development runner (<code>php artisan dev</code>)</td></tr>
             </tbody>
@@ -391,7 +395,7 @@ npm run build      # required after editing resources/css/app.css</pre>
                 <tr><td><code>SESSION_DRIVER=database</code></td><td>Sessions live in the <code>sessions</code> table, so deactivating a user can delete the user's sessions</td></tr>
                 <tr><td><code>APP_LOCALE=id</code></td><td>Indonesian screens (dictionary active only for <code>id</code>)</td></tr>
                 <tr><td><code>DB_*</code>, <code>DB_ADMIN_*</code></td><td>Application MySQL account; admin account used only by the installer and <code>sstock:import-geo</code></td></tr>
-                <tr><td><code>MAIL_*</code></td><td><code>MAIL_MAILER=log</code> in development (reset links only appear in <code>storage/logs/laravel.log</code>); production needs SMTP</td></tr>
+                <tr><td><code>MAIL_*</code></td><td><code>MAIL_MAILER=log</code> in development (reset links only appear in <code>storage/logs/laravel.log</code>); production needs SMTP, see <a href="#mail">Mail</a></td></tr>
                 <tr><td><code>SSTOCK_SAMPLE_REFRESH</code></td><td>Allow the Sample Data screen. <code>.env.example</code> sets <code>false</code>; the code default (<code>config/sstock.php</code>) is on outside production. <code>phpunit.xml</code> sets <code>true</code> so the tests do not depend on <code>.env</code></td></tr>
                 <tr><td><code>SSTOCK_REORDER_EXCLUDE_DAYS</code></td><td>Batches expiring within N days do not count as available stock for the Reorder Point (default 0)</td></tr>
                 <tr><td><code>config/devlib.php</code></td><td><code>back_history = false</code> (<code>DL_BACK_HISTORY</code>): the Back button goes to the module grid, not the previous screen; <code>translate_fixed = true</code></td></tr>
@@ -401,12 +405,21 @@ npm run build      # required after editing resources/css/app.css</pre>
         <h3>Deployment checklist</h3>
         <ol class="g-steps">
             <li>Clone the repository next to <code>../devlib</code> (<code>telasih/devlib</code> is a path repository without a remote) and run <code>composer setup</code>.</li>
-            <li>Set <code>APP_ENV=production</code>, <code>APP_DEBUG=false</code>, real SMTP, and a strong <code>DB_PASSWORD</code>.</li>
+            <li>Set <code>APP_ENV=production</code>, <code>APP_DEBUG=false</code>, real SMTP (<a href="#mail">Mail</a>), and a strong <code>DB_PASSWORD</code>.</li>
             <li>Replace the seeded test passwords (or do not seed accounts); keep <code>SSTOCK_SAMPLE_REFRESH</code> off.</li>
             <li>Run <code>npm run build</code> after any CSS or JS change and hard-reload the browser.</li>
             <li>On a small server run <code>php artisan optimize:clear &amp;&amp; php artisan optimize</code> after every pull (config, route, event and view caches) and set <code>LOG_LEVEL=warning</code> and <code>CACHE_STORE=file</code> (sessions stay in the database). With the config cache on, <code>.env</code> is no longer read at run time, so code reads settings only through <code>config()</code>, never <code>env()</code>. The server needs no tests, docs or Node sources: <code>git sparse-checkout</code> can hide them.</li>
             <li>Help files live in <code>resources/</code> and are served through <code>auth</code> routes; never put them in <code>public/</code>.</li>
         </ol>
+
+        <h3 id="mail">Mail</h3>
+        <p>The only mail Stoku sends is the password-reset link (<code>PasswordResetController</code>, text in <code>AppServiceProvider</code>: Indonesian, subject and signature use <code>APP_NAME</code>). Everything is set in <code>.env</code> and read through <code>config/mail.php</code>; code never calls <code>env()</code>, so it also works with <code>config:cache</code>.</p>
+        <ul class="g-list">
+            <li><code>MAIL_MAILER</code> (<code>log</code> writes the mail to <code>storage/logs/laravel.log</code>; <code>smtp</code> sends), <code>MAIL_HOST</code>, <code>MAIL_PORT</code>, <code>MAIL_SCHEME</code> (<code>null</code> = STARTTLS on 587; <code>smtps</code> with 465), <code>MAIL_USERNAME</code>, <code>MAIL_PASSWORD</code>, <code>MAIL_FROM_ADDRESS</code>, <code>MAIL_FROM_NAME</code>, <code>MAIL_TIMEOUT</code> (seconds, default 15), <code>MAIL_EHLO_DOMAIN</code> (default: host of <code>APP_URL</code>).</li>
+            <li>When sending fails, the user sees a friendly message on the forgot-password screen (not a 500), the exception is written to the log with <code>Log::error</code> (<code>LOG_LEVEL=warning</code> still records it), and the reset token is deleted so the user can ask again at once.</li>
+            <li>Test the transport with <code>php artisan sstock:mail-test you@example.com</code>. Tests use <code>MAIL_MAILER=array</code> (<code>phpunit.xml</code>); <code>PasswordResetTest</code> and <code>MailTestCommandTest</code> cover the message, the sender and the failure path.</li>
+            <li>Small server checklist: no local MTA is needed. Relay through an outside SMTP account (for example Gmail with an app password on port 587), put the <code>MAIL_*</code> values in the server <code>.env</code>, then <code>php artisan optimize:clear &amp;&amp; php artisan optimize</code> and reload php-fpm. Limit: a server that has only an IP address (no domain, no SPF/DKIM) can relay through a provider, but mail sent straight from that IP usually lands in spam or is rejected. Full steps: <code>docs/SMTP.md</code>.</li>
+        </ul>
 
         <h3 id="testing">Testing</h3>
         <p>Tests run on in-memory SQLite (<code>phpunit.xml</code>: <code>DB_CONNECTION=sqlite</code>, <code>DB_DATABASE=:memory:</code>, array cache and session), so they never touch the MySQL database. <code>Tests\TestCase</code> disables Vite (no <code>npm run build</code> needed) and clears the static <code>Constants</code> cache between tests. <code>makeItem()</code> creates a product with its batch.</p>
@@ -457,12 +470,10 @@ composer test                        # config:clear, then php artisan test</pre>
 
         <h2 id="open">12. Open items</h2>
         <ul class="g-list">
-            <li>Stok Opname: colour the large-difference rows (needs a DevLib <code>x-dl::sheet</code> option), a backup Save button on the entry sheet (today only auto-save), and refreshing one moved line instead of all moved lines.</li>
             <li>Re-order records: no screen to edit or delete an order (only <i>Close Order</i> exists). The list and detail are in Riwayat Pemesanan.</li>
             <li>Segregation of duties between creator and approver (Adjustment, Stok Opname).</li>
             <li>Hide the Save button on RO modules (the server already rejects the save).</li>
             <li>Company screen: no separate black-and-white logo for Ink Saver (the same PNG is used), and no second letterhead for a VAT variant (<code>companyPpn</code>).</li>
-            <li>Production SMTP; portrait wallpapers for phones.</li>
         </ul>
     </main>
 </div>

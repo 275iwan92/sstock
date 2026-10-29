@@ -35,12 +35,12 @@ class AppServiceProvider extends ServiceProvider
             $url = route('password.reset', ['token' => $token, 'email' => $user->getEmailForPasswordReset()]);
             $minutes = config('auth.passwords.'.config('auth.defaults.passwords').'.expire');
 
-            return (new MailMessage)->subject('Atur ulang password Stoku')
+            return (new MailMessage)->subject('Atur ulang password '.config('app.name'))
                 ->greeting('Halo '.$user->name.',')
-                ->line('Kami menerima permintaan untuk mengatur ulang password akun Stoku Anda.')
+                ->line('Kami menerima permintaan untuk mengatur ulang password akun '.config('app.name').' Anda.')
                 ->action('Atur password baru', $url)
                 ->line("Tautan ini berlaku {$minutes} menit. Jika bukan Anda yang meminta, abaikan e-mail ini; password Anda tidak berubah.")
-                ->salutation('Stoku');
+                ->salutation(config('app.name'));
         });
     }
 }
