@@ -5,6 +5,7 @@
  *                Bawaan: aktif selain di production; di production wajib dinyalakan sengaja lewat SSTOCK_SAMPLE_REFRESH=true.
  *                super_admin = satu akun (username + hash kata sandi, dari .env) yang SATU-SATUNYA boleh menyegarkan data contoh, di lingkungan mana pun termasuk production;
  *                dibuat ulang oleh UserSeeder setiap penyegaran. Kosong = aturan lama (sakelar sample_refresh, semua Administrator).
+ *                ip_lookup = layar Log Aktivitas boleh mengirim IP publik ke ipwho.is untuk perkiraan lokasi (App\Support\IpLocation); SSTOCK_IP_LOOKUP=false mematikannya.
  * Dipakai oleh : App\Services\SampleData, SampleDataController, UserSeeder, UserController.
  * Status       : Aktif.
  */
@@ -13,6 +14,7 @@ return [
     // Batch yang kedaluwarsa dalam N hari ke depan tidak dihitung sebagai stok tersedia untuk titik pesan ulang. 0 = hanya yang sudah lewat (bawaan).
     'reorder_exclude_days' => (int) env('SSTOCK_REORDER_EXCLUDE_DAYS', 0),
     'sample_refresh' => (bool) env('SSTOCK_SAMPLE_REFRESH', env('APP_ENV', 'production') !== 'production'),
+    'ip_lookup' => (bool) env('SSTOCK_IP_LOOKUP', true),  // Log Aktivitas: cari perkiraan lokasi IP publik ke ipwho.is (false = tidak ada IP yang dikirim keluar)
     'activity_dir' => storage_path('app/activity'),  // log aktivitas (CSV bulanan), di luar database sehingga tidak ikut terhapus saat data contoh disegarkan
     // Hanya dipakai perintah pemasangan (sstock:install, sstock:import-geo); di config agar tetap terbaca saat config:cache dipakai.
     'geo_source_db' => env('GEO_SOURCE_DB', 'tm2mst'),

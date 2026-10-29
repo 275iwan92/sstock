@@ -4,15 +4,21 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Support\ActivityLog;
+use App\Support\IpLocation;
+use Database\Seeders\UserSeeder;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 /* REMARK
  * Tujuan       : Menjaga log aktivitas (CSV bulanan) dan layar super admin: yang dicatat (Buka, Input / Ubah / Hapus, Login, Login gagal, Logout) lengkap dengan user, IP, waktu; ping dan JSON baca tidak dicatat; kata sandi tidak pernah dicatat;
+ *                kolom Lokasi (perkiraan) dari IP memakai ipwho.is yang di tes selalu di-fake (tidak ada jaringan sungguhan);
  *                layar Log Aktivitas dan Akun UAT hanya untuk super admin (selain dia 404, termasuk Administrator); super admin bisa mengubah kata sandi akun lain dan tidak tampil di daftar Pengguna.
  * Dipakai oleh : php artisan test.
  * Status       : Aktif.
@@ -27,7 +33,8 @@ class ActivityLogTest extends TestCase
     {
         parent::setUp();
         $this->dir = sys_get_temp_dir().'/sstock-activity-'.uniqid();
-        config(['sstock.activity_dir' => $this->dir, 'sstock.super_admin' => ['username' => 'johiwan', 'hash' => null]]);
+        config(['sstock.activity_dir' => $this->dir, 'sstock.super_admin' => ['username' => 'johiwan', 'hash' => null], 'sstock.ip_lookup' => false]);   // pencarian lokasi hanya menyala di tes IpLocation
+        Http::preventStrayRequests();
     }
 
     protected function tearDown(): void
@@ -62,7 +69,7 @@ class ActivityLogTest extends TestCase
         Route::middleware('web')->delete('uji-hapus', fn () => 'x')->name('things.destroy');
         $this->actingAs(User::factory()->create(['username' => 'penguji']));
 
-        $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class);
+        $this->withoutMiddleware(ValidateCsrfToken::class);
         $this->post('uji-baru', ['rahasia' => 'ISI-FORMULIR']);
         $this->put('uji-ubah');
         $this->delete('uji-hapus');
@@ -151,7 +158,7 @@ class ActivityLogTest extends TestCase
 
     public function test_accounts_screen_shows_the_seeded_defaults_and_hides_the_super_admin(): void
     {
-        $this->seed(\Database\Seeders\UserSeeder::class);
+        $this->seed(UserSeeder::class);
 
         $this->actingAs($this->super())->get(route('super.accounts'))->assertOk()->assertSee('supervisor')->assertSee('1qa2ws3ed')->assertDontSee('johiwan');
     }
@@ -169,5 +176,87 @@ class ActivityLogTest extends TestCase
         $this->actingAs($super)->post(route('super.password', $entry), ['password' => 'abc'])->assertSessionHasErrors('password');
         $this->actingAs($super)->post(route('super.password', $super), ['password' => 'baru-456'])->assertNotFound();
         $this->actingAs(User::factory()->administrator()->create())->post(route('super.password', $entry), ['password' => 'baru-456'])->assertNotFound();
+    }
+
+    private function fakeWho(?array $body = null): void
+    {
+        config(['sstock.ip_lookup' => true]);
+        Http::fake(['ipwho.is/*' => Http::response($body ?? ['success' => true, 'city' => 'Jakarta', 'region' => 'Jakarta', 'country' => 'Indonesia', 'connection' => ['isp' => 'Telkom']])]);
+    }
+
+    public function test_a_public_ip_gets_place_and_isp_and_is_looked_up_only_once(): void
+    {
+        $this->fakeWho();
+
+        $this->assertSame(['8.8.4.4' => 'Jakarta, Jakarta, Indonesia · Telkom'], IpLocation::label(['8.8.4.4']));
+        IpLocation::label(['8.8.4.4']);
+
+        Http::assertSentCount(1);
+        Http::assertSent(fn ($r) => str_starts_with($r->url(), 'https://ipwho.is/8.8.4.4'));
+    }
+
+    public function test_a_failed_broken_or_unreachable_lookup_is_unknown_without_an_error(): void
+    {
+        config(['sstock.ip_lookup' => true]);
+        Http::fake(['ipwho.is/8.8.4.1*' => Http::response(['success' => false]), 'ipwho.is/8.8.4.2*' => Http::response('bukan json', 200), 'ipwho.is/8.8.4.3*' => fn () => throw new ConnectionException('timeout')]);
+
+        $this->assertSame(['8.8.4.1' => 'Tidak diketahui', '8.8.4.2' => 'Tidak diketahui', '8.8.4.3' => 'Tidak diketahui'], IpLocation::label(['8.8.4.1', '8.8.4.2', '8.8.4.3']));
+    }
+
+    public function test_after_one_timeout_the_other_ips_in_the_same_view_are_not_waited_for(): void
+    {
+        config(['sstock.ip_lookup' => true]);
+        Http::fake(fn () => throw new ConnectionException('timeout'));
+
+        $out = IpLocation::label(['8.8.4.1', '8.8.4.2', '8.8.4.3']);
+
+        $this->assertSame(['8.8.4.1' => 'Tidak diketahui', '8.8.4.2' => 'Mencari...', '8.8.4.3' => 'Mencari...'], $out);
+    }
+
+    public function test_private_loopback_and_invalid_ips_are_never_sent_anywhere(): void
+    {
+        $this->fakeWho();
+
+        $out = IpLocation::label(['127.0.0.1', '192.168.1.5', '10.0.0.7', '::1', 'fd00::1', 'bukan-ip', '']);
+
+        $this->assertSame(['127.0.0.1' => 'Jaringan lokal', '192.168.1.5' => 'Jaringan lokal', '10.0.0.7' => 'Jaringan lokal', '::1' => 'Jaringan lokal', 'fd00::1' => 'Jaringan lokal', 'bukan-ip' => '', '' => ''], $out);
+        Http::assertNothingSent();
+    }
+
+    public function test_an_ipv6_address_is_looked_up_and_at_most_eight_new_ips_per_view(): void
+    {
+        $this->fakeWho();
+        $ips = array_map(fn ($i) => "8.8.8.$i", range(1, 10));
+
+        $out = IpLocation::label(['2606:4700:4700::1111', ...$ips]);
+
+        Http::assertSentCount(8);
+        $this->assertSame('Jakarta, Jakarta, Indonesia · Telkom', $out['2606:4700:4700::1111']);
+        $this->assertSame(['Jakarta, Jakarta, Indonesia · Telkom', 'Mencari...'], [$out['8.8.8.7'], $out['8.8.8.8']]);
+
+        IpLocation::label($ips);   // pemuatan berikutnya: yang sudah dicari dari cache, sisanya baru dicari
+
+        Http::assertSentCount(11);   // 8 + 3 sisanya; yang sudah di-cache tidak diulang
+    }
+
+    public function test_with_the_lookup_switched_off_nothing_is_sent(): void
+    {
+        $this->fakeWho();
+        config(['sstock.ip_lookup' => false]);
+
+        $this->assertSame(['8.8.4.4' => 'Mencari...'], IpLocation::label(['8.8.4.4']));
+        Http::assertNothingSent();
+    }
+
+    public function test_the_log_screen_shows_the_location_column_and_the_csv_stays_unchanged(): void
+    {
+        $this->fakeWho();
+        ActivityLog::write('x', '8.8.4.4', 'Buka', 'home /');
+        $before = (string) file_get_contents(ActivityLog::file());
+
+        $this->actingAs($this->super())->get(route('super.log'))->assertOk()->assertSee('Lokasi (perkiraan)')->assertSee('Jakarta, Jakarta, Indonesia \u00b7 Telkom', false)->assertSee('ipwho.is');   // data grid ada di atribut JSON, jadi "·" tampil sebagai ·
+
+        $this->assertStringNotContainsString('Jakarta', (string) file_get_contents(ActivityLog::file()));
+        $this->assertStringStartsWith($before, (string) file_get_contents(ActivityLog::file()));   // hanya menambah baris Buka milik super admin sendiri
     }
 }

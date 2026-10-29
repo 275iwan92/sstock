@@ -15,7 +15,7 @@ Layar Keamanan > Data Contoh (ketik `SEGARKAN`) menghapus seluruh data lalu meng
 
 ## Layar super admin (menu Keamanan, hanya tampil baginya; selain dia 404)
 
-- **Log Aktivitas** (`/super/log`): Waktu, User, IP, Aksi (Buka, Input, Ubah, Hapus, Batalkan, Unduh, Login, Login gagal, Logout, Reset data contoh), Rincian (nama rute + alamat). Per bulan, 1.500 baris terbaru, cari / urutkan, unduh CSV.
+- **Log Aktivitas** (`/super/log`): Waktu, User, IP, Lokasi (perkiraan), Aksi (Buka, Input, Ubah, Hapus, Batalkan, Unduh, Login, Login gagal, Logout, Reset data contoh), Rincian (nama rute + alamat). Per bulan, 1.500 baris terbaru, cari / urutkan, unduh CSV.
 - **Akun UAT** (`/super/akun`): semua akun dengan **kata sandi bawaan seeder** dan kolom untuk mengubah kata sandi akun mana pun (disimpan sebagai hash, sesi lama akun itu keluar).
 
 Kata sandi di database adalah hash dan **tidak bisa dibaca**; yang ditampilkan hanya nilai bawaan seeder, berlaku selama belum diubah. Sengaja tidak ada penyimpanan kata sandi yang bisa dibaca kembali: penguji bisa saja memakai kata sandi yang sama dengan akun lain milik mereka.
@@ -25,3 +25,10 @@ Kata sandi di database adalah hash dan **tidak bisa dibaca**; yang ditampilkan h
 - Berkas CSV per bulan: `storage/app/activity/YYYY-MM.csv` (`config sstock.activity_dir`). Dipilih CSV karena menulis = menambah satu baris di akhir berkas (tercepat), tanpa migrasi, mudah diunduh, dan **tidak ikut terhapus saat data contoh disegarkan** (database dibuang, berkas ini tidak).
 - Dicatat oleh middleware `LogActivity` sesudah respons terkirim (tidak memperlambat layar). Yang dicatat hanya nama rute, alamat tanpa query, dan kode status bila galat. **Isi formulir dan kata sandi tidak pernah dicatat.** Ping sesi, permintaan JSON baca, dan berkas statis tidak dicatat.
 - Di server, folder dan berkas harus bisa ditulis PHP-FPM (grup `www-data`): `storage/app/activity` bergrup `www-data`, mode `775` (`sudo chgrp www-data storage/app/activity && sudo chmod 775 storage/app/activity`).
+
+## Lokasi (perkiraan) di Log Aktivitas
+
+- Kolom **Lokasi (perkiraan)** menampilkan "Kota, Provinsi, Negara · operator (ISP)" dari alamat IP (`App\Support\IpLocation`). IP lokal / privat (`127.0.0.1`, `192.168.x.x`, `10.x.x.x`, `::1`) tampil "Jaringan lokal" dan tidak dikirim ke mana pun. Hanya tampilan: **berkas CSV unduhan tidak berubah**.
+- **Privasi:** IP publik pengakses dikirim ke layanan pihak ketiga **ipwho.is** (HTTPS, tanpa kunci), satu kali per IP, lalu hasilnya disimpan di cache aplikasi (30 hari; gagal dicoba lagi setelah 10 menit). Per pemuatan layar paling banyak 8 IP baru dicari (batas waktu 3 detik; layanan mati = pencarian pemuatan itu berhenti); sisanya tampil "Mencari..." dan terisi pada pemuatan berikutnya. Layanan mati / IP tidak dikenal = "Tidak diketahui", layar tetap terbuka.
+- **Mematikan:** `SSTOCK_IP_LOOKUP=false` di `.env` (`config sstock.ip_lookup`), lalu `php artisan config:clear` (atau `optimize` ulang bila `config:cache` dipakai). Tidak ada IP yang dikirim keluar; IP yang sudah ada di cache tetap tampil, yang belum tampil "Mencari...".
+- **Akurasi:** hanya perkiraan kasar. IP seluler sering menunjuk kota pusat jaringan operator, bukan posisi orangnya; IP lewat VPN / proxy menunjuk ke server mereka. Cache memakai `CACHE_STORE` bawaan (`file` cukup).

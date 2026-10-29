@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Support\ActivityLog;
+use App\Support\IpLocation;
 use Database\Seeders\UserSeeder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,7 +27,11 @@ class SuperAdminController extends Controller
         $months = ActivityLog::months();
         $month = in_array($request->query('month'), $months, true) ? $request->query('month') : ($months[0] ?? now()->format('Y-m'));
 
-        return view('super.log', ['rows' => ActivityLog::read($month, 1500), 'month' => $month, 'months' => $months ?: [$month]]);
+        $rows = ActivityLog::read($month, 1500);
+        $loc = IpLocation::label(array_column($rows, 'ip'));   // hanya tampilan; CSV unduhan tidak berubah
+        $rows = array_map(fn ($row) => $row + ['loc' => $loc[$row['ip']] ?? ''], $rows);
+
+        return view('super.log', ['rows' => $rows, 'month' => $month, 'months' => $months ?: [$month]]);
     }
 
     public function download(Request $request)
