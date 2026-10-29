@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\HpShell;
 use Closure;
 use Devlib\Device;
 use Illuminate\Http\Request;
@@ -22,6 +23,10 @@ class ResetViewChoice
 
     public function handle(Request $request, Closure $next)
     {
+        // Ponsel asli selalu Tampilan HP sampai keluar atau ganti perangkat: cookie ui=desktop di ponsel diabaikan di setiap permintaan.
+        if ($request->cookie(Device::COOKIE) === Device::DESKTOP && HpShell::isRealPhone()) {
+            $request->cookies->remove(Device::COOKIE);
+        }
         if (! $request->isMethod('GET') || $request->cookie('ui_ver') === self::VERSION) {
             return $next($request);
         }

@@ -30,11 +30,11 @@ class PhoneViewTest extends TestCase
 
     public function test_login_page_follows_device_and_cookie_and_offers_the_phone_view_popup_on_desktop_only(): void
     {
-        // ponsel: halaman login HP (tanpa popup), dengan jalan kembali ke tampilan desktop
+        // ponsel: halaman login HP (tanpa popup), tanpa jalan ke tampilan desktop (ponsel selalu Tampilan HP)
         $phone = $this->withHeader('User-Agent', self::PHONE)->get('/login')->assertOk()->getContent();
         $this->assertStringContainsString('dl-plogin', $phone);
         $this->assertStringNotContainsString('dl-phoneoffer', $phone);
-        $this->assertStringContainsString('name="ui" value="desktop"', $phone);
+        $this->assertStringNotContainsString('name="ui" value="desktop"', $phone);
 
         // komputer tanpa pilihan: login desktop + popup tawaran (CSS menampilkannya hanya pada layar phone: lebar < 600 px, atau HP landscape)
         $pc = $this->withHeader('User-Agent', self::PC)->get('/login')->getContent();
@@ -44,11 +44,23 @@ class PhoneViewTest extends TestCase
         $this->assertStringContainsString('Tetap desktop', $pc);
         $this->assertStringContainsString('data-auto', $pc, 'layar phone langsung ke Tampilan HP (DevLib phone-offer auto)');
 
-        // pilihan pengguna (cookie) menang atas tebakan; popup tidak muncul lagi bila sudah memilih
+        // pilihan pengguna (cookie) menang atas tebakan di komputer; di ponsel asli cookie desktop diabaikan
         $chosen = $this->withHeader('User-Agent', self::PHONE)->withCookie('ui', 'desktop')->get('/login')->getContent();
-        $this->assertStringNotContainsString('dl-plogin', $chosen);
+        $this->assertStringContainsString('dl-plogin', $chosen);
         $this->assertStringNotContainsString('dl-phoneoffer', $chosen);
         $this->assertStringContainsString('dl-plogin', $this->withHeader('User-Agent', self::PC)->withCookie('ui', 'hp')->get('/login')->getContent());
+    }
+
+    public function test_a_real_phone_is_always_the_phone_view_with_no_desktop_switch_but_a_narrowed_pc_window_keeps_the_way_back(): void
+    {
+        $user = User::factory()->create();
+        $phone = $this->actingAs($user)->withHeader('User-Agent', self::PHONE)->withCookie('ui', 'desktop')->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('dl-phone', $phone);
+        $this->assertStringNotContainsString('data-dl-device', $phone);
+        $this->assertStringNotContainsString('action="'.route('ui.set').'"', $phone);
+
+        $pc = $this->actingAs($user)->withHeader('User-Agent', self::PC)->withCookie('ui', 'phone')->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('action="'.route('ui.set').'"', $pc);
     }
 
     public function test_guest_can_save_the_view_choice_from_the_popup_and_the_phone_login(): void
@@ -83,8 +95,8 @@ class PhoneViewTest extends TestCase
         $this->assertStringContainsString('dl-phone__burger', $phone);
         $this->assertStringNotContainsString('dl-shell', $phone);
 
-        // pilihan pengguna menang atas tebakan, ke dua arah
-        $this->actingAs($sup)->withHeader('User-Agent', self::PHONE)->withCookie('ui', 'desktop')->get('/')->assertSee('dl-shell', false)->assertDontSee('dl-phone__burger', false);
+        // pilihan pengguna menang atas tebakan di komputer; di ponsel asli pilihan desktop diabaikan (ponsel selalu Tampilan HP)
+        $this->actingAs($sup)->withHeader('User-Agent', self::PHONE)->withCookie('ui', 'desktop')->get('/')->assertSee('dl-phone__burger', false)->assertDontSee('dl-shell', false);
         $this->actingAs($sup)->withHeader('User-Agent', self::PC)->withCookie('ui', 'hp')->get('/')->assertSee('dl-phone__burger', false);
     }
 

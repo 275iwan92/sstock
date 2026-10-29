@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\User;
+use Devlib\Device;
 
 /* REMARK
  * Tujuan       : Data kerangka tampilan HP (x-dl::phone-shell): menu utama besar di panel Menu (Beranda, Stok, Transaksi, Opname; tombol kelima Menu = semua modul) dan modul panel Menu, disaring menurut akses pengguna.
@@ -16,6 +17,18 @@ final class HpShell
 {
     // Modul yang punya tampilan HP sendiri: kode => nama rute.
     private const OWN = ['SO' => 'hp.counts'];
+
+    // Perangkat ini ponsel asli menurut UA (bukan jendela komputer yang dipersempit): ponsel selalu Tampilan HP, tanpa tombol Tampilan Desktop.
+    public static function isRealPhone(): bool
+    {
+        return Device::detect(request()->userAgent(), request()->header('Sec-CH-UA-Mobile')) === Device::PHONE;
+    }
+
+    // Alamat peralihan tampilan untuk x-dl::phone-shell / phone-login: ponsel asli tidak punya (null = tombol tidak digambar); jendela komputer yang sempit tetap perlu jalan kembali ke desktop.
+    public static function deviceAction(): ?string
+    {
+        return self::isRealPhone() ? null : route('ui.set');
+    }
 
     public static function url(string $code): string
     {

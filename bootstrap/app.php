@@ -23,6 +23,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectUsersTo(fn () => route('home'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // Keluar dengan sesi / token yang sudah kedaluwarsa (halaman terbuka lama, login di tab lain): tujuannya sudah tercapai, jadi ke halaman masuk, bukan layar 419.
+        $exceptions->render(fn (\Symfony\Component\HttpKernel\Exception\HttpException $e, Request $request) => $e->getStatusCode() === 419 && $request->routeIs('logout') ? redirect()->route('login') : null);
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );

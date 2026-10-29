@@ -124,10 +124,10 @@
 <h3 id="tampilan-hp">Tampilan HP dan Tampilan Desktop</h3>
 <p>Stoku punya dua tampilan. <b>Tampilan Desktop</b> untuk komputer (menu di sisi kiri). <b>Tampilan HP</b> untuk ponsel yang dipegang tegak: satu tombol <b>&#8801;</b> melayang di kiri atas dan isi selebar layar, tanpa bilah permanen di atas maupun di bawah.</p>
 <ul class="g-list">
-    <li><b>Di ponsel</b>, Stoku langsung memakai Tampilan HP, mulai dari halaman Masuk (isian dan tombol besar). Tautan kecil <b>Tampilan Desktop</b> di bawahnya kembali ke tampilan komputer.</li>
+    <li><b>Di ponsel</b>, Stoku selalu memakai Tampilan HP, mulai dari halaman Masuk (isian dan tombol besar), dan tidak ada tombol untuk pindah ke Tampilan Desktop. Tampilan mengikuti perangkat: ponsel memakai Tampilan HP, komputer memakai Tampilan Desktop. Untuk berganti, keluar lalu masuk dari perangkat lain.</li>
     <li><b>Di komputer atau tablet dengan layar sempit</b> (lebih sempit dari 600 px, atau HP yang diputar mendatar), halaman Masuk dan Beranda <b>beralih sendiri</b> ke Tampilan HP, juga bila Anda baru mempersempit jendela. Bila jendela dilebarkan lagi, Stoku <b>kembali sendiri</b> ke Tampilan Desktop. Peralihan otomatis ini hanya berlaku selama Anda belum memilih tampilan sendiri. Bila peralihan otomatis tidak berjalan, muncul pertanyaan <b>Ingin tampilan yang lebih nyaman di smartphone?</b>: <b>Ketuk di sini</b> beralih ke Tampilan HP, <b>Tetap desktop</b> menutupnya dan pilihan itu diingat.</li>
-    <li><b>Memilih sendiri:</b> di Tampilan HP ketuk <b>&#8801;</b>, lalu <b>Menu</b>, lalu <b>Tampilan Desktop</b>. Di Tampilan Desktop buka menu profil dan pilih <b>Tampilan HP</b>. Pilihan yang Anda buat sendiri diingat di perangkat itu dan <b>tidak diubah otomatis</b>.</li>
-    <li>Tablet dan ponsel yang meminta &quot;situs desktop&quot; dianggap komputer. Pilih Tampilan HP di halaman Masuk atau di menu profil bila ingin tampilan ponsel.</li>
+    <li><b>Memilih sendiri (hanya di komputer):</b> di Tampilan Desktop buka menu profil dan pilih <b>Tampilan HP</b>; jalan kembali ke Tampilan Desktop ada di ketukan <b>&#8801;</b>, lalu <b>Menu</b>. Pilihan yang Anda buat sendiri diingat di perangkat itu dan <b>tidak diubah otomatis</b>.</li>
+    <li>Tablet dan ponsel yang meminta &quot;situs desktop&quot; di peramban dianggap komputer.</li>
 </ul>
 
 <h3 id="hp-menu">Tombol &#8801; dan bilah menu di HP</h3>
