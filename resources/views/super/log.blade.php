@@ -6,7 +6,7 @@
  Dipakai oleh : route super.log (menu Keamanan > Log Aktivitas, hanya super admin).
  Status       : Aktif.
 --}}
-@extends('layout', ['title' => 'Log Aktivitas', 'bodyClass' => 'sstock-scroll'])
+@extends('layout', ['title' => 'Log Aktivitas'])
 @section('body')
     @include('partials.flash')
     <div>

@@ -6,7 +6,7 @@
  Dipakai oleh : route super.accounts (menu Keamanan > Akun UAT, hanya super admin).
  Status       : Aktif.
 --}}
-@extends('layout', ['title' => 'Akun UAT', 'bodyClass' => 'sstock-scroll'])
+@extends('layout', ['title' => 'Akun UAT'])
 @section('body')
     @include('partials.flash')
     <div style="max-width: 980px">

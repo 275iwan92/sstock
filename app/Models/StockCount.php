@@ -41,11 +41,6 @@ class StockCount extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function submitter(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'submitted_by');
-    }
-
     public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');

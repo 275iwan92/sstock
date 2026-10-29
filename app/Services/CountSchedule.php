@@ -134,10 +134,4 @@ final class CountSchedule
 
         return $s['days_to'] < 0 ? ['badge' => '!', 'tone' => 'danger', 'title' => $s['detail']] : null;
     }
-
-    /** @return Collection<int, string> */
-    public static function weekdayOptions(): Collection
-    {
-        return collect(self::WEEKDAYS);
-    }
 }

@@ -22,7 +22,7 @@ class UserController extends Controller
 {
     public function index()
     {
-        $rows = User::visible()->orderBy('name')->get()->map(fn (User $u) => [
+        $rows = User::visible()->with('group:id,name')->orderBy('name')->get()->map(fn (User $u) => [
             'id' => $u->id, 'name' => $u->name, 'username' => $u->username, 'email' => $u->email, 'role' => $u->roleLabel(), 'group' => $u->group?->name ?? '—', 'active' => $u->is_active,
         ])->all();
 

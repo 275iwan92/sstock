@@ -5,7 +5,7 @@
  Dipakai oleh : rute ukur (routes/web.php).
  Status       : Aktif.
 --}}
-@extends('layout', ['title' => 'Screen info', 'bodyClass' => 'sstock-scroll'])
+@extends('layout', ['title' => 'Screen info'])
 @section('body')
     <x-dl::screen-info />
 @endsection

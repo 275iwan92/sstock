@@ -38,16 +38,6 @@ class StockDocument extends Model
         return $this->belongsTo(Supplier::class);
     }
 
-    public function recipientMaster(): BelongsTo
-    {
-        return $this->belongsTo(Recipient::class, 'recipient_id');
-    }
-
-    public function departmentMaster(): BelongsTo
-    {
-        return $this->belongsTo(Department::class, 'department_id');
-    }
-
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
