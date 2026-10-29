@@ -43,7 +43,6 @@ Tempel seluruh teks ini di awal sesi baru, lalu baca juga `CLAUDE.md` bila perlu
 - Tombol Simpan pada modul berakses RO masih tampil (server menolak dengan pesan); menyembunyikannya belum dikerjakan.
 
 ## 5. Belum dikerjakan
-- Stok Opname: baris selisih besar berwarna (butuh opsi DevLib `x-dl::sheet`), tombol Simpan cadangan di lembar input (kini hanya simpan otomatis), perbarui satu baris saja dari layar (kini perbarui semua baris yang bergeser sekaligus).
 - Ubah / hapus catatan Catat Pemesanan (layar Riwayat Pemesanan hanya membaca + Tutup Pesanan) dan logo hitam-putih khusus Hemat Tinta.
 - Pemisahan tugas pembuat vs penyetuju.
 
