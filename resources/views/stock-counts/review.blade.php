@@ -3,7 +3,7 @@
                 (alasan WAJIB bila selisih melewati ambang), ringkasan lebih / kurang, lalu Setujui (mesin membuat satu Penyesuaian), Kembalikan, atau Batalkan.
  Sumber hulu  : StockCountController@show (count, summary, reviewRows, moved).
  Input        : count, summary, reviewRows, moved.
- Output       : x-dl::lookup-grid (auto-save ke stock-counts.review; halaman dimuat ulang setelah simpan supaya ringkasan ikut benar), POST stock-counts.approve / reject / refresh.
+ Output       : x-dl::lookup-grid (auto-save ke stock-counts.review; halaman dimuat ulang setelah simpan supaya ringkasan ikut benar; baris selisih besar berwarna), POST stock-counts.approve / reject / refresh (semua baris bergeser) / refresh-line (satu baris).
  Dipakai oleh : stock-counts/show (Supervisor, status Tinjau; Selesai / Dibatalkan hanya baca).
  Status       : Aktif.
 --}}
@@ -18,6 +18,13 @@
         <x-dl::action-form :action="route('stock-counts.refresh', $count)">
             <x-dl::button type="submit" size="sm" icon="fa-rotate" label="Refresh Moved Lines" data-dl-confirm="Perbarui baris yang bergeser? Stok sistemnya diganti stok sekarang dan barisnya dikosongkan untuk dihitung ulang; opname kembali ke Sedang dihitung." data-dl-confirm-tone="warn" />
         </x-dl::action-form>
+        <x-dl::action-bar align="start">
+            @foreach ($moved->take(12) as $l)
+                <x-dl::action-form :action="route('stock-counts.refresh-line', [$count, $l->id])">
+                    <x-dl::button type="submit" size="sm" variant="secondary" icon="fa-rotate" :label="'Perbarui '.$l->item->code" data-dl-confirm="Perbarui baris {{ $l->item->code }} saja? Stok sistemnya diganti stok sekarang dan barisnya dikosongkan untuk dihitung ulang; opname kembali ke Sedang dihitung." data-dl-confirm-tone="warn" />
+                </x-dl::action-form>
+            @endforeach
+        </x-dl::action-bar>
     </x-dl::alert>
 @endif
 @if ($editable && ($ownShare ?? 0) > 0.5)
@@ -41,7 +48,7 @@
         <x-dl::button variant="secondary" icon="fa-rotate-left" label="Return to Counting" data-dl-open="return-modal" />
     </x-dl::action-bar>
 @endif
-<x-dl::lookup-grid data-reload-on-save :rows="$reviewRows" :add-rows="false" :auto-save="true" :save-url="route('stock-counts.review', $count)"
+<x-dl::lookup-grid data-reload-on-save :rows="$reviewRows" :add-rows="false" :auto-save="true" :save-url="route('stock-counts.review', $count)" row-tone="tone"
     :stats="[['label' => 'All'], ['label' => 'Differences only', 'where' => ['has_diff' => 'yes'], 'tone' => 'warn'], ['label' => 'Large differences', 'where' => ['big' => 'yes'], 'tone' => 'danger']]"
     :columns="[
         ['key' => 'code', 'label' => 'Code', 'readonly' => true, 'width' => '120px'],

@@ -185,10 +185,11 @@
     <li><b>Input hasil hitung</b> (Data Entry atau Supervisor). Buka opname dari daftar. Setiap baris adalah satu batch. Isi <b>Hasil Hitung</b> (angka 0 atau lebih, sampai 3 desimal, dalam satuan stok) dan <b>Penghitung</b>. Nama penghitung terakhir diingat untuk baris berikutnya.
         <ul class="g-list">
             <li>Setiap perubahan <b>tersimpan otomatis</b> begitu Anda pindah sel.</li>
+            <li>Ingin memastikan semuanya sudah masuk? Tekan <b>Simpan Cadangan</b>. Stoku membandingkan jumlah baris terisi di layar dengan yang ada di server, lalu menampilkan &quot;Semua isian tersimpan di server: ...&quot;. Bila jumlahnya berbeda, muncul peringatan merah dan isian Anda mungkin belum tersimpan: muat ulang halaman dan isi lagi baris yang kurang.</li>
             <li>Kotak <b>Terisi</b> dan <b>Belum diisi</b> di atas lembar menghitung kemajuan langsung. Klik <b>Belum diisi</b> untuk melihat baris yang tersisa. Kotak <b>Cari</b> mencari kode atau nama.</li>
             <li>Beberapa orang boleh mengisi baris yang berbeda sekaligus. Stoku mencatat <b>siapa yang menginput</b> tiap baris. Namanya tampil di kolom <b>Diinput oleh</b> di layar Tinjau dan di Berita Acara.</li>
             <li>Baris yang sama sudah diubah orang lain sejak layar Anda dimuat? Muncul peringatan &quot;Baris ... sudah diubah oleh ... pada ...&quot;. Isi alasan lalu Simpan untuk <b>menimpa</b>. Angka yang Anda ketik menggantikan angka lama, bukan ditambahkan. Atau pilih Batal untuk membuang isian Anda.</li>
-            <li>Opname <b>tidak buta</b>? Kolom <b>Stok Sistem</b> dan <b>Selisih</b> tampil langsung di layar input.</li>
+            <li>Opname <b>tidak buta</b>? Kolom <b>Stok Sistem</b> dan <b>Selisih</b> tampil langsung di layar input, dan baris yang selisihnya <b>melewati ambang</b> diberi warna merah muda supaya mudah dilihat.</li>
         </ul>
     </li>
     <li><b>Barang tidak ketemu atau tidak bisa dihitung?</b> Isi <b>Catatan</b> dulu, lalu centang <b>Tidak dihitung</b>. Catatan wajib. Baris itu tidak menghasilkan selisih.</li>
@@ -196,7 +197,9 @@
     <li><b>Selesai Hitung.</b> Tombol ini hanya berhasil bila semua baris terisi, atau Tidak dihitung dengan catatan. Bila belum, pesannya menyebut kode barang yang tersisa. Sesudahnya isian terkunci dan opname masuk <b>Tinjau</b>.</li>
     <li><b>Tinjau</b> <span class="g-role">hanya Supervisor</span>. Layar menampilkan stok sistem, hasil fisik, dan <b>selisih</b> (jumlah, persen, dan nilai). Nilai adalah selisih dikali biaya rata-rata saat titik acuan. Ada juga ringkasan nilai lebih dan nilai kurang. Saring dengan kotak <b>Hanya selisih</b> atau <b>Selisih besar</b>.
         <ul class="g-list">
+            <li>Baris yang selisihnya melewati ambang (kolom <b>Besar</b>) diberi <b>warna merah muda</b> di seluruh barisnya.</li>
             <li>Isi <b>Hitung Ulang</b> bila perlu. Bila ada, angka itulah yang dipakai.</li>
+            <li>Stok sebuah barang bergeser sejak titik acuan? Muncul kotak merah berisi tombol <b>Perbarui Baris Bergeser</b> (semua baris yang bergeser sekaligus) dan satu tombol <b>Perbarui &lt;kode barang&gt;</b> per baris. Tombol per baris hanya memperbarui barang itu: stok sistemnya diganti stok sekarang dan barisnya dikosongkan untuk dihitung ulang. Baris lain yang sudah terisi tidak disentuh. Opname kembali ke Sedang dihitung; isi baris itu lalu tekan Selesai Hitung lagi.</li>
             <li>Isi <b>Alasan</b> tiap selisih. Alasan <b>wajib</b> bila selisihnya melewati ambang (kolom <b>Besar</b>). Stok sistem 0 dan ada selisih? Alasan juga wajib.</li>
             <li>Tekan <b>Pratinjau Berita Acara</b> untuk melihat berita acaranya.</li>
         </ul>

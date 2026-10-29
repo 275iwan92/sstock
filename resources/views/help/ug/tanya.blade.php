@@ -20,7 +20,7 @@
         <tr><td>Bagaimana memakai tombol plus?</td><td>Tekan <b>+</b> di samping pilihan, isi kotak kecil, lalu tekan <b>Simpan</b>. Datanya masuk ke master dan langsung terpilih. Lihat <a href="#tombol-plus">Tombol plus</a>.</td></tr>
         <tr><td>Penerimaan atau Pengeluaran ditolak: &quot;Stok Opname ... sedang berjalan, transaksi dikunci&quot;</td><td>Ada Stok Opname yang berjalan dengan kunci transaksi. Draf boleh tetap disimpan. Tunggu opname selesai, atau minta Supervisor menekan <b>Buka Kunci</b>.</td></tr>
         <tr><td>Selesai Hitung ditolak</td><td>Masih ada baris yang kosong, atau Tidak dihitung tanpa catatan. Pesan menyebut kode barangnya.</td></tr>
-        <tr><td>Setujui Opname ditolak: stok bergeser sejak cut-off</td><td>Ada transaksi stok sesudah titik acuan. Supervisor menekan <b>Perbarui Baris Bergeser</b>, lalu baris itu dihitung ulang.</td></tr>
+        <tr><td>Setujui Opname ditolak: stok bergeser sejak cut-off</td><td>Ada transaksi stok sesudah titik acuan. Supervisor menekan <b>Perbarui Baris Bergeser</b> (semua baris yang bergeser) atau <b>Perbarui &lt;kode barang&gt;</b> (satu baris saja), lalu baris itu dihitung ulang.</td></tr>
         <tr><td>Muncul pesan &quot;Akses Anda ke modul ini hanya-baca (RO)&quot;</td><td>Grup Anda hanya boleh membuka modul itu tanpa mengubah. Minta Administrator memberi RW.</td></tr>
         <tr><td>Menu atau tombol tidak ada</td><td>Peran atau Grup Anda belum diberi akses. Contoh: mengubah Barang hanya untuk Supervisor. Hubungi Administrator.</td></tr>
         <tr><td>Kode barang tidak bisa diubah</td><td>Memang terkunci supaya riwayat tidak rusak. Bila salah, nonaktifkan barangnya lalu buat barang baru.</td></tr>

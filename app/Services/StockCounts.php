@@ -164,6 +164,13 @@ final class StockCounts
         });
     }
 
+    // Perbarui SATU baris yang bergeser (tombol per baris di layar tinjau); baris yang stoknya tidak bergeser ditolak, supaya hasil hitung yang sah tidak terhapus tanpa sebab.
+    public function refreshOne(StockCount $count, int $lineId): void
+    {
+        abort_unless($this->movedLines($count)->contains('id', $lineId), 422, 'Baris ini tidak bergeser sejak cut-off, tidak perlu diperbarui.');
+        $this->refreshLine($count, $lineId);
+    }
+
     // Kunci kembali transaksi sesudah dibuka (tercatat siapa dan kapan). Stok yang sempat bergeser ditolak saat persetujuan, bukan di sini.
     public function lock(StockCount $count, User $by): void
     {
@@ -182,6 +189,12 @@ final class StockCounts
     public function movedLines(StockCount $count): Collection
     {
         return $count->lines()->with('item')->get()->filter(fn (StockCountLine $l) => $l->diff() != 0.0 && abs($l->item->stock_qty - $l->system_qty) > self::EPS)->values();
+    }
+
+    // Baris yang sudah berisi hasil hitung atau ditandai Tidak dihitung, menurut database (tombol Simpan di lembar input membandingkannya dengan yang tampak di layar).
+    public function enteredCount(StockCount $count): int
+    {
+        return $count->lines()->where(fn ($w) => $w->where('skipped', true)->orWhereNotNull('counted_qty'))->count();
     }
 
     // Bagian baris yang diinput akun ini (0..1). Hanya peringatan pemisahan tugas di layar Setujui, tidak memblokir (gudang kecil boleh satu orang).
@@ -281,7 +294,7 @@ final class StockCounts
         return $this->ordered($count)->map(fn (StockCountLine $l) => [
             'id' => $l->id, 'code' => $l->item->code, 'name' => $l->item->name, 'batch' => $this->batch($l->item), 'location' => $l->item->location ?? '', 'unit' => $l->item->unit,
             'counted_qty' => $l->counted_qty ?? '', 'counted_by' => $l->counted_by ?? '', 'skipped' => $l->skipped, 'note' => $l->note ?? '', 'filled' => $l->isComplete() ? 'yes' : 'no', 'rev' => $l->rev,
-        ] + ($count->blind ? [] : ['system_qty' => $l->system_qty, 'diff' => $l->finalQty() === null ? '' : $l->diff()])
+        ] + ($count->blind ? [] : ['system_qty' => $l->system_qty, 'diff' => $l->finalQty() === null ? '' : $l->diff(), 'tone' => $l->overThreshold($count->threshold_pct) ? 'danger' : ''])
             + ($trace ? ['by_id' => $l->entered_by, 'by' => $l->enteredBy?->name ?? '', 'at' => $l->entered_at?->format('H:i') ?? ''] : []))->values()->all();
     }
 
@@ -296,7 +309,7 @@ final class StockCounts
             'id' => $l->id, 'code' => $l->item->code, 'name' => $l->item->name, 'batch' => $this->batch($l->item), 'unit' => $l->item->unit, 'system_qty' => $l->system_qty,
             'physical' => $l->finalQty() ?? '', 'diff' => $l->diff(), 'pct' => $l->pct() ?? '', 'recount_qty' => $l->recount_qty ?? '', 'reason' => $l->reason ?? '', 'entered_by' => $l->enteredBy?->name ?? '',
             'state' => $l->skipped && $l->recount_qty === null ? 'Tidak dihitung' : ($l->recount_qty !== null ? 'Dihitung ulang' : ($l->added_manually ? 'Ditambah manual' : '')),
-            'flag' => $l->overThreshold($count->threshold_pct) ? 'Besar' : '', 'has_diff' => $l->diff() != 0.0 ? 'yes' : 'no', 'big' => $l->overThreshold($count->threshold_pct) ? 'yes' : 'no',
+            'flag' => $l->overThreshold($count->threshold_pct) ? 'Besar' : '', 'tone' => $l->overThreshold($count->threshold_pct) ? 'danger' : '', 'has_diff' => $l->diff() != 0.0 ? 'yes' : 'no', 'big' => $l->overThreshold($count->threshold_pct) ? 'yes' : 'no',
         ] + ($withValue ? ['value' => $l->value()] : []))->values()->all();
     }
 

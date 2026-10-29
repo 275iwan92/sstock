@@ -116,6 +116,22 @@ class StockCountController extends Controller
         return response()->json(['rows' => $compact ? $this->phoneRows($count, $ids) : $this->counts->entryRows($count)]);
     }
 
+    // Tombol Simpan di lembar input: isian sudah tersimpan per sel, tombol ini memastikannya. Layar mengirim jumlah baris terisi yang dilihatnya (seen); server membandingkannya dengan databasenya sendiri.
+    public function save(Request $request, StockCount $count): JsonResponse
+    {
+        if ($count->status !== 'counting') {
+            return response()->json(['error' => "{$count->doc_no} sudah tidak dalam penghitungan ({$count->statusLabel()})."], 422);
+        }
+        $entered = $this->counts->enteredCount($count);
+        $seen = $request->integer('seen', -1);
+        if ($seen !== $entered) {
+            return response()->json(['error' => "Layar menunjukkan {$seen} baris terisi, di server {$entered}. Isian Anda mungkin belum tersimpan, atau orang lain sudah mengisi baris lain. Muat ulang halaman untuk melihat yang terbaru."], 409);
+        }
+        $summary = $this->counts->summary($count);
+
+        return response()->json(['message' => "Semua isian tersimpan di server: {$summary['filled']} dari {$summary['lines']} baris sudah lengkap (pukul ".now()->format('H:i').').']);
+    }
+
     // Tampilan HP menyimpan satu barang per permintaan dan hanya butuh barisnya sendiri (compact=1): jawabannya baris itu saja, lengkap dengan jejak siapa / jam.
     private function phoneRows(StockCount $count, array $ids): array
     {
@@ -184,6 +200,15 @@ class StockCountController extends Controller
         $n = $this->counts->refreshMoved($count);
 
         return redirect()->route('stock-counts.show', $count)->with('status', "{$n} baris diperbarui ke stok sekarang dan dibuka untuk diisi ulang. Isi hasil hitungnya, lalu Selesai hitung lagi.");
+    }
+
+    // Perbarui satu baris saja dari daftar baris bergeser di layar tinjau.
+    public function refreshOne(StockCount $count, int $line): RedirectResponse
+    {
+        $code = $count->lines()->with('item')->findOrFail($line)->item->code;
+        $this->counts->refreshOne($count, $line);
+
+        return redirect()->route('stock-counts.show', $count)->with('status', "{$code} diperbarui ke stok sekarang dan dibuka untuk diisi ulang. Isi hasil hitungnya, lalu Selesai hitung lagi.");
     }
 
     public function approve(Request $request, StockCount $count): RedirectResponse

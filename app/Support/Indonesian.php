@@ -142,7 +142,7 @@ final class Indonesian
 
         // Stok Opname (lembar input hasil hitung)
         'Not filled' => 'Belum diisi', 'System Stock' => 'Stok Sistem', 'Count Result' => 'Hasil Hitung', 'Counter' => 'Penghitung', 'Not counted' => 'Tidak dihitung', 'Note' => 'Catatan',
-        'Add Item' => 'Tambah Barang', 'Finish Count' => 'Selesai Hitung',
+        'Add Item' => 'Tambah Barang', 'Finish Count' => 'Selesai Hitung', 'Save Backup' => 'Simpan Cadangan',
 
         // Stok Opname (tinjau dan persetujuan)
         'Refresh Moved Lines' => 'Perbarui Baris Bergeser', 'Counted Batches' => 'Batch Dihitung', 'Rows with Difference' => 'Baris Berselisih', 'Surplus Value' => 'Nilai Lebih', 'Shortage Value' => 'Nilai Kurang',

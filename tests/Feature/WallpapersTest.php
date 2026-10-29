@@ -7,6 +7,7 @@ use Tests\TestCase;
 
 /* REMARK
  * Tujuan       : Menjaga sinkronisasi wallpaper otomatis: PNG / WebP jadi JPG, gambar besar dikecilkan, potret dipotong 16:9, JPG kecil tidak disentuh, file rusak / bukan gambar diabaikan, file asli dicadangkan.
+ *                Varian tegak untuk layar HP: kembaran -portrait.jpg (9:16) dibuat otomatis, foto tegak buatan sendiri menimpanya, random() memilih tegak bila ada dan jatuh ke lanskap bila tidak; login HP memakainya.
  * Dipakai oleh : php artisan test.
  * Status       : Aktif.
  */
@@ -57,7 +58,7 @@ class WallpapersTest extends TestCase
         file_put_contents($this->dir.'/rusak.png', 'bukan png sungguhan');
         touch($this->dir.'/rusak.png', time() - 60);
 
-        $this->assertSame(3, Wallpapers::sync($this->dir, $this->backup));
+        $this->assertSame(4, Wallpapers::sync($this->dir, $this->backup));   // 3 konversi + kembaran tegak sudah-siap.jpg (hasil konversi baru menunggu 3 detik)
 
         $this->assertSame([2560, 1440], array_slice(getimagesize($this->dir.'/foto-besar.jpg'), 0, 2));
         $this->assertSame('image/jpeg', getimagesize($this->dir.'/foto-besar.jpg')['mime']);
@@ -71,6 +72,41 @@ class WallpapersTest extends TestCase
             $this->assertFileDoesNotExist($this->dir.'/'.$f);
         }
         $this->assertSame(0, Wallpapers::sync($this->dir, $this->backup));                         // kedua kali: tidak ada yang berubah
+    }
+
+    public function test_a_portrait_twin_is_made_from_each_landscape_jpg_once(): void
+    {
+        $this->image('lanskap.jpg', 1600, 900, 'jpg');
+
+        $this->assertSame(1, Wallpapers::sync($this->dir, $this->backup));
+
+        $this->assertSame([506, 900], array_slice(getimagesize($this->dir.'/lanskap-portrait.jpg'), 0, 2));   // 9:16
+        $this->assertSame(0, Wallpapers::sync($this->dir, $this->backup));                                       // kembaran tidak dibuatkan kembaran lagi
+        $this->assertFileDoesNotExist($this->dir.'/lanskap-portrait-portrait.jpg');
+    }
+
+    public function test_a_portrait_photo_dropped_by_hand_is_converted_and_replaces_the_automatic_twin(): void
+    {
+        $this->image('kota.jpg', 1600, 900, 'jpg');
+        Wallpapers::sync($this->dir, $this->backup);
+        $this->image('kota-portrait.png', 1500, 2667);   // foto tegak besar
+
+        Wallpapers::sync($this->dir, $this->backup);
+
+        $this->assertSame([1080, 1920], array_slice(getimagesize($this->dir.'/kota-portrait.jpg'), 0, 2));
+        $this->assertFileExists($this->backup.'/kota-portrait.png');
+        $this->assertFileDoesNotExist($this->dir.'/kota-portrait-2.jpg');
+    }
+
+    public function test_random_prefers_the_portrait_twin_and_falls_back_to_landscape(): void
+    {
+        $this->assertNull(Wallpapers::random($this->dir));   // folder kosong: tanpa foto, bukan error
+
+        $this->image('a.jpg', 1600, 900, 'jpg');
+        $this->assertStringEndsWith('/a.jpg', Wallpapers::random($this->dir));   // belum ada kembaran: lanskap
+
+        Wallpapers::sync($this->dir, $this->backup);
+        $this->assertStringEndsWith('/a-portrait.jpg', Wallpapers::random($this->dir));
     }
 
     public function test_oversized_jpg_is_shrunk_and_name_collisions_get_a_number(): void
@@ -92,5 +128,17 @@ class WallpapersTest extends TestCase
 
         $this->assertSame(0, Wallpapers::sync($this->dir, $this->backup));
         $this->assertFileExists($this->dir.'/baru.png');
+    }
+
+    public function test_phone_login_screens_use_the_portrait_photo_and_desktop_login_does_not(): void
+    {
+        $phone = 'Mozilla/5.0 (Linux; Android 15; CPH2700) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36';
+        $pc = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36';
+
+        foreach (['/login', '/forgot-password'] as $url) {
+            $html = $this->withHeader('User-Agent', $phone)->get($url)->assertOk()->getContent();
+            $this->assertMatchesRegularExpression('~class="sstock-hpwall__img" src="[^"]+-portrait\.jpg"~', $html);
+            $this->assertStringNotContainsString('sstock-hpwall', $this->withHeader('User-Agent', $pc)->get($url)->getContent());
+        }
     }
 }

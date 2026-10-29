@@ -2,7 +2,8 @@
  Tujuan       : Lembar INPUT hasil hitung (Stok Opname): satu layar massal, satu baris per batch. Isian Hasil hitung (kosong = belum dihitung, 0 = memang kosong), Penghitung, Tidak dihitung (+ Catatan wajib) tersimpan otomatis per sel.
  Sumber hulu  : StockCountController@show (count, entryRows). Hitung buta: stok sistem tidak dikirim ke browser sama sekali.
  Input        : count, entryRows.
- Output       : x-dl::lookup-grid (auto-save ke stock-counts.lines; kotak Terisi / Belum diisi dihitung langsung di browser), modal Tambah barang (POST stock-counts.items), tombol Selesai hitung (POST stock-counts.finish).
+ Output       : x-dl::lookup-grid (auto-save ke stock-counts.lines; kotak Terisi / Belum diisi dihitung langsung di browser; baris selisih besar berwarna bila opname tidak buta), tombol Simpan Cadangan (POST stock-counts.save lewat app.js, memastikan semua isian sudah di server),
+                modal Tambah barang (POST stock-counts.items), tombol Selesai hitung (POST stock-counts.finish).
  Dipakai oleh : stock-counts/show (status Sedang dihitung; status lain hanya baca).
  Status       : Aktif.
 --}}
@@ -16,12 +17,13 @@
     <x-dl::alert tone="info" message="Kosong = belum dihitung; isi 0 bila barang memang kosong. Tidak ketemu / tidak bisa dihitung? Isi Catatan, lalu centang Tidak dihitung. Setiap perubahan tersimpan otomatis." />
     <x-dl::action-bar align="start">
         <x-dl::button variant="secondary" icon="new" label="Add Item" data-dl-open="add-item-modal" />
+        <x-dl::button variant="secondary" icon="save" label="Save Backup" data-count-save="{{ route('stock-counts.save', $count) }}" />
         <x-dl::action-form :action="route('stock-counts.finish', $count)">
             <x-dl::button type="submit" icon="fa-flag-checkered" label="Finish Count" data-dl-confirm="Selesai hitung? Semua baris harus terisi (atau Tidak dihitung dengan catatan). Sesudah ini hasil tidak bisa diubah kecuali dikembalikan Supervisor." />
         </x-dl::action-form>
     </x-dl::action-bar>
 @endif
-<x-dl::lookup-grid :rows="$entryRows" :add-rows="false" :auto-save="true" :save-url="route('stock-counts.lines', $count)"
+<x-dl::lookup-grid :rows="$entryRows" :add-rows="false" :auto-save="true" :save-url="route('stock-counts.lines', $count)" :row-tone="$count->blind ? null : 'tone'"
     :stats="[['label' => 'All'], ['label' => 'Filled', 'where' => ['filled' => 'yes'], 'tone' => 'success'], ['label' => 'Not filled', 'where' => ['filled' => 'no'], 'tone' => 'warn']]"
     :columns="array_values(array_filter([
         ['key' => 'code', 'label' => 'Code', 'readonly' => true, 'width' => '130px'],
