@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\StockCount;
 use App\Support\Constants;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
