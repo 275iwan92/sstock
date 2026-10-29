@@ -404,6 +404,7 @@ npm run build      # required after editing resources/css/app.css</pre>
             <li>Set <code>APP_ENV=production</code>, <code>APP_DEBUG=false</code>, real SMTP, and a strong <code>DB_PASSWORD</code>.</li>
             <li>Replace the seeded test passwords (or do not seed accounts); keep <code>SSTOCK_SAMPLE_REFRESH</code> off.</li>
             <li>Run <code>npm run build</code> after any CSS or JS change and hard-reload the browser.</li>
+            <li>On a small server run <code>php artisan optimize:clear &amp;&amp; php artisan optimize</code> after every pull (config, route, event and view caches) and set <code>LOG_LEVEL=warning</code> and <code>CACHE_STORE=file</code> (sessions stay in the database). With the config cache on, <code>.env</code> is no longer read at run time, so code reads settings only through <code>config()</code>, never <code>env()</code>. The server needs no tests, docs or Node sources: <code>git sparse-checkout</code> can hide them.</li>
             <li>Help files live in <code>resources/</code> and are served through <code>auth</code> routes; never put them in <code>public/</code>.</li>
         </ol>
 
