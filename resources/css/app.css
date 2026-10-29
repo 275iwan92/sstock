@@ -51,6 +51,8 @@ body.dl-body:not(.sstock-bare) { padding: 0 16px 16px; }
 body.dl-body.sstock-scroll { height: auto; min-height: 100vh; overflow-y: auto; }
 /* Layar desktop yang dibuka di dalam kerangka HP (iframe, body.dl-phone-shelled): daftar kartu Barang dst. lebih tinggi dari layar dan grid tidak punya wadah gulir sendiri di HP, jadi body-nya yang menggulir. */
 body.dl-body.dl-phone-shelled { height: auto; min-height: 100vh; overflow-y: auto; }
+/* Layar desktop (laptop) di tab Layer Shell: daftar master dengan puluhan baris (Barang, Satuan, Lokasi, ...) lebih tinggi dari tab, sedangkan body DevLib terkunci overflow hidden; body yang menggulir. Layar bersampul sstock-bare (shell, login, panduan) dan formulir (.dl-form menggulir sendiri dengan judul + tombol Simpan tetap di atas) tidak tersentuh. */
+body.dl-body:not(.sstock-bare):not(:has(.dl-form)) { height: auto; min-height: 100vh; overflow-y: auto; }
 /* Dibuka di kerangka HP: judul sudah ada di baris judul kerangka. */
 body.dl-phone-shelled .sstock-pagetitle { display: none; }
 

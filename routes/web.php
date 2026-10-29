@@ -31,6 +31,8 @@ use Illuminate\Support\Facades\Route;
 
 // Pilihan tampilan HP / Desktop (cookie ui): juga dipakai tamu (popup dan halaman login HP); tanpa login karena hanya menyimpan cookie.
 Route::post('ui', [HpController::class, 'setDevice'])->name('ui.set');
+// Dibuka lewat GET (muat ulang / ganti mode "situs desktop" peramban / markah setelah ganti tampilan) tidak lagi 405: kembali ke Beranda tanpa mengubah pilihan.
+Route::get('ui', fn () => redirect()->route('home'));
 
 // Ukur layar (x-dl::screen-info): publik, murni sisi klien, tanpa data server; dibuka dari HP untuk mengukur layar sungguhan.
 Route::view('ukur', 'ukur')->name('ukur');

@@ -56,6 +56,8 @@ class PhoneViewTest extends TestCase
         $this->withHeader('User-Agent', self::PC)->post(route('ui.set'), ['ui' => 'hp'])->assertRedirect()->assertCookie('ui', 'phone');
         $this->withHeader('User-Agent', self::PHONE)->post(route('ui.set'), ['ui' => 'desktop'])->assertRedirect()->assertCookie('ui', 'desktop');
         $this->post(route('ui.set'), ['ui' => 'tablet'])->assertSessionHasErrors('ui');
+        $this->get('/ui')->assertRedirect(route('home'));   // muat ulang halaman hasil ganti tampilan: bukan 405
+        $this->get('/ui')->assertCookieMissing('ui');
     }
 
     public function test_login_stores_the_chosen_view_in_the_ui_cookie(): void
