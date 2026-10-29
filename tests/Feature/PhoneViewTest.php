@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Http\Middleware\ResetViewChoice;
 use App\Models\User;
 use App\Models\UserGroup;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,13 +17,6 @@ class PhoneViewTest extends TestCase
     use RefreshDatabase;
 
     private const PHONE = 'Mozilla/5.0 (Linux; Android 15; CPH2700) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36';
-
-    // Semua tes di sini menganggap browser sudah melewati reset pilihan tampilan satu kali (ResetViewChoice).
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->withCookie('ui_ver', ResetViewChoice::VERSION);
-    }
 
     private const PC = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36';
 
@@ -109,23 +101,6 @@ class PhoneViewTest extends TestCase
         $this->actingAs($sup)->withHeader('User-Agent', self::PHONE)->get('/')->assertDontSee('dl-phoneoffer', false);
     }
 
-    public function test_an_old_view_choice_is_forgotten_once_so_the_auto_switch_can_work(): void
-    {
-        $sup = User::factory()->supervisor()->create();
-        $this->defaultCookies = [];   // tanpa ui_ver dari setUp
-
-        // browser lama: cookie ui = desktop, belum ada ui_ver -> dilupakan, Beranda memuat popup auto, ui_ver dipasang
-        $res = $this->actingAs($sup)->withHeader('User-Agent', self::PC)->withCookie('ui', 'desktop')->get('/');
-        $res->assertSee('data-auto', false)->assertCookie('ui_ver', ResetViewChoice::VERSION);
-        $this->assertTrue(collect($res->headers->getCookies())->contains(fn ($c) => $c->getName() === 'ui' && $c->isCleared()));
-
-        // sudah ber-ui_ver: pilihan pengguna menang lagi
-        $this->actingAs($sup)->withHeader('User-Agent', self::PC)->withCookie('ui', 'desktop')->withCookie('ui_ver', ResetViewChoice::VERSION)->get('/')->assertDontSee('dl-phoneoffer', false);
-
-        // permintaan POST (memilih) tidak dihapus
-        $this->withHeader('User-Agent', self::PC)->post(route('ui.set'), ['ui' => 'desktop'])->assertCookie('ui', 'desktop');
-    }
-
     public function test_automatic_switch_is_marked_and_a_user_choice_removes_the_mark(): void
     {
         $user = User::factory()->supervisor()->create();
@@ -138,7 +113,7 @@ class PhoneViewTest extends TestCase
         // ui hasil otomatis dianggap belum dipilih: Beranda desktop memuat popup lagi; kerangka HP kembali sendiri hanya untuk pilihan otomatis
         $this->actingAs($user)->withHeader('User-Agent', self::PC)->withCookie('ui', 'desktop')->withCookie('ui_auto', '1')->get('/')->assertSee('dl-phoneoffer', false);
         $this->actingAs($user)->withCookie('ui', 'phone')->withCookie('ui_auto', '1')->get('/')->assertSee('data-auto-return', false);
-        $this->defaultCookies = ['ui_ver' => ResetViewChoice::VERSION];   // withCookie bertahan antar permintaan: buang ui_auto dari yang sebelumnya
+        $this->defaultCookies = [];   // withCookie bertahan antar permintaan: buang ui_auto dari yang sebelumnya
         $this->actingAs($user)->withCookie('ui', 'phone')->get('/')->assertDontSee('data-auto-return', false);
     }
 
@@ -155,6 +130,20 @@ class PhoneViewTest extends TestCase
 
         $this->actingAs($user)->post(route('ui.set'), ['ui' => 'desktop'])->assertRedirect(route('home'))->assertCookie('ui', 'desktop');
         $this->actingAs($user)->post(route('ui.set'), ['ui' => 'tablet'])->assertSessionHasErrors('ui');
+    }
+
+    // DevLib PhoneShell.init mengikat klik ke elemen-elemen ini tanpa pemeriksaan: satu saja hilang dari kerangka = galat JS "Cannot read properties of null (reading 'addEventListener')" dan menu HP mati.
+    public function test_every_phone_screen_renders_all_the_hooks_phone_shell_js_binds_to(): void
+    {
+        $user = User::factory()->supervisor()->create();
+        $hooks = ['data-dl-phone-menu', 'data-dl-phone-bar', 'data-dl-phone-more', 'data-dl-phone-list', 'data-dl-phone-panel', 'data-dl-phone-close-panel', 'data-dl-phone-sheet', 'dl-phone__main'];
+
+        foreach (['/', route('hp.group', 'TRX'), route('hp.open', 'ITM'), route('hp.find'), route('hp.counts')] as $url) {
+            $html = $this->actingAs($user)->withHeader('User-Agent', self::PHONE)->get($url)->assertOk()->getContent();
+            foreach ($hooks as $hook) {
+                $this->assertStringContainsString($hook, $html, "$url tanpa $hook");
+            }
+        }
     }
 
     public function test_phone_shell_menu_lists_only_modules_the_user_may_open(): void

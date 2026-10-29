@@ -133,7 +133,6 @@ class ActivityLogTest extends TestCase
 
     public function test_on_the_phone_the_super_screens_open_inside_the_shell_so_the_menu_button_stays(): void
     {
-        $this->withCookie('ui_ver', \App\Http\Middleware\ResetViewChoice::VERSION);   // tanpa ini pilihan tampilan HP dilupakan sekali
         $super = $this->super();
         $menu = $this->actingAs($super)->withCookie('ui', 'hp')->get('/')->assertOk()->getContent();
         $this->assertStringContainsString(route('hp.open', 'LOG'), $menu);

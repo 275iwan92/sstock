@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Http\Middleware\ResetViewChoice;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
@@ -26,7 +25,6 @@ class HpFindTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withCookie('ui_ver', ResetViewChoice::VERSION);
         $cat = Category::create(['code' => 'ATK', 'name' => 'ATK']);
         $this->pensil = Product::register(['name' => 'Pensil 2B', 'category_id' => $cat->id, 'unit' => 'pcs', 'location' => 'RAK-A1', 'unit_price' => 100, 'reorder_point' => 50]);
         $this->pensil->items()->first()->forceFill(['stock_qty' => 40, 'avg_cost' => 100])->save();

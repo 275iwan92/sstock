@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Http\Middleware\ResetViewChoice;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductUnit;
@@ -28,7 +27,6 @@ class PhoneFormsTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withCookie('ui_ver', ResetViewChoice::VERSION);
     }
 
     private function product(): Product
