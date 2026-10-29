@@ -156,6 +156,14 @@ class PhoneViewTest extends TestCase
         $this->actingAs($admin)->withCookie('ui', 'hp')->get('/')->assertSee('Pengguna');
     }
 
+    public function test_phone_menu_has_the_sign_out_power_icon_in_the_name_row_and_no_bottom_button(): void
+    {
+        $html = $this->actingAs(User::factory()->create())->withCookie('ui', 'hp')->get('/')->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression('#dl-phone__who--out.*action="'.preg_quote(route('logout'), '#').'".*dl-phone__poweroff#s', $html);
+        $this->assertStringNotContainsString('class="dl-phone__out"', $html);
+    }
+
     public function test_module_without_a_phone_screen_opens_its_desktop_page_inside_the_frame(): void
     {
         $user = User::factory()->create();

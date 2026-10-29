@@ -10,7 +10,7 @@
 @section('body')
     @php $me = auth()->user(); @endphp
     <x-dl::phone-shell :title="$title ?? 'Stoku'" :back="$back ?? null" :active="$active ?? ''" :tabs="\App\Support\HpShell::tabs($me)" :modules="\App\Support\HpShell::modules($me)"
-        :user="['name' => $me->name, 'role' => $me->roleLabel()]" :logout-action="route('logout')" :device-action="route('ui.set')" :links="array_values(array_filter([$me->canAccess('ITM') ? ['label' => 'Cari Barang', 'icon' => 'fa-solid fa-magnifying-glass', 'url' => route('hp.find')] : null, ['label' => 'Bantuan', 'icon' => 'fa-solid fa-circle-question', 'url' => route('help.user-guide')]]))" :frame="$frame ?? null" auto-return>
+        :user="['name' => $me->name, 'role' => $me->roleLabel()]" :logout-action="route('logout')" logout-top :device-action="route('ui.set')" :links="array_values(array_filter([$me->canAccess('ITM') ? ['label' => 'Cari Barang', 'icon' => 'fa-solid fa-magnifying-glass', 'url' => route('hp.find')] : null, ['label' => 'Bantuan', 'icon' => 'fa-solid fa-circle-question', 'url' => route('help.user-guide')]]))" :frame="$frame ?? null" auto-return>
         @yield('content')
     </x-dl::phone-shell>
 @endsection
