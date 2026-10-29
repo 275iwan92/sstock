@@ -346,7 +346,7 @@ npm run build      # required after editing resources/css/app.css</pre>
         <ul class="g-list">
             <li>Test accounts (development only; change before production): <code>admin</code>, <code>supervisor</code>, <code>entry</code> (see <code>UserSeeder</code>).</li>
             <li>Tests: see <a href="#testing">Testing</a> below.</li>
-            <li>Production: set SMTP (<code>MAIL_*</code>, currently <code>log</code>) and replace the test passwords. migrations are the source of truth (the reference DDL <code>database/sql/sstock_mysql_ddl.sql</code> is regenerated only when needed).</li>
+            <li>Production: set SMTP (<code>MAIL_*</code>, currently <code>log</code>) and replace the test passwords. Migrations are the source of truth (the reference DDL <code>database/sql/sstock_mysql_ddl.sql</code> is regenerated only when needed).</li>
         </ul>
 
         <h3 id="install">Install steps</h3>
