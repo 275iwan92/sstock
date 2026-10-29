@@ -213,7 +213,7 @@
         </table>
 
         <h3>Migrations</h3>
-        <p>Migrations are the source of truth for the schema (<code>database/sql/sstock_mysql_ddl.sql</code> is out of date). In order:</p>
+        <p>Migrations are the source of truth for the schema (<code>database/sql/sstock_mysql_ddl.sql</code> is a reference DDL regenerated on 2026-10-29 and goes stale after each new migration). In order:</p>
         <table class="g-table">
             <thead><tr><th>Migration</th><th>What it does</th></tr></thead>
             <tbody>
@@ -346,7 +346,7 @@ npm run build      # required after editing resources/css/app.css</pre>
         <ul class="g-list">
             <li>Test accounts (development only; change before production): <code>admin</code>, <code>supervisor</code>, <code>entry</code> (see <code>UserSeeder</code>).</li>
             <li>Tests: see <a href="#testing">Testing</a> below.</li>
-            <li>Production: set SMTP (<code>MAIL_*</code>, currently <code>log</code>) and replace the test passwords. <code>database/sql/sstock_mysql_ddl.sql</code> is out of date; migrations are the source of truth.</li>
+            <li>Production: set SMTP (<code>MAIL_*</code>, currently <code>log</code>) and replace the test passwords. migrations are the source of truth (the reference DDL <code>database/sql/sstock_mysql_ddl.sql</code> is regenerated only when needed).</li>
         </ul>
 
         <h3 id="install">Install steps</h3>
@@ -462,7 +462,7 @@ composer test                        # config:clear, then php artisan test</pre>
             <li>Segregation of duties between creator and approver (Adjustment, Stok Opname).</li>
             <li>Hide the Save button on RO modules (the server already rejects the save).</li>
             <li>Company screen: no separate black-and-white logo for Ink Saver (the same PNG is used), and no second letterhead for a VAT variant (<code>companyPpn</code>).</li>
-            <li>Regenerate the reference DDL; production SMTP; portrait wallpapers for phones.</li>
+            <li>Production SMTP; portrait wallpapers for phones.</li>
         </ul>
     </main>
 </div>

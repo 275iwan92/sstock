@@ -38,14 +38,14 @@ Tempel seluruh teks ini di awal sesi baru, lalu baca juga `CLAUDE.md` bila perlu
 ## 4. Catatan teknis penting
 - Alat: heredoc Python di bash sering gagal bila isinya berisi `\` atau tanda kutip, pakai tool Write/Edit atau berkas skrip di scratchpad; tinker satu baris dengan `$` gagal, pakai berkas skrip (`php artisan tinker <berkas.php>`). Peringatan CRLF git tidak berbahaya.
 - Widget DevLib: select = `[data-dl-select]` + input tersembunyi `[data-dl-value]`; modal dibuka dengan class `is-on` pada `[data-dl-modal-id]`; validasi form menghitung `.dl-field__req` yang kosong; Back komponen memakai `history.back()` kecuali `DL_BACK_HISTORY=false`.
-- Migrasi terbaru: reorder_orders, departments+recipients (+kolom di stock_documents), user_groups(+modules,+access), confirm/cancel/reversal_of, cancel_request. `database/sql/sstock_mysql_ddl.sql` sudah KETINGGALAN (hanya sampai `add_kind_to_units`); migrasi tetap sumber kebenaran, regenerasi bila perlu.
+- Migrasi terbaru: reorder_orders, departments+recipients (+kolom di stock_documents), user_groups(+modules,+access), confirm/cancel/reversal_of, cancel_request. `database/sql/sstock_mysql_ddl.sql` dibuat ulang 2026-10-29 dari semua migrasi; migrasi tetap sumber kebenaran, berkas itu ketinggalan lagi bila ada migrasi baru.
 - Pembuat dokumen yang sama masih boleh menyetujui penyesuaian (belum ada pemisahan tugas). Supervisor yang menekan Cancel tidak perlu persetujuan orang lain.
 - Tombol Simpan pada modul berakses RO masih tampil (server menolak dengan pesan); menyembunyikannya belum dikerjakan.
 
 ## 5. Belum dikerjakan
 - Stok Opname: baris selisih besar berwarna (butuh opsi DevLib `x-dl::sheet`), tombol Simpan cadangan di lembar input (kini hanya simpan otomatis), perbarui satu baris saja dari layar (kini perbarui semua baris yang bergeser sekaligus).
 - Ubah / hapus catatan Catat Pemesanan (layar Riwayat Pemesanan hanya membaca + Tutup Pesanan) dan logo hitam-putih khusus Hemat Tinta.
-- Pemisahan tugas pembuat vs penyetuju, regenerasi DDL referensi, SMTP produksi.
+- Pemisahan tugas pembuat vs penyetuju, SMTP produksi.
 - Foto portrait wallpaper (layar HP memakai foto lanskap yang dipotong).
 
 ## 6. Menjalankan di mesin lain
