@@ -126,7 +126,7 @@ class ActivityLogTest extends TestCase
             $this->actingAs(User::factory()->supervisor()->create())->get(route($name))->assertNotFound();
             $this->actingAs($super)->get(route($name))->assertOk();
         }
-        $this->actingAs($super)->get(route('super.log'))->assertSee('9.9.9.9');
+        $this->actingAs($super)->get(route('super.log'))->assertSee('9.9.9.9')->assertDontSee('data-g-new', false);   // log hanya dibaca: tanpa tombol Data Baru
         $this->actingAs($super)->get(route('super.log.download', ['month' => now()->format('Y-m')]))->assertOk()->assertHeader('content-disposition');
         $this->actingAs($admin)->get(route('super.log.download', ['month' => now()->format('Y-m')]))->assertNotFound();
     }

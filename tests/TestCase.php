@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Support\Constants;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\File;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -16,6 +17,14 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
         $this->withoutVite();
         Constants::forget();   // cache pengaturan statis tidak boleh bocor antar tes
+        // Log aktivitas ditulis oleh setiap permintaan yang login: tes tidak boleh mengisi log asli (storage/app/activity).
+        config(['sstock.activity_dir' => sys_get_temp_dir().'/sstock-activity-'.getmypid(), 'sstock.super_admin' => ['username' => null, 'hash' => null]]);   // super admin di .env pengembang tidak boleh mengubah hasil tes
+    }
+
+    protected function tearDown(): void
+    {
+        File::deleteDirectory(config('sstock.activity_dir'));
+        parent::tearDown();
     }
 
     // Barang uji: produk baru (kode tetap) beserta batch tunggalnya; mengembalikan batch (Item) yang dipakai dokumen.
