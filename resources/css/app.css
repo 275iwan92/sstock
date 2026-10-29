@@ -49,6 +49,8 @@
 body.dl-body:not(.sstock-bare) { padding: 0 16px 16px; }
 /* Layar mandiri yang panjang (Log Aktivitas, Akun UAT) dibuka langsung, bukan di tab Layer Shell: body.dl-body memakai overflow hidden + 100vh, jadi tanpa ini isinya terpotong dan tidak bisa digulir. */
 body.dl-body.sstock-scroll { height: auto; min-height: 100vh; overflow-y: auto; }
+/* Layar desktop yang dibuka di dalam kerangka HP (iframe, body.dl-phone-shelled): daftar kartu Barang dst. lebih tinggi dari layar dan grid tidak punya wadah gulir sendiri di HP, jadi body-nya yang menggulir. */
+body.dl-body.dl-phone-shelled { height: auto; min-height: 100vh; overflow-y: auto; }
 /* Dibuka di kerangka HP: judul sudah ada di baris judul kerangka. */
 body.dl-phone-shelled .sstock-pagetitle { display: none; }
 
