@@ -47,6 +47,8 @@
 
 /* Layar di dalam tab Layer Shell diberi jarak kiri / kanan / bawah supaya tidak menempel ke menu. Login dan layar utama (shell) memakai kelas sstock-bare: tanpa jarak. */
 body.dl-body:not(.sstock-bare) { padding: 0 16px 16px; }
+/* Layar mandiri yang panjang (Log Aktivitas, Akun UAT) dibuka langsung, bukan di tab Layer Shell: body.dl-body memakai overflow hidden + 100vh, jadi tanpa ini isinya terpotong dan tidak bisa digulir. */
+body.dl-body.sstock-scroll { height: auto; min-height: 100vh; overflow-y: auto; }
 
 /* Logo tanpa kotak di belakangnya tampil lebih besar supaya kubusnya jelas. */
 .dl-logo-badge--sm { width: 46px; height: 46px; }

@@ -6,10 +6,10 @@
  Dipakai oleh : route super.log (menu Keamanan > Log Aktivitas, hanya super admin).
  Status       : Aktif.
 --}}
-@extends('layout', ['title' => 'Log Aktivitas'])
+@extends('layout', ['title' => 'Log Aktivitas', 'bodyClass' => 'sstock-scroll'])
 @section('body')
     @include('partials.flash')
-    <div style="padding: 4px 12px 16px">
+    <div>
     <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 4px 0 10px">
         <h2 style="margin: 0 12px 0 0">Log Aktivitas</h2>
         <form method="GET" action="{{ route('super.log') }}" style="display: flex; gap: 8px; align-items: center">
