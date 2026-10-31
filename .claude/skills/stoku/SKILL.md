@@ -14,7 +14,7 @@ Bahasa kerja dengan pemilik: Indonesia, ringkas. Daftar fitur, akun uji, dan hal
 4. **Gaya grid:** lihat bagian "Gaya grid" di bawah.
 5. **Form dokumen:** wajib Confirm, Delete (selama draf), dan Cancel; aturan lengkap di bagian "Siklus dokumen". Form tidak boleh terkirim dua kali (penjaga di `layout.blade.php`).
 6. **Stok** hanya diubah lewat `App\Services\StockLedger` (`post`, `reverse`, `assertReversible`); siklus dokumen di `App\Services\StockDocuments`. Pembalikan = baris baru `reversal_of`, baris asal tidak diubah.
-7. **Verifikasi** tampilan di http://sstock.test. Setelah mengubah `resources/css/app.css` jalankan `npm run build` dan muat ulang keras. Kembalikan viewport emulasi ke `desktop`. Jangan tinggalkan data uji di database lokal.
+7. **Verifikasi** tampilan di http://stoku.test. Setelah mengubah `resources/css/app.css` jalankan `npm run build` dan muat ulang keras. Kembalikan viewport emulasi ke `desktop`. Jangan tinggalkan data uji di database lokal.
 8. Tanya pemilik hanya bila benar-benar buntu; selebihnya putuskan sendiri dan sebutkan asumsinya.
 9. **Selalu MANDIRI tanpa prompting (perintah tegas pemilik, 2026-10-20):** pemilik sering tidak di depan laptop. Kerjakan semua sampai tuntas (kode, tes, HELP UG+TG, commit + push) tanpa menunggu jawaban dan tanpa menutup dengan pertanyaan "mau lanjut / mulai dari mana?"; daftar "belum dikerjakan" yang Anda sebut sendiri juga langsung dikerjakan. **Pengecualian satu-satunya: keputusan tampilan LAYAR** (tata letak, bentuk, apa yang terlihat pengguna) adalah hak pemilik: usulkan dan tanyakan dulu, jangan putuskan sendiri. Keputusan lain (logika, data, tes) putuskan sendiri dan sebut asumsinya di ringkasan akhir.
 

@@ -36,7 +36,7 @@ Pasang semua ini lebih dulu:
 | MySQL | 8 | Database aplikasi. Aplikasi ini hanya diuji di MySQL. |
 | Node.js dan npm | Node 20.19 atau lebih baru, atau 22.12 atau lebih baru | Syarat dari Vite 8 (lihat `package.json`). Wajib, karena tampilan (CSS/JS) harus dibangun dulu. |
 | Git | versi terbaru | Mengunduh kode dari GitHub. |
-| Herd atau cara lain | - | Untuk menjalankan aplikasi: Laravel Herd (alamat `sstock.test`) atau perintah `php artisan serve`. |
+| Herd atau cara lain | - | Untuk menjalankan aplikasi: Laravel Herd (alamat `stoku.test`) atau perintah `php artisan serve`. |
 
 Cek versi di terminal:
 
@@ -192,7 +192,7 @@ npm run build
 **Dengan Herd:** daftarkan folder induk (tempat `sstock` berada) di Herd sebagai folder terdaftar (parked). Lalu buka:
 
 ```
-http://sstock.test
+http://stoku.test
 ```
 
 **Tanpa Herd:** jalankan server bawaan PHP, dan biarkan terminal ini terbuka:

@@ -1,4 +1,4 @@
-# Serah terima Stoku (kode proyek: sstock, dulu "Simple Stock", baris kedua "STOK SEDERHANA") — 2026-10-20
+# Serah terima Stoku (kode proyek: sstock, dulu "Simple Stock", baris kedua "STOK SEDERHANA") — diperbarui 2026-10-31
 
 Tempel seluruh teks ini di awal sesi baru, lalu baca juga `CLAUDE.md` bila perlu. Bahasa kerja dengan pemilik: Indonesia, ringkas.
 
@@ -10,14 +10,16 @@ Tempel seluruh teks ini di awal sesi baru, lalu baca juga `CLAUDE.md` bila perlu
 5. **Setiap form dokumen harus punya Confirm (artinya diproses ke stok), Delete selama belum Confirm, dan Cancel.** Selama belum Confirm stok TIDAK berubah. Tombol **Kembali selalu ke GRID** (bukan layar sebelumnya). Form tidak boleh bisa terkirim dua kali (penjaga di `layout.blade.php`).
 6. **Cancel dokumen yang sudah Confirm:** pengguna mengajukan + wajib menulis alasan, lalu Supervisor menyetujui/menolak; Supervisor/Administrator yang menekan Cancel langsung berlaku. Sebelum menerima pengajuan sistem MENGHITUNG apakah stok masih cukup untuk menarik dokumen itu kembali; bila tidak cukup, pembatalan DITOLAK dan pengguna harus membuat Stock Adjustment. Hitungan juga tampil sebagai peringatan di form sebelum tombol ditekan, dan diulang saat persetujuan.
 7. **Mode Ponytail aktif** (plugin): ubah sekecil mungkin tapi lengkap (termasuk tes, fixture, pemanggil), akhiri jawaban dengan 1-2 baris "apa yang dilewati / risiko". Jawab terus terang bila ada yang gagal atau tidak sempat dicek; jelaskan akar masalah, bukan hanya perbaikan.
-8. Verifikasi di browser (http://sstock.test) bila menyangkut tampilan; setelah mengubah `resources/css/app.css` jalankan `npm run build` dan muat ulang keras. Kembalikan viewport emulasi ke `desktop` setelah menguji. Jangan membuat data uji permanen di database lokal (bersihkan yang Anda buat).
+8. Verifikasi di browser (http://stoku.test) bila menyangkut tampilan; setelah mengubah `resources/css/app.css` jalankan `npm run build` dan muat ulang keras. Kembalikan viewport emulasi ke `desktop` setelah menguji. Jangan membuat data uji permanen di database lokal (bersihkan yang Anda buat).
 9. Tanya pemilik hanya bila benar-benar buntu; selebihnya ambil keputusan masuk akal, sebutkan asumsinya.
 
 ## 2. Lokasi, stack, akun
-- Folder `C:\Users\iwanp\Herd\sstock` (sejajar `tmerp` dan `devlib`), situs http://sstock.test (Herd), GitHub https://github.com/275iwan92/sstock (privat, `main`).
-- Laravel 13.37, PHP 8.3 atau lebih baru (`composer.json` ^8.3), Vite + Tailwind 4, MySQL 8 (db `sstock`, user `sstock_usr`, dibuat oleh `php artisan sstock:install`). Tes memakai SQLite in-memory.
+- **Keadaan per 2026-10-31 (baca ini dulu):** folder kerja sekarang `C:\Users\iwanp\Herd\stoku` (sejajar `tmerp` dan `devlib`), situs http://stoku.test (Herd), database MySQL `stoku` (akun `stoku_usr`, kata sandi di `.env`). Folder `sstock` lama sudah dihapus isinya (data identik dicek lebih dulu; cadangan terakhir `C:\Users\iwanp\Backups\sstock-terakhir-20261031.sql`); folder kosongnya mungkin masih ada karena terkunci, boleh dihapus; database `sstock` dan akun `sstock_usr` sudah di-drop. Kode proyek, repo GitHub (https://github.com/275iwan92/sstock, privat, `main`), perintah `sstock:*`, `config/sstock.php` dan kelas CSS `sstock-*` TETAP bernama sstock (sengaja tidak diganti).
+- **Jays** = klon Stoku di `C:\Users\iwanp\Herd\jays` (http://jays.test, DB `jays`, akun `jays_usr`, APP_NAME=Jays), git TANPA remote supaya tidak mendorong ke repo sstock. Kode sama dengan Stoku saat dikloning; perubahan Stoku tidak otomatis ikut ke Jays. Akun uji Jays diubah langsung di database: `entry` jadi `admhr`, `supervisor` jadi `spv` (sandi dari pemilik; seeder tidak diubah, jadi "Segarkan data contoh" mengembalikan nama lama).
+- **Biznet** (duplikat UAT, 103.127.135.74, HTTP): `/stoku/` (DB `stoku`), `/jays/` (DB `jays`, klon checkout stoku tanpa remote, cookie `jays_session`, path sesi `/jays`) dan `/devlib/`; alamat `/` mengarah ke `/jays/` (jays dijadikan utama). Akses `plink` + kunci `.ppk`, MySQL lewat `sudo mysql`. Memperbarui jays: `git pull /var/www/stoku main` di `/var/www/jays`. Rincian deploy: lihat `docs/`.
+- Laravel 13.37, PHP 8.3 atau lebih baru (`composer.json` ^8.3), Vite + Tailwind 4, MySQL 8 (db `stoku`, user `stoku_usr`, dibuat oleh `php artisan sstock:install` dengan `DB_DATABASE` / `DB_USERNAME` di `.env`). Tes memakai SQLite in-memory. Folder berisi tautan `vendor/jo/devlib` ke `..\devlib` (junction): lepas dengan `cmd /c rmdir` sebelum menghapus folder proyek.
 - Akun uji (hanya untuk pengembangan/UAT, ganti sebelum produksi; ada di `UserSeeder`): `admin` / `admin` (Administrator), `supervisor` / `1qa2ws3ed` (Supervisor), `entry` / `12345678` (Data Entry).
-- **Bangun ulang data contoh:** layar Administrator **Keamanan > Data Contoh** (`SampleDataController`, `App\Services\SampleData`; ketik SEGARKAN; tabel `geo_*` dipertahankan; pengguna keluar lalu masuk ulang; dimatikan di production kecuali `SSTOCK_SAMPLE_REFRESH=true`), atau CLI `composer sample` (= `php artisan migrate:fresh --seed --force`, TERMASUK menghapus `geo_*`; MENGHAPUS seluruh isi database `sstock`, lalu mengisi ulang akun, kategori, lokasi, barang, supplier, departemen, dan riwayat transaksi contoh). Wajib dijalankan ulang bila seeder berubah. Seeder dijaga tes `ItemCodeTest`.
+- **Bangun ulang data contoh:** layar Administrator **Keamanan > Data Contoh** (`SampleDataController`, `App\Services\SampleData`; ketik SEGARKAN; tabel `geo_*` dipertahankan; pengguna keluar lalu masuk ulang; dimatikan di production kecuali `SSTOCK_SAMPLE_REFRESH=true`), atau CLI `composer sample` (= `php artisan migrate:fresh --seed --force`, TERMASUK menghapus `geo_*`; MENGHAPUS seluruh isi database proyek (`stoku`), lalu mengisi ulang akun, kategori, lokasi, barang, supplier, departemen, dan riwayat transaksi contoh). Wajib dijalankan ulang bila seeder berubah. Seeder dijaga tes `ItemCodeTest`.
 - Perintah: `php artisan test` (61 tes lulus saat serah terima), `vendor\bin\pint --dirty`, `npm run build`, `php artisan sstock:wallpapers`, `php artisan sstock:import-geo`.
 
 ## 3. Yang sudah ada
@@ -48,7 +50,7 @@ Tempel seluruh teks ini di awal sesi baru, lalu baca juga `CLAUDE.md` bila perlu
 
 ## 6. Menjalankan di mesin lain
 ```bash
-git clone https://github.com/275iwan92/sstock.git   # taruh sejajar dengan ../devlib
+git clone https://github.com/275iwan92/sstock.git stoku   # taruh sejajar dengan ../devlib
 composer setup    # install, .env, key, buat DB + user MySQL, migrate, seed, build
 ```
-Daftarkan folder ke Herd (park/link) lalu buka http://sstock.test.
+Daftarkan folder ke Herd (park/link) lalu buka http://stoku.test.

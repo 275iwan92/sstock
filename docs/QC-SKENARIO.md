@@ -303,13 +303,13 @@ Peran: Administrator.
 
 ## 13b. Beranda: sapaan, cuaca, dan baris jaringan (BRN)
 
-Peran: semua. Uji di komputer dan di HP (sekitar 360 x 790). Cuaca butuh internet. Lokasi perangkat hanya bisa dipakai bila Stoku dibuka lewat HTTPS atau localhost; lewat `http://sstock.test` atau alamat IP yang dipakai adalah kota cadangan dari layar Perusahaan (CMP-12).
+Peran: semua. Uji di komputer dan di HP (sekitar 360 x 790). Cuaca butuh internet. Lokasi perangkat hanya bisa dipakai bila Stoku dibuka lewat HTTPS atau localhost; lewat `http://stoku.test` atau alamat IP yang dipakai adalah kota cadangan dari layar Perusahaan (CMP-12).
 
 | No | Langkah | Hasil yang diharapkan | Lulus/Gagal | Catatan |
 |---|---|---|---|---|
 | BRN-01 | Masuk, lihat bagian atas Beranda komputer. | Satu baris sapaan sesuai jam (misalnya "Selamat siang, Budi": nama depan, tanpa emoji) dan di bawahnya tanggal dan jam kecil ("Jumat, 23 Oktober 2026 · 15:13"). Tidak memakan banyak tinggi. | | |
-| BRN-02 | Kosongkan Kota, Lintang, Bujur di Perusahaan, lalu buka Beranda lewat `http://sstock.test` atau alamat IP. | Tidak ada kartu cuaca dan sapaan tetap rapi. | | |
-| BRN-03 | Isi Kota `Malang`, Lintang `-7.98`, Bujur `112.63` di Perusahaan, buka Beranda lewat `http://sstock.test`. | Kartu biru tua kecil di kanan sapaan: ikon, suhu, "Gerimis · Malang" (kondisi mengikuti cuaca sesungguhnya). Browser tidak meminta izin lokasi (alamat tanpa HTTPS). | | |
+| BRN-02 | Kosongkan Kota, Lintang, Bujur di Perusahaan, lalu buka Beranda lewat `http://stoku.test` atau alamat IP. | Tidak ada kartu cuaca dan sapaan tetap rapi. | | |
+| BRN-03 | Isi Kota `Malang`, Lintang `-7.98`, Bujur `112.63` di Perusahaan, buka Beranda lewat `http://stoku.test`. | Kartu biru tua kecil di kanan sapaan: ikon, suhu, "Gerimis · Malang" (kondisi mengikuti cuaca sesungguhnya). Browser tidak meminta izin lokasi (alamat tanpa HTTPS). | | |
 | BRN-04 | Bila ada akses HTTPS: buka Beranda, tekan **Blokir** pada permintaan lokasi, lalu muat ulang beberapa kali. Lalu ubah izin menjadi Izinkan. | Saat diblokir: kartu memakai kota cadangan dan browser tidak menanyakan lagi. Saat diizinkan: kartu memakai kota posisi perangkat (nama kota dari posisi, bukan dari Perusahaan). | | |
 | BRN-05 | Matikan internet sebentar lalu muat ulang Beranda (cache lokasi satu jam dapat tampil). | Kartu cuaca diam atau tidak tampil; tidak ada pesan galat, pekerjaan lain tidak terganggu. | | |
 | BRN-06 | Di HP buka Beranda. | Sapaan satu baris; di bawahnya tanggal singkat ("Jum, 23 Okt 2026 · 15:13") dengan label kecil cuaca ("25°C · Malang") di sebelahnya bila ada cuaca; tidak tertutup tombol hamburger; tidak ada gulir ke samping. | | |
