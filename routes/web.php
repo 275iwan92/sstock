@@ -24,6 +24,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SampleDataController;
 use App\Http\Controllers\StockCountController;
 use App\Http\Controllers\StockDocumentController;
+use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\UserController;
@@ -94,7 +95,7 @@ Route::middleware(['auth', 'active', 'module'])->group(function () {
     });
 
     // Super admin (SSTOCK_SUPER_ADMIN): log aktivitas dan akun UAT. Selain dia = 404.
-    Route::middleware('super')->prefix('super')->name('super.')->controller(\App\Http\Controllers\SuperAdminController::class)->group(function () {
+    Route::middleware('super')->prefix('super')->name('super.')->controller(SuperAdminController::class)->group(function () {
         Route::get('log', 'log')->name('log');
         Route::get('log/unduh', 'download')->name('log.download');
         Route::get('akun', 'accounts')->name('accounts');
@@ -177,16 +178,16 @@ Route::middleware(['auth', 'active', 'module'])->group(function () {
             Route::post('{count}/unlock', 'unlock')->name('stock-counts.unlock');
             Route::post('{count}/review', 'reviewLines')->name('stock-counts.review');
             Route::post('{count}/refresh', 'refreshMoved')->name('stock-counts.refresh');
-            Route::post('{count}/approve', 'approve')->name('stock-counts.approve');
             Route::post('{count}/lines/{line}/refresh', 'refreshOne')->whereNumber('line')->name('stock-counts.refresh-line');
+            Route::post('{count}/approve', 'approve')->name('stock-counts.approve');
             Route::post('{count}/reject', 'reject')->name('stock-counts.reject');
             Route::get('{count}/report', 'report')->name('stock-counts.report');
         });
         Route::get('{count}', 'show')->name('stock-counts.show');
         Route::get('{count}/sheet', 'sheet')->name('stock-counts.sheet');
         Route::post('{count}/lines', 'saveLines')->name('stock-counts.lines');
-        Route::post('{count}/items', 'addItem')->name('stock-counts.items');
         Route::post('{count}/save', 'save')->name('stock-counts.save');
+        Route::post('{count}/items', 'addItem')->name('stock-counts.items');
         Route::post('{count}/finish', 'finish')->name('stock-counts.finish');
     });
 
